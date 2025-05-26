@@ -1,30 +1,47 @@
-# parietal.py (Sensory Integration, Spatial Awareness)
+# parietal.py (Sensory Integration, Spatial Awareness using Keras)
 import numpy as np
-import json
+import json # Still needed for memory persistence if desired, though Keras handles model weights
 import os
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # For compatibility
 
 class ParietalLobeAI:
-    def __init__(self, model_path="data/parietal_model.json"):
+    def __init__(self, model_path="data/parietal_model.weights.h5"): # Updated extension
         self.input_size = 20  # Sensory data (e.g., sensor readings)
-        self.hidden_size = 25 # Size of the new hidden layer
-        self.output_size = 3  # Spatial coordinates (e.g., x, y, z error or target position)
+        self.output_size = 3  # Spatial coordinates (e.g., x, y, z) - regression target
 
-        # Learning rates
-        self.learning_rate_learn = 0.01
-        self.learning_rate_consolidate = 0.005
+        # Learning rate for the Keras optimizer
+        self.learning_rate_learn = 0.001 # Standard Keras learning rate
+        # learning_rate_consolidate is not directly used unless model is recompiled or optimizer LR is changed.
+        # For simplicity, consolidation will use the same LR as initial training.
 
-        # New two-layer architecture weights and biases
-        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size) * 0.01
-        self.bias_hidden = np.zeros((1, self.hidden_size))
-        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size) * 0.01
-        self.bias_output = np.zeros((1, self.output_size))
+        self.model_path = model_path
+        self.memory_path = self.model_path.replace(".weights.h5", "_memory.json") # Path for memory
+
+        # Build and compile the Keras model
+        self.model = self._build_model()
+        
+        # Load model weights if they exist
+        self.load_model()
 
         # Memory will store (sensory_data_list, true_coords_list) tuples.
         self.memory = []
-        self.max_memory_size = 100 # Max memory size
+        self.max_memory_size = 200 # Increased memory size
+        self._load_memory() # Load memory if it exists
 
-        self.model_path = model_path
-        self.load_model()
+    def _build_model(self):
+        model = Sequential([
+            Input(shape=(self.input_size,), name="input_layer"), # Explicit Input layer
+            Dense(32, activation='relu', name='dense_hidden1'),
+            # Dense(16, activation='relu', name='dense_hidden2'), # Optional second hidden layer
+            Dense(self.output_size, activation='linear', name='dense_output') # Linear activation for regression
+        ])
+        optimizer = LegacyAdam(learning_rate=self.learning_rate_learn)
+        model.compile(optimizer=optimizer, loss='mse') # Mean Squared Error for regression
+        # model.summary() # Uncomment to print summary when an instance is created
+        return model
 
     def _prepare_input_vector(self, sensor_data):
         """Prepares a 1D numpy array from sensor_data, ensuring correct size."""
@@ -33,200 +50,248 @@ class ParietalLobeAI:
         elif isinstance(sensor_data, np.ndarray):
             input_vec_list = sensor_data.flatten().tolist()
         else:
-            # print(f"Warning: Unexpected sensor_data type {type(sensor_data)} in _prepare_input_vector. Using zeros.")
+            print(f"Parietal Lobe: Warning: Unexpected sensor_data type {type(sensor_data)}. Using zeros.")
             input_vec_list = [0.0] * self.input_size
 
-        if len(input_vec_list) < self.input_size:
-            input_vec_list.extend([0.0] * (self.input_size - len(input_vec_list)))
-        elif len(input_vec_list) > self.input_size:
-            input_vec_list = input_vec_list[:self.input_size]
-        return np.array(input_vec_list) # Return 1D array
-
-    def _prepare_target_coords_vector(self, true_coords_list_or_array):
-        """Prepares a 1D numpy array from true_coords, ensuring correct size."""
-        if isinstance(true_coords_list_or_array, list):
-            target_list = true_coords_list_or_array
-        elif isinstance(true_coords_list_or_array, np.ndarray):
-            target_list = true_coords_list_or_array.flatten().tolist()
+        current_len = len(input_vec_list)
+        if current_len == self.input_size:
+            return np.array(input_vec_list, dtype=float)
+        elif current_len < self.input_size:
+            # Pad with zeros
+            return np.array(input_vec_list + [0.0] * (self.input_size - current_len), dtype=float)
         else:
-            # print(f"Warning: Unexpected true_coords type {type(true_coords_list_or_array)}. Using zeros.")
+            # Truncate
+            return np.array(input_vec_list[:self.input_size], dtype=float)
+
+    def _prepare_target_coords_vector(self, true_coords):
+        """Prepares a 1D numpy array from true_coords, ensuring correct size."""
+        if isinstance(true_coords, list):
+            target_list = true_coords
+        elif isinstance(true_coords, np.ndarray):
+            target_list = true_coords.flatten().tolist()
+        else:
+            print(f"Parietal Lobe: Warning: Unexpected true_coords type {type(true_coords)}. Using zeros.")
             target_list = [0.0] * self.output_size
-
-        if len(target_list) < self.output_size:
-            target_list.extend([0.0] * (self.output_size - len(target_list)))
-        elif len(target_list) > self.output_size:
-            target_list = target_list[:self.output_size]
-        return np.array(target_list) # Return 1D array, shape (self.output_size,)
-
-    def _forward_propagate(self, sensor_data):
-        input_vec_1d = self._prepare_input_vector(sensor_data)
-        if input_vec_1d.shape[0] != self.input_size:
-            input_vec_1d = np.zeros(self.input_size)
-        input_vec_2d = input_vec_1d.reshape(1, -1)
-        hidden_layer_input = input_vec_2d @ self.weights_input_hidden + self.bias_hidden
-        hidden_layer_output = np.tanh(hidden_layer_input)
-        output_coords = hidden_layer_output @ self.weights_hidden_output + self.bias_output
-        return input_vec_1d, hidden_layer_output.flatten(), output_coords.flatten()
+        
+        current_len = len(target_list)
+        if current_len == self.output_size:
+            return np.array(target_list, dtype=float)
+        elif current_len < self.output_size:
+            return np.array(target_list + [0.0] * (self.output_size - current_len), dtype=float)
+        else:
+            return np.array(target_list[:self.output_size], dtype=float)
 
     def process_task(self, sensory_data):
-        try:
-            _input_features, _hidden_activation, output_coords = self._forward_propagate(sensory_data)
-            return output_coords.tolist()
-        except Exception as e:
+        print(f"Parietal Lobe: Processing task with sensory data...")
+        input_vec_1d = self._prepare_input_vector(sensory_data)
+        
+        # Check if input_vec_1d is all zeros, which might indicate a preparation error or actual zero input
+        if not np.any(input_vec_1d) and not np.all(np.array(sensory_data, dtype=float) == 0): # If not all zeros originally
+            print("Parietal Lobe: Input vector became all zeros after preparation, possibly due to invalid input type. Returning default.")
             return [0.0] * self.output_size
 
-    def learn(self, sensory_data, true_coords):
-        """Update based on spatial error using backpropagation."""
+        input_batch = np.reshape(input_vec_1d, [1, self.input_size])
+        
+        try:
+            predicted_coords_batch = self.model.predict(input_batch, verbose=0)
+            predicted_coords_list = predicted_coords_batch[0].tolist()
+            print(f"Parietal Lobe: Predicted coordinates: {predicted_coords_list}")
+            return predicted_coords_list
+        except Exception as e:
+            print(f"Parietal Lobe: Error during model prediction: {e}")
+            return [0.0] * self.output_size
 
-        # Forward propagation
-        fwd_results = self._forward_propagate(sensory_data)
-        input_vec_1d, hidden_output_1d, predicted_coords_1d = fwd_results
+    def learn(self, sensory_data, true_coords): # Assuming true_coords, not spatial_error
+        print(f"Parietal Lobe: Learning with sensory data and true coordinates...")
+        input_vec_1d = self._prepare_input_vector(sensory_data)
+        target_coords_1d = self._prepare_target_coords_vector(true_coords)
 
-        if not np.any(input_vec_1d): # Skip if input vector is all zeros
-            # print("Warning: Skipping learning in ParietalLobeAI due to zero input vector.")
+        # Check if input_vec_1d is all zeros (similar to process_task)
+        if not np.any(input_vec_1d) and not np.all(np.array(sensory_data, dtype=float) == 0):
+            print("Parietal Lobe: Input vector for learning is all zeros after preparation. Skipping learning.")
             return
 
-        true_coords_1d = self._prepare_target_coords_vector(true_coords) # Shape (output_size,)
+        input_batch = np.reshape(input_vec_1d, [1, self.input_size])
+        target_batch = np.reshape(target_coords_1d, [1, self.output_size])
 
-        # Backward Pass
-        # 1. Error at output layer (delta_output)
-        # For linear output layer and Mean Squared Error loss, delta_output = predicted - true
-        delta_output = predicted_coords_1d - true_coords_1d  # Shape (output_size,)
+        try:
+            history = self.model.fit(input_batch, target_batch, epochs=1, verbose=0)
+            loss = history.history.get('loss', [float('nan')])[0]
+            print(f"Parietal Lobe: Training complete. Loss: {loss:.4f}")
 
-        # 2. Gradients for hidden-to-output layer
-        delta_weights_ho = np.outer(hidden_output_1d, delta_output)  # Shape (hidden_size, output_size)
-        delta_bias_output = delta_output  # Shape (output_size,)
+            # Store raw forms in memory
+            s_data_to_store = sensory_data.tolist() if isinstance(sensory_data, np.ndarray) else list(sensory_data)
+            t_coords_to_store = true_coords.tolist() if isinstance(true_coords, np.ndarray) else list(true_coords)
+            self.memory.append((s_data_to_store, t_coords_to_store))
+            if len(self.memory) > self.max_memory_size:
+                self.memory.pop(0)
+        except Exception as e:
+            print(f"Parietal Lobe: Error during model training: {e}")
 
-        # 3. Error at hidden layer (delta_hidden)
-        error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T  # Shape (hidden_size,)
-        derivative_tanh_hidden = 1 - hidden_output_1d**2  # hidden_output_1d is tanh(z_hidden)
-        delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden  # Shape (hidden_size,)
-
-        # 4. Gradients for input-to-hidden layer
-        delta_weights_ih = np.outer(input_vec_1d, delta_hidden)  # Shape (input_size, hidden_size)
-        delta_bias_hidden = delta_hidden  # Shape (hidden_size,)
-
-        # Update Weights and Biases
-        self.weights_hidden_output -= self.learning_rate_learn * delta_weights_ho
-        self.bias_output -= self.learning_rate_learn * delta_bias_output.reshape(1, -1)
-
-        self.weights_input_hidden -= self.learning_rate_learn * delta_weights_ih
-        self.bias_hidden -= self.learning_rate_learn * delta_bias_hidden.reshape(1, -1)
-
-        # Update Memory
-        s_data_list = sensory_data.tolist() if isinstance(sensory_data, np.ndarray) else list(sensory_data)
-        t_coords_list = true_coords.tolist() if isinstance(true_coords, np.ndarray) else list(true_coords)
-
-        self.memory.append((s_data_list, t_coords_list))
-        if len(self.memory) > self.max_memory_size:
-            self.memory.pop(0)
-
-    def consolidate(self):
-        """Bedtime: Replay experiences from memory to refine model."""
-        if not self.memory:
-            self.save_model()
-            return
-
-        # print(f"Consolidating Parietal Lobe. Memory size: {len(self.memory)}")
-        for sensory_data_to_replay, true_coords_to_replay in list(self.memory):
-
-            fwd_results = self._forward_propagate(sensory_data_to_replay)
-            input_vec_1d, hidden_output_1d, predicted_coords_1d = fwd_results
-
-            if not np.any(input_vec_1d): continue
-
-            true_coords_1d = self._prepare_target_coords_vector(true_coords_to_replay)
-
-            delta_output = predicted_coords_1d - true_coords_1d
-            delta_weights_ho = np.outer(hidden_output_1d, delta_output)
-            delta_bias_output = delta_output
-            error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
-            derivative_tanh_hidden = 1 - hidden_output_1d**2
-            delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden
-            delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
-            delta_bias_hidden = delta_hidden
-
-            self.weights_hidden_output -= self.learning_rate_consolidate * delta_weights_ho
-            self.bias_output -= self.learning_rate_consolidate * delta_bias_output.reshape(1, -1)
-            self.weights_input_hidden -= self.learning_rate_consolidate * delta_weights_ih
-            self.bias_hidden -= self.learning_rate_consolidate * delta_bias_hidden.reshape(1, -1)
-
-        self.save_model()
-
-    def _initialize_default_weights_biases(self):
-        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size) * 0.01
-        self.bias_hidden = np.zeros((1, self.hidden_size))
-        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size) * 0.01
-        self.bias_output = np.zeros((1, self.output_size))
 
     def save_model(self):
-        model_data = {
-            'weights_input_hidden': self.weights_input_hidden.tolist(),
-            'bias_hidden': self.bias_hidden.tolist(),
-            'weights_hidden_output': self.weights_hidden_output.tolist(),
-            'bias_output': self.bias_output.tolist(),
-            'input_size': self.input_size,
-            'hidden_size': self.hidden_size,
-            'output_size': self.output_size
-        }
+        print(f"Parietal Lobe: Saving model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
-        with open(self.model_path, "w") as f: json.dump(model_data, f)
+        try:
+            self.model.save_weights(self.model_path)
+            print("Parietal Lobe: Model weights saved.")
+        except Exception as e:
+            print(f"Parietal Lobe: Error saving model weights: {e}")
 
     def load_model(self):
         if os.path.exists(self.model_path):
+            print(f"Parietal Lobe: Loading model weights from {self.model_path}...")
             try:
-                with open(self.model_path, "r") as f: data = json.load(f)
-                loaded_input_size = data.get('input_size', self.input_size)
-                loaded_hidden_size = data.get('hidden_size', self.hidden_size)
-                loaded_output_size = data.get('output_size', self.output_size)
-                if not (loaded_input_size == self.input_size and \
-                        loaded_hidden_size == self.hidden_size and \
-                        loaded_output_size == self.output_size):
-                    self._initialize_default_weights_biases(); return
-                required_keys = ['weights_input_hidden', 'bias_hidden', 'weights_hidden_output', 'bias_output']
-                if all(key in data for key in required_keys):
-                    w_ih = np.array(data['weights_input_hidden']); b_h = np.array(data['bias_hidden'])
-                    w_ho = np.array(data['weights_hidden_output']); b_o = np.array(data['bias_output'])
-                    if w_ih.shape == (self.input_size, self.hidden_size) and \
-                       b_h.shape == (1, self.hidden_size) and \
-                       w_ho.shape == (self.hidden_size, self.output_size) and \
-                       b_o.shape == (1, self.output_size):
-                        self.weights_input_hidden = w_ih; self.bias_hidden = b_h
-                        self.weights_hidden_output = w_ho; self.bias_output = b_o
-                    else: self._initialize_default_weights_biases()
-                elif 'weights' in data: self._initialize_default_weights_biases() # Old format
-                else: self._initialize_default_weights_biases()
-            except Exception: self._initialize_default_weights_biases()
-        else: self._initialize_default_weights_biases()
+                # Model must be built before loading weights
+                if not hasattr(self, 'model') or self.model is None:
+                     self.model = self._build_model() # Should already be called in __init__
+                self.model.load_weights(self.model_path)
+                print("Parietal Lobe: Model weights loaded successfully.")
+            except Exception as e:
+                print(f"Parietal Lobe: Error loading model weights: {e}. Model remains initialized.")
+        else:
+            print(f"Parietal Lobe: No pre-trained weights found at {self.model_path}. Model is newly initialized.")
+
+    def _save_memory(self):
+        print("Parietal Lobe: Saving memory...")
+        os.makedirs(os.path.dirname(self.memory_path), exist_ok=True)
+        try:
+            with open(self.memory_path, "w") as f:
+                json.dump({"memory": self.memory}, f)
+            print("Parietal Lobe: Memory saved.")
+        except Exception as e:
+            print(f"Parietal Lobe: Error saving memory: {e}")
+
+    def _load_memory(self):
+        if os.path.exists(self.memory_path):
+            print("Parietal Lobe: Loading memory...")
+            try:
+                with open(self.memory_path, "r") as f:
+                    loaded_data = json.load(f)
+                    self.memory = loaded_data.get("memory", [])
+                # Ensure memory items are tuples of lists (or convert if necessary)
+                self.memory = [
+                    (list(item[0]), list(item[1])) for item in self.memory 
+                    if isinstance(item, (list, tuple)) and len(item) == 2
+                ]
+                print("Parietal Lobe: Memory loaded.")
+            except Exception as e:
+                print(f"Parietal Lobe: Error loading memory: {e}. Initializing empty memory.")
+                self.memory = []
+        else:
+            print("Parietal Lobe: No memory file found. Initializing empty memory.")
+            self.memory = []
+
+
+    def consolidate(self):
+        print("Parietal Lobe: Starting consolidation...")
+        if not self.memory:
+            print("Parietal Lobe: Memory is empty. Nothing to consolidate.")
+        else:
+            print(f"Parietal Lobe: Consolidating {len(self.memory)} experiences from memory.")
+            # Example: Batch processing for consolidation
+            sensory_data_batch = []
+            true_coords_batch = []
+            
+            # Simple batching: process all memory items if not too large, or a sample
+            # For Keras, it's often better to fit on the entire dataset (or large batches)
+            # if memory is reasonably sized.
+            
+            for s_data, t_coords in self.memory:
+                sensory_data_batch.append(self._prepare_input_vector(s_data))
+                true_coords_batch.append(self._prepare_target_coords_vector(t_coords))
+            
+            if sensory_data_batch: # If any valid data was prepared
+                input_data_np = np.array(sensory_data_batch)
+                target_data_np = np.array(true_coords_batch)
+                print(f"Parietal Lobe: Training consolidation batch of size {input_data_np.shape[0]}...")
+                try:
+                    self.model.fit(input_data_np, target_data_np, epochs=1, verbose=0, batch_size=16) # Example batch_size
+                    print("Parietal Lobe: Consolidation training complete.")
+                except Exception as e:
+                    print(f"Parietal Lobe: Error during consolidation training: {e}")
+            else:
+                print("Parietal Lobe: No valid data prepared for consolidation training.")
+
+        self.save_model() # Save updated model weights
+        self._save_memory() # Save memory state (e.g., if it was pruned or modified)
+        print("Parietal Lobe: Consolidation complete.")
 
 # Example Usage
 if __name__ == "__main__":
-    parietal_ai = ParietalLobeAI(model_path="data/test_parietal_model_backprop.json")
-    print("ParietalLobeAI initialized for backpropagation test.")
+    print("\n--- Testing ParietalLobeAI (Keras FFN) ---")
+    test_model_path = "data/test_parietal_keras.weights.h5"
+    
+    # Clean up old test files
+    if os.path.exists(test_model_path): os.remove(test_model_path)
+    if os.path.exists(test_model_path.replace(".weights.h5", "_memory.json")):
+        os.remove(test_model_path.replace(".weights.h5", "_memory.json"))
 
-    sample_sensor_data = np.random.rand(parietal_ai.input_size).tolist()
-    sample_true_coords = np.random.rand(parietal_ai.output_size).tolist()
+    parietal_ai = ParietalLobeAI(model_path=test_model_path)
+    parietal_ai.model.summary()
 
-    initial_w_ih_sample = parietal_ai.weights_input_hidden[0,0]
-    initial_w_ho_sample = parietal_ai.weights_hidden_output[0,0]
+    print("\n--- Testing Data Preparation ---")
+    sample_sensor_data_short = [1.0, 2.0]
+    prepared_input = parietal_ai._prepare_input_vector(sample_sensor_data_short)
+    print(f"Prepared input for short data ({sample_sensor_data_short}): {prepared_input}, shape: {prepared_input.shape}")
+    assert prepared_input.shape == (parietal_ai.input_size,)
 
-    print(f"Initial w_ih[0,0]: {initial_w_ih_sample}, w_ho[0,0]: {initial_w_ho_sample}")
+    sample_coords_long = [0.1, 0.2, 0.3, 0.4]
+    prepared_target = parietal_ai._prepare_target_coords_vector(sample_coords_long)
+    print(f"Prepared target for long data ({sample_coords_long}): {prepared_target}, shape: {prepared_target.shape}")
+    assert prepared_target.shape == (parietal_ai.output_size,)
+    
+    print("\n--- Testing process_task ---")
+    sensor_input = np.random.rand(parietal_ai.input_size).tolist()
+    predicted_coords = parietal_ai.process_task(sensor_input)
+    print(f"Predicted coords for random input: {predicted_coords}")
+    assert len(predicted_coords) == parietal_ai.output_size
 
-    parietal_ai.learn(sample_sensor_data, sample_true_coords)
-    print(f"Memory after learn: {parietal_ai.memory}")
-    print(f"w_ih[0,0] after learn: {parietal_ai.weights_input_hidden[0,0]}")
-    print(f"w_ho[0,0] after learn: {parietal_ai.weights_hidden_output[0,0]}")
+    print("\n--- Testing learn ---")
+    true_spatial_coords = np.random.rand(parietal_ai.output_size).tolist()
+    parietal_ai.learn(sensor_input, true_spatial_coords)
+    print(f"Memory size after one learn call: {len(parietal_ai.memory)}")
 
-    if initial_w_ih_sample == parietal_ai.weights_input_hidden[0,0] and \
-       initial_w_ho_sample == parietal_ai.weights_hidden_output[0,0]:
-       print("Warning: Weights did not change after learn. This might be okay if error was zero or input was zero.")
-    else:
-       print("Weights changed after learn, as expected.")
+    # Simulate a few more learning steps
+    for i in range(5):
+        s_data = np.random.rand(parietal_ai.input_size).tolist()
+        t_coords = (np.random.rand(parietal_ai.output_size) * (i+1)).tolist() # Make targets somewhat different
+        parietal_ai.learn(s_data, t_coords)
+    print(f"Memory size after several learn calls: {len(parietal_ai.memory)}")
 
+
+    print("\n--- Testing Consolidation ---")
     parietal_ai.consolidate()
-    print(f"w_ih[0,0] after consolidate: {parietal_ai.weights_input_hidden[0,0]}")
-    print(f"w_ho[0,0] after consolidate: {parietal_ai.weights_hidden_output[0,0]}")
 
-    if os.path.exists("data/test_parietal_model_backprop.json"):
-        os.remove("data/test_parietal_model_backprop.json")
-    print("ParietalLobeAI backpropagation test finished.")
+    print("\n--- Testing Save/Load ---")
+    parietal_ai.save_model() # Includes saving memory
+    
+    # Create a new instance to test loading
+    print("\nCreating new ParietalLobeAI instance for loading test...")
+    parietal_ai_loaded = ParietalLobeAI(model_path=test_model_path)
+    
+    # Test if model weights were loaded (simple check on one layer's weights)
+    # Need to access weights of a specific layer, e.g., the output layer
+    if hasattr(parietal_ai.model.get_layer("dense_output"), "kernel") and \
+       hasattr(parietal_ai_loaded.model.get_layer("dense_output"), "kernel"):
+        original_weights_output = parietal_ai.model.get_layer("dense_output").kernel.numpy()
+        loaded_weights_output = parietal_ai_loaded.model.get_layer("dense_output").kernel.numpy()
+        if np.array_equal(original_weights_output, loaded_weights_output):
+            print("Model weights loaded successfully (output layer kernel weights match).")
+        else:
+            print("Model weights loading failed or mismatch. This might happen if consolidation changed weights after save and before this check.")
+    else:
+         print("Could not access kernel weights for 'dense_output' layer to compare.")
+
+    if len(parietal_ai_loaded.memory) == len(parietal_ai.memory):
+        print(f"Memory loaded successfully with {len(parietal_ai_loaded.memory)} items.")
+    else:
+        print("Memory loading failed or mismatch.")
+
+    # Clean up
+    if os.path.exists(test_model_path): os.remove(test_model_path)
+    if os.path.exists(test_model_path.replace(".weights.h5", "_memory.json")):
+        os.remove(test_model_path.replace(".weights.h5", "_memory.json"))
+    print("\nCleaned up test files.")
+    
+    print("\nParietal Lobe AI (Keras FFN) test script finished.")
