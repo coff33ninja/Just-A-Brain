@@ -61,15 +61,18 @@ class TemporalLobeAI:
     def _to_numerical_vector(self, data, size, context="input"):
         if isinstance(data, str):
             hash_val = hash(data)
-            np.random.seed(hash_val % (2**32 -1) )
+            np.random.seed(hash_val % (2**32 -1))
             vec = np.random.rand(size)
             np.random.seed(None)
             return vec
         try:
             vec = np.array(data, dtype=float).flatten()
-        except ValueError: return np.zeros(size)
-        if vec.shape[0] == size: return vec
-        elif vec.shape[0] < size: return np.concatenate((vec, np.zeros(size - vec.shape[0])))
+        except ValueError:
+            return np.zeros(size)
+        if vec.shape[0] == size:
+            return vec
+        elif vec.shape[0] < size:
+            return np.concatenate((vec, np.zeros(size - vec.shape[0])))
         else: return vec[:size]
 
     def _forward_prop_text(self, input_text_1d):

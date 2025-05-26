@@ -202,7 +202,7 @@ class ParietalLobeAI:
 # Example Usage
 if __name__ == "__main__":
     parietal_ai = ParietalLobeAI(model_path="data/test_parietal_model_backprop.json")
-    print(f"ParietalLobeAI initialized for backpropagation test.")
+    print("ParietalLobeAI initialized for backpropagation test.")
 
     sample_sensor_data = np.random.rand(parietal_ai.input_size).tolist()
     sample_true_coords = np.random.rand(parietal_ai.output_size).tolist()

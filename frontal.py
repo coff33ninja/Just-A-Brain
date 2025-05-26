@@ -84,7 +84,7 @@ class FrontalLobeAI:
         indices = np.random.choice(len(self.memory), size=actual_batch_size, replace=False)
         batch = [self.memory[i] for i in indices]
 
-        for state_list, action, reward, next_state_list, done in batch:
+        for state_list, action, reward, _next_state_list, _done in batch:
             # Convert state_list (stored as list) back to a 1D NumPy array
             state_vector_1d = self._prepare_state_vector(state_list)
 
@@ -131,7 +131,7 @@ class FrontalLobeAI:
 
                 self.exploration_rate_epsilon = data.get('exploration_rate_epsilon', 1.0)
 
-            except Exception as e:
+            except Exception:
                 self.weights = np.random.randn(self.input_size, self.output_size) * 0.01
                 self.exploration_rate_epsilon = 1.0
         else:
@@ -141,7 +141,7 @@ class FrontalLobeAI:
 # Example Usage
 if __name__ == "__main__":
     frontal_ai = FrontalLobeAI(model_path="data/test_frontal_q_consolidate.json")
-    print(f"FrontalLobeAI initialized for Q-learning consolidate test.")
+    print("FrontalLobeAI initialized for Q-learning consolidate test.")
 
     # Populate memory with some experiences
     for i in range(50): # Add 50 experiences

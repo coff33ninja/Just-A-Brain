@@ -294,7 +294,7 @@ class LimbicSystemAI:
 # Example Usage
 if __name__ == "__main__":
     limbic_ai = LimbicSystemAI(model_path="data/test_limbic_model_backprop.json")
-    print(f"LimbicSystemAI initialized for backpropagation test.")
+    print("LimbicSystemAI initialized for backpropagation test.")
 
     sample_temporal_output = np.random.rand(limbic_ai.input_size).tolist()  # Size 10
     true_emotion = 1  # e.g. "urgent"

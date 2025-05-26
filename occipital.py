@@ -225,7 +225,7 @@ if __name__ == '__main__':
     ai = OccipitalLobeAI(model_path="data/test_occipital_model_save_load.json")
 
     if os.path.exists('data/images/default_test_image.png'):
-        print(f"Testing save/load with default_test_image.png")
+        print("Testing save/load with default_test_image.png")
         ai.learn('data/images/default_test_image.png', true_label=0)
         ai.save_model() # Save the model with architectural params
 
