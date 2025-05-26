@@ -3,7 +3,7 @@
 ## System Design
 
     Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI.
-        - Occipital, Temporal, Cerebellum, Limbic, and Parietal lobes now implement two-layer neural networks (input-hidden-output) with backpropagation for learning. Hidden layers typically use `tanh` activation.
+        - The Occipital Lobe now uses a Convolutional Neural Network (CNN) built with TensorFlow/Keras for image processing. Other sensory lobes (Temporal, Parietal, Cerebellum, Limbic) currently use two-layer numpy-based neural networks for their respective tasks.
         - FrontalLobeAI has been upgraded to use Q-learning for decision-making.
     Main Script: main.py initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
     Functionality:
@@ -11,7 +11,7 @@
         Learning occurs via backpropagation for most modules and Q-learning for the Frontal lobe.
         Bedtime consolidation refines models by replaying experiences and saving updates to disk.
         Purpose emerges from environmental feedback, with no predefined goals.
-    Dependencies: This project uses Python with NumPy, Pillow, and Gradio. Install dependencies using the provided `requirements.txt` file. For simplicity, heavy frameworks like TensorFlow are avoided, but the system can be scaled up.
+    Dependencies: This project uses Python with NumPy, Pillow, Gradio, and TensorFlow. Install dependencies using the provided `requirements.txt` file. For simplicity, heavy frameworks like TensorFlow are avoided for other modules, but the system can be scaled up.
     File Structure:
     project/
     ├── main.py
@@ -28,29 +28,30 @@
 ## Implementation
 
 The system provides a modular implementation for each AI, focusing on the "baby AI" concept where capabilities are learned and refined over time.
-    - Most AI modules (Occipital, Temporal, Cerebellum, Limbic, Parietal) now feature two-layer neural networks, allowing for more complex pattern recognition and function approximation.
+    - The Occipital Lobe uses a TensorFlow/Keras based Convolutional Neural Network (CNN) for advanced image processing. Input images for the Occipital Lobe are automatically resized to 64x64 pixels and normalized before being processed by its CNN.
+    - Most other AI modules (Temporal, Cerebellum, Limbic, Parietal) now feature two-layer neural networks, allowing for more complex pattern recognition and function approximation.
     - FrontalLobeAI employs Q-learning to improve its decision-making based on rewards.
     - Data input has been enhanced to support image files (for Occipital) and paired image-text data for cross-modal learning experiments.
 
 ## Explanation
 
     Modules: Each module defines a class with:
-        - A model: Two-layer neural networks (input-hidden-output with biases) for most modules. FrontalLobeAI uses a Q-table approximated by a linear model.
+        - A model: The OccipitalLobeAI uses a Convolutional Neural Network (CNN) implemented with TensorFlow/Keras. Most other AI modules (Temporal, Parietal, etc.) use two-layer numpy-based neural networks. FrontalLobeAI uses a Q-table approximated by a linear model.
         - process_task: Handles inputs specific to the AI’s role.
-        - learn: Updates weights via backpropagation (for most modules) or Q-learning updates (FrontalLobeAI) based on feedback and experiences.
-        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them.
-        - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories) to disk, with backward compatibility for older model formats.
+        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI), or Q-learning updates (FrontalLobeAI) based on feedback and experiences.
+        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI, this primarily involves saving the learned model weights.
+        - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
     main.py:
         - Initializes all AIs and coordinates tasks.
         - process_day: Manages data flow (including image paths and text descriptions from paired data), routes inputs to appropriate AIs, collects outputs, and applies feedback for learning.
         - bedtime: Triggers consolidation for all AIs.
     Learning and Growth:
-        - AIs start with random weights.
+        - AIs start with random weights (or initial Keras model states).
         - They learn from feedback during tasks (e.g., rewards, errors, target values) and consolidate nightly.
-        - OccipitalLobeAI processes images and learns to classify them.
+        - OccipitalLobeAI processes images and learns to classify them using its CNN.
         - TemporalLobeAI processes text, learns text embeddings, and can associate text with visual labels.
         - FrontalLobeAI learns to choose actions using Q-learning.
-    Storage: Models and memories are saved in the `data/` folder as JSON files.
+    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital Lobe's TensorFlow/Keras model weights are saved in a specific format (e.g., `data/occipital_model.weights.h5`).
 
 ## Running the Command-Line Simulation (main.py)
 
@@ -72,7 +73,7 @@ For a more user-friendly and interactive experience, a Gradio web interface is a
 
 ### Running the Gradio App
 
-1.  Ensure all dependencies are installed. The `requirements.txt` file includes Gradio:
+1.  Ensure all dependencies are installed. The `requirements.txt` file includes Gradio and TensorFlow:
     ```bash
     pip install -r requirements.txt
     ```
@@ -88,7 +89,7 @@ The interface allows you to simulate the AI's 'days' interactively:
 
 **Inputs**:
 *   **Text Description**: Textual input for the AI to process.
-*   **Upload Image**: Visual input for the AI. You can upload an image file.
+*   **Upload Image**: Visual input for the AI. You can upload an image file. (Images are resized to 64x64 for the Occipital Lobe).
 *   **Sensor Values (1, 2, 3)**: Three sliders representing simplified sensor data inputs to the Parietal lobe.
 *   **Action Reward (Feedback)**: A slider (-1, 0, or 1) to provide a reward or punishment. This primarily influences the Frontal Lobe's Q-learning process based on the outcome of the previous state and action (though in this UI, it's provided alongside the current day's input).
 *   **Vision Label (Feedback for Image)**: A numerical label you associate with the uploaded image. This is used as a target for training the Occipital Lobe (image classification) and can influence Temporal Lobe associations.

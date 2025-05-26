@@ -1,244 +1,187 @@
 # occipital.py (Visual Processing)
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import numpy as np
-import json
 import os
-from PIL import Image
-
-# Helper function for Softmax
-def softmax(x):
-    """Compute softmax values for each sets of scores in x."""
-    e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
-    return e_x / np.sum(e_x, axis=-1, keepdims=True)
+from PIL import Image # Still needed for image loading and preprocessing
 
 class OccipitalLobeAI:
-    def __init__(self, model_path="data/occipital_model.json"):
-        self.image_size = (32, 32)
-        self.grid_size = (4, 4)
-        self.input_size = self.grid_size[0] * self.grid_size[1]  # 16 features
-        self.hidden_size = 32
-        self.output_size = 5  # Object labels
-
-        self.learning_rate_learn = 0.01
-        self.learning_rate_consolidate = 0.005
-
-        # Initialize weights and biases - these will be set by _initialize_default_weights_biases or load_model
-        self.weights_input_hidden = None
-        self.bias_hidden = None
-        self.weights_hidden_output = None
-        self.bias_output = None
-
-        self.memory = []  # Stores (image_path, true_label)
+    def __init__(self, model_path="data/occipital_model.weights.h5"): # Changed extension
+        self.input_shape = (64, 64, 3) # Height, Width, Channels (color images)
+        self.output_size = 5           # Number of object labels/classes
         self.model_path = model_path
-        self.load_model() # Attempt to load, will initialize if no valid model found
 
-    def _initialize_default_weights_biases(self):
-        # print("Initializing default weights and biases for OccipitalLobeAI.")
-        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size) * 0.01
-        self.bias_hidden = np.zeros((1, self.hidden_size))
-        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size) * 0.01
-        self.bias_output = np.zeros((1, self.output_size))
+        self.model = self._build_model()
+        self.model.compile(optimizer='adam', 
+                           loss='sparse_categorical_crossentropy', 
+                           metrics=['accuracy'])
+        
+        self.load_model() # Load weights if they exist
 
-    def _extract_regional_features(self, image_array):
-        img_height, img_width = image_array.shape
-        grid_rows, grid_cols = self.grid_size
-        cell_height = img_height // grid_rows
-        cell_width = img_width // grid_cols
-        features = []
-        for i in range(grid_rows):
-            for j in range(grid_cols):
-                region = image_array[i*cell_height:(i+1)*cell_height, j*cell_width:(j+1)*cell_width]
-                features.append(np.mean(region))
-        return np.array(features)
-
-    def _process_image_to_vector(self, image_path):
-        try:
-            img = Image.open(image_path).convert('L')
-            img = img.resize(self.image_size)
-            img_array = np.array(img) / 255.0
-            feature_vector = self._extract_regional_features(img_array)
-            return feature_vector
-        except FileNotFoundError:
-            return np.zeros(self.input_size)
-        except Exception as e:
-            return np.zeros(self.input_size)
-
-    def _forward_propagate(self, image_path):
-        input_vec_1d = self._process_image_to_vector(image_path)
-        if input_vec_1d.shape[0] != self.input_size:
-            input_vec_1d = np.zeros(self.input_size)
-
-        input_vec_2d = input_vec_1d.reshape(1, -1)
-
-        hidden_layer_input = input_vec_2d @ self.weights_input_hidden + self.bias_hidden
-        hidden_layer_output = np.tanh(hidden_layer_input)
-
-        output_layer_scores = hidden_layer_output @ self.weights_hidden_output + self.bias_output
-
-        return input_vec_1d, hidden_layer_output.flatten(), output_layer_scores.flatten()
-
-    def process_task(self, image_path):
-        try:
-            _, _, output_layer_scores = self._forward_propagate(image_path)
-            return np.argmax(output_layer_scores)
-        except Exception as e:
-            return np.random.randint(self.output_size)
-
-    def learn(self, image_path, true_label):
-        if not (0 <= true_label < self.output_size):
-            return
-
-        input_vec_1d, hidden_output_1d, output_scores_1d = self._forward_propagate(image_path)
-        if not np.any(input_vec_1d):
-            return
-
-        true_one_hot = np.zeros(self.output_size)
-        true_one_hot[true_label] = 1.0
-        output_probabilities = softmax(output_scores_1d)
-        delta_output = output_probabilities - true_one_hot
-
-        delta_weights_ho = np.outer(hidden_output_1d, delta_output)
-        delta_bias_output = delta_output
-
-        error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
-        derivative_tanh = 1 - hidden_output_1d**2
-        delta_hidden = error_propagated_to_hidden * derivative_tanh
-
-        delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
-        delta_bias_hidden = delta_hidden
-
-        self.weights_hidden_output -= self.learning_rate_learn * delta_weights_ho
-        self.bias_output -= self.learning_rate_learn * delta_bias_output.reshape(1, -1)
-        self.weights_input_hidden -= self.learning_rate_learn * delta_weights_ih
-        self.bias_hidden -= self.learning_rate_learn * delta_bias_hidden.reshape(1, -1)
-
-        self.memory.append((image_path, true_label))
-        if len(self.memory) > 100:
-            self.memory.pop(0)
-
-    def consolidate(self):
-        for image_path, true_label in list(self.memory):
-            if not (0 <= true_label < self.output_size):
-                continue
-
-            input_vec_1d, hidden_output_1d, output_scores_1d = self._forward_propagate(image_path)
-            if not np.any(input_vec_1d):
-                continue
-
-            true_one_hot = np.zeros(self.output_size)
-            true_one_hot[true_label] = 1.0
-            output_probabilities = softmax(output_scores_1d)
-            delta_output = output_probabilities - true_one_hot
-
-            delta_weights_ho = np.outer(hidden_output_1d, delta_output)
-            delta_bias_output = delta_output
-
-            error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
-            derivative_tanh = 1 - hidden_output_1d**2
-            delta_hidden = error_propagated_to_hidden * derivative_tanh
-
-            delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
-            delta_bias_hidden = delta_hidden
-
-            self.weights_hidden_output -= self.learning_rate_consolidate * delta_weights_ho
-            self.bias_output -= self.learning_rate_consolidate * delta_bias_output.reshape(1, -1)
-            self.weights_input_hidden -= self.learning_rate_consolidate * delta_weights_ih
-            self.bias_hidden -= self.learning_rate_consolidate * delta_bias_hidden.reshape(1, -1)
-
-        self.save_model()
+    def _build_model(self):
+        model = Sequential([
+            Conv2D(32, (3, 3), activation='relu', input_shape=self.input_shape, name="conv2d_1"),
+            MaxPooling2D((2, 2), name="maxpool_1"),
+            Conv2D(64, (3, 3), activation='relu', name="conv2d_2"),
+            MaxPooling2D((2, 2), name="maxpool_2"),
+            Flatten(name="flatten"),
+            Dense(64, activation='relu', name="dense_1"),
+            # Dropout(0.5), # Optional for regularization, ensure it's imported if used
+            Dense(self.output_size, activation='softmax', name="output_dense") # Softmax for multi-class
+        ])
+        # model.summary() # You can uncomment this to print summary when an instance is created
+        return model
 
     def save_model(self):
-        model_data = {
-            'weights_input_hidden': self.weights_input_hidden.tolist(),
-            'bias_hidden': self.bias_hidden.tolist(),
-            'weights_hidden_output': self.weights_hidden_output.tolist(),
-            'bias_output': self.bias_output.tolist(),
-            # Adding architectural parameters for more robust loading
-            'input_size': self.input_size,
-            'hidden_size': self.hidden_size,
-            'output_size': self.output_size
-        }
+        print(f"Saving Occipital Lobe model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
-        with open(self.model_path, 'w') as f:
-            json.dump(model_data, f)
+        try:
+            self.model.save_weights(self.model_path)
+            print("Occipital Lobe model weights saved.")
+        except Exception as e:
+            print(f"Error saving Occipital Lobe model weights: {e}")
 
     def load_model(self):
         if os.path.exists(self.model_path):
+            print(f"Loading Occipital Lobe model weights from {self.model_path}...")
             try:
-                with open(self.model_path, 'r') as f:
-                    data = json.load(f)
-
-                # Check for architectural parameters if they were saved
-                # If not saved, this check will fail, and we might rely on current instance's sizes
-                # or decide to re-initialize if sizes are critical and not present.
-                # For now, let's assume if they are present, they should match.
-                # If they are not present (older model), we proceed with shape checks against current self.sizes.
-                loaded_input_size = data.get('input_size', self.input_size)
-                loaded_hidden_size = data.get('hidden_size', self.hidden_size)
-                loaded_output_size = data.get('output_size', self.output_size)
-
-                if loaded_input_size != self.input_size or \
-                   loaded_hidden_size != self.hidden_size or \
-                   loaded_output_size != self.output_size:
-                    # print("Warning: Architectural mismatch. Re-initializing model.")
-                    self._initialize_default_weights_biases()
-                    return
-
-                required_keys = ['weights_input_hidden', 'bias_hidden', 'weights_hidden_output', 'bias_output']
-                if all(key in data for key in required_keys):
-                    w_ih = np.array(data['weights_input_hidden'])
-                    b_h = np.array(data['bias_hidden'])
-                    w_ho = np.array(data['weights_hidden_output'])
-                    b_o = np.array(data['bias_output'])
-
-                    if w_ih.shape == (self.input_size, self.hidden_size) and \
-                       b_h.shape == (1, self.hidden_size) and \
-                       w_ho.shape == (self.hidden_size, self.output_size) and \
-                       b_o.shape == (1, self.output_size):
-                        self.weights_input_hidden = w_ih
-                        self.bias_hidden = b_h
-                        self.weights_hidden_output = w_ho
-                        self.bias_output = b_o
-                    else:
-                        raise ValueError("Shape mismatch in loaded weights/biases.")
-                # No explicit 'elif weights in data' for old format, as the architectural check above
-                # would ideally lead to re-initialization if sizes don't match.
-                # If an old model file (single 'weights' key) is encountered, and it doesn't have
-                # architectural params, the all(key in data for key in required_keys) will fail.
-                else:
-                    # print("Warning: Model file does not contain expected two-layer architecture keys. Re-initializing.")
-                    self._initialize_default_weights_biases() # If keys for new arch are missing.
-
+                self.model.load_weights(self.model_path)
+                print("Occipital Lobe model weights loaded successfully.")
             except Exception as e:
-                # print(f"Error loading/parsing model from {self.model_path}: {e}. Re-initializing all weights/biases.")
-                self._initialize_default_weights_biases()
+                print(f"Error loading Occipital Lobe model weights: {e}. Model remains initialized with new weights.")
         else:
-            self._initialize_default_weights_biases()
+            print(f"No pre-trained weights found at {self.model_path} for Occipital Lobe. Model is initialized with new weights.")
+
+    def _preprocess_image(self, image_path):
+        """
+        Loads and preprocesses an image to be suitable for the CNN.
+        Returns a numpy array (batch_size, height, width, channels) or None if error.
+        """
+        try:
+            if not os.path.exists(image_path):
+                print(f"Occipital Lobe: Error: Image file not found at {image_path}")
+                return None
+            img = Image.open(image_path).convert('RGB') # Ensure 3 channels
+            img = img.resize((self.input_shape[0], self.input_shape[1]))
+            img_array = np.array(img) / 255.0  # Normalize to [0, 1]
+            return np.expand_dims(img_array, axis=0)  # Add batch dimension
+        except FileNotFoundError: 
+            print(f"Occipital Lobe: Error: Image file not found at {image_path}")
+            return None
+        except Exception as e:
+            print(f"Occipital Lobe: Error processing image {image_path}: {e}")
+            return None
+
+    def process_task(self, image_path):
+        # Ensure os and np are imported in the file
+        print(f"Occipital Lobe: Processing task for image {os.path.basename(image_path)}...")
+        processed_image_batch = self._preprocess_image(image_path)
+
+        if processed_image_batch is None:
+            # Error message already printed by _preprocess_image
+            print(f"Occipital Lobe: Preprocessing failed for {os.path.basename(image_path)}. Cannot predict.")
+            return -1 # Indicator of failure
+
+        try:
+            print("Occipital Lobe: Predicting with CNN model...")
+            predictions = self.model.predict(processed_image_batch, verbose=0)
+            # predictions is typically a 2D array, e.g., [[0.1, 0.7, 0.2]] for batch size 1
+            # We need the index of the highest score in the first (and only) item of the batch.
+            predicted_label = np.argmax(predictions[0])
+            
+            # Optional: Log the raw scores for debugging
+            scores_str = ", ".join([f"{score:.3f}" for score in predictions[0]])
+            print(f"Occipital Lobe: Raw prediction scores for {os.path.basename(image_path)}: [{scores_str}]")
+            
+            print(f"Occipital Lobe: Predicted label for {os.path.basename(image_path)} is {predicted_label}.")
+            return int(predicted_label) # Ensure it's a standard int
+        except Exception as e:
+            print(f"Occipital Lobe: Error during model prediction for {os.path.basename(image_path)}: {e}")
+            return -1 # Indicator of failure
+
+    def learn(self, image_path, label):
+        print(f"Occipital Lobe: learn called for image {os.path.basename(image_path)} with label {label}")
+        processed_image_batch = self._preprocess_image(image_path)
+
+        if processed_image_batch is None:
+            # Error already logged by _preprocess_image
+            print(f"Occipital Lobe: Preprocessing failed for image {image_path}, skipping training.")
+            return
+
+        try:
+            # Ensure label is an integer and prepare for Keras
+            valid_label = int(label)
+        except ValueError:
+            print(f"Occipital Lobe: Invalid label '{label}'. Must be an integer. Skipping training.")
+            return
+        
+        if not (0 <= valid_label < self.output_size):
+            print(f"Occipital Lobe: Label {valid_label} is out of range (expected 0 to {self.output_size - 1}). Skipping training.")
+            return
+
+        target_label_array = np.array([valid_label])
+
+        print(f"Occipital Lobe: Training on image {os.path.basename(image_path)} with label {valid_label}...")
+        try:
+            history = self.model.fit(
+                processed_image_batch,
+                target_label_array,
+                epochs=1,
+                verbose=0 
+            )
+            # Safely get loss and accuracy from history
+            loss = history.history.get('loss', [float('nan')])[0] 
+            accuracy = history.history.get('accuracy', [float('nan')])[0]
+            print(f"Occipital Lobe: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
+        except Exception as e:
+            print(f"Occipital Lobe: Error during model training: {e}")
 
 
-# Example
+    def consolidate(self):
+        print("Occipital consolidate called (saving model weights).")
+        self.save_model()
+
+# Example usage (optional, for testing within the file)
 if __name__ == '__main__':
-    os.makedirs("data/images", exist_ok=True)
-    try:
-        Image.new('L', (32,32), color='gray').save('data/images/default_test_image.png')
-    except Exception as e: print(f"Could not create dummy image: {e}")
+    dummy_image_dir = "data/images"
+    dummy_image_path = os.path.join(dummy_image_dir, "test_dummy_occipital.png")
+    os.makedirs(dummy_image_dir, exist_ok=True)
+    
+    if not os.path.exists(dummy_image_path):
+        try:
+            Image.new('RGB', (64, 64), color='blue').save(dummy_image_path) # Changed color for visibility
+            print(f"Created dummy image at {dummy_image_path}")
+        except Exception as e:
+            print(f"Could not create dummy image: {e}")
 
-    ai = OccipitalLobeAI(model_path="data/test_occipital_model_save_load.json")
+    print("\n--- Testing OccipitalLobeAI Initialization ---")
+    test_model_path = "data/test_temp_occipital_cnn.weights.h5"
+    occipital_ai = OccipitalLobeAI(model_path=test_model_path)
+    
+    # Train the model a bit to get non-random predictions
+    if os.path.exists(dummy_image_path):
+        print("\n--- Initial training pass (to make predictions meaningful) ---")
+        for i in range(occipital_ai.output_size): # Train on each label once
+            occipital_ai.learn(dummy_image_path, i)
+        print("--- Initial training pass complete ---")
 
-    if os.path.exists('data/images/default_test_image.png'):
-        print("Testing save/load with default_test_image.png")
-        ai.learn('data/images/default_test_image.png', true_label=0)
-        ai.save_model() # Save the model with architectural params
-
-        # Create another instance and load
-        ai_loaded = OccipitalLobeAI(model_path="data/test_occipital_model_save_load.json")
-
-        # Check if weights are loaded (not re-initialized)
-        # A simple check: if one weight is same, likely all are. More robust checks in unit tests.
-        np.testing.assert_array_almost_equal(ai.weights_input_hidden, ai_loaded.weights_input_hidden)
-        print("Model loaded successfully and weights match.")
-
-        if os.path.exists("data/test_occipital_model_save_load.json"): os.remove("data/test_occipital_model_save_load.json")
-        if os.path.exists('data/images/default_test_image.png'): os.remove('data/images/default_test_image.png')
-        print("Occipital Lobe AI save/load test finished.")
+    print("\n--- Testing process_task method ---")
+    if os.path.exists(dummy_image_path):
+        print("\nTesting process_task with valid image:")
+        predicted_label = occipital_ai.process_task(dummy_image_path)
+        print(f"process_task final returned label: {predicted_label}")
     else:
-        print("Skipping Occipital Lobe AI save/load test as dummy image not found.")
+        print(f"Skipping process_task test as dummy image {dummy_image_path} not found.")
+
+    print("\nTesting process_task with invalid image path:")
+    invalid_image_path = "data/images/non_existent_image.png"
+    predicted_label_invalid = occipital_ai.process_task(invalid_image_path)
+    print(f"process_task with invalid path final returned label: {predicted_label_invalid}")
+    
+    # Clean up dummy model file
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
+        print(f"\nCleaned up dummy model weights file: {test_model_path}")
+    
+    print("\nOccipital Lobe AI (CNN) process_task method test script finished.")
