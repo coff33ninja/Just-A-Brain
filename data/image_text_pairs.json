@@ -1,0 +1,17 @@
+[
+  {
+    "image_path": "data/images/image1.png",
+    "text_description": "a red square object",
+    "visual_label": 0
+  },
+  {
+    "image_path": "data/images/image2.png",
+    "text_description": "a blue square object",
+    "visual_label": 1
+  },
+  {
+    "image_path": "data/images/default_image.png",
+    "text_description": "a plain gray square",
+    "visual_label": 2
+  }
+]

@@ -1,74 +1,85 @@
-System Design
+# Baby AI System
 
-    Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI. Each AI starts as a tiny neural network or model (~5,000–20,000 parameters, approximated by small arrays or simple architectures) and includes methods for task processing, learning, and bedtime consolidation.
+## System Design
+
+    Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI.
+        - Occipital, Temporal, Cerebellum, Limbic, and Parietal lobes now implement two-layer neural networks (input-hidden-output) with backpropagation for learning. Hidden layers typically use `tanh` activation.
+        - FrontalLobeAI has been upgraded to use Q-learning for decision-making.
     Main Script: main.py initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
     Functionality:
-        Each AI processes tasks relevant to its brain region (e.g., occipital for vision, frontal for planning).
-        Learning occurs via simple updates (e.g., gradient descent, reinforcement learning) during tasks.
+        Each AI processes tasks relevant to its brain region.
+        Learning occurs via backpropagation for most modules and Q-learning for the Frontal lobe.
         Bedtime consolidation refines models by replaying experiences and saving updates to disk.
         Purpose emerges from environmental feedback, with no predefined goals.
-    Dependencies: We’ll use NumPy for lightweight neural network operations and JSON for persistent storage (mimicking SSD saves). For simplicity, I’ll avoid heavy frameworks like TensorFlow, but you can scale up later.
+    Dependencies: This project uses Python with NumPy and Pillow. Install dependencies using the provided `requirements.txt` file. For simplicity, heavy frameworks like TensorFlow are avoided, but the system can be scaled up.
     File Structure:
-    text
+    project/
+    ├── main.py
+    ├── frontal.py
+    ├── parietal.py
+    ├── temporal.py
+    ├── occipital.py
+    ├── cerebellum.py
+    ├── limbic.py
+    ├── requirements.txt
+    └── data/  # Stores model weights and memory
 
-project/
-├── main.py
-├── frontal.py
-├── parietal.py
-├── temporal.py
-├── occipital.py
-├── cerebellum.py
-├── limbic.py
-└── data/  # Stores model weights and memory
+## Implementation
 
-Implementation
+The system provides a modular implementation for each AI, focusing on the "baby AI" concept where capabilities are learned and refined over time.
+    - Most AI modules (Occipital, Temporal, Cerebellum, Limbic, Parietal) now feature two-layer neural networks, allowing for more complex pattern recognition and function approximation.
+    - FrontalLobeAI employs Q-learning to improve its decision-making based on rewards.
+    - Data input has been enhanced to support image files (for Occipital) and paired image-text data for cross-modal learning experiments.
 
-Below, I’ll provide a minimal implementation for each module and main.py, focusing on modularity, simplicity, and the "baby AI" concept. Each AI uses a basic neural network (or equivalent) for processing, a memory buffer for learning, and a consolidation step for bedtime. The system is designed to run on modest hardware (e.g., CPU-based, minimal RAM), with growth simulated by updating weights and memory.
+## Explanation
 
-Explanation
-
-    Modules: Each module (frontal.py, etc.) defines a class with:
-        A tiny model (NumPy arrays for weights, simulating ~5,000–20,000 parameters).
-        process_task: Handles inputs specific to the AI’s role (e.g., vision for occipital).
-        learn: Updates weights based on feedback (e.g., RL for frontal, error correction for cerebellum).
-        consolidate: Replays experiences at bedtime, refining weights and saving to JSON.
-        save_model/load_model: Persists weights to disk, mimicking SSD storage.
+    Modules: Each module defines a class with:
+        - A model: Two-layer neural networks (input-hidden-output with biases) for most modules. FrontalLobeAI uses a Q-table approximated by a linear model.
+        - process_task: Handles inputs specific to the AI’s role.
+        - learn: Updates weights via backpropagation (for most modules) or Q-learning updates (FrontalLobeAI) based on feedback and experiences.
+        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them.
+        - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories) to disk, with backward compatibility for older model formats.
     main.py:
-        Initializes all AIs and coordinates tasks.
-        process_day: Routes inputs (e.g., vision, sensors) to appropriate AIs, collects outputs, and applies feedback for learning.
-        bedtime: Triggers consolidation for all AIs.
-        Uses random inputs for demonstration; you can replace with real data (e.g., camera feeds, user text).
+        - Initializes all AIs and coordinates tasks.
+        - process_day: Manages data flow (including image paths and text descriptions from paired data), routes inputs to appropriate AIs, collects outputs, and applies feedback for learning.
+        - bedtime: Triggers consolidation for all AIs.
     Learning and Growth:
-        AIs start with random weights, acting like a "baby" with no purpose.
-        They learn from feedback during tasks (e.g., rewards, errors) and consolidate nightly, mimicking brain plasticity.
-        Purpose emerges as AIs specialize based on frequent tasks (e.g., occipital AI becomes better at vision if fed more images).
-    Storage: Models and memories are saved in a data/ folder as JSON files, keeping the system lightweight and persistent.
+        - AIs start with random weights.
+        - They learn from feedback during tasks (e.g., rewards, errors, target values) and consolidate nightly.
+        - OccipitalLobeAI processes images and learns to classify them.
+        - TemporalLobeAI processes text, learns text embeddings, and can associate text with visual labels.
+        - FrontalLobeAI learns to choose actions using Q-learning.
+    Storage: Models and memories are saved in the `data/` folder as JSON files.
 
-Running the System
+## Running the System
 
-    Create the folder structure and save each file.
-    Ensure Python and NumPy are installed (pip install numpy).
-    Run main.py: python main.py
-    The script simulates 3 days, processing random inputs and consolidating each night. Outputs show actions, motor commands, and emotions, which evolve as AIs learn.
+1.  Create the project folder structure as listed above.
+2.  Ensure Python 3.x is installed.
+3.  Install necessary Python libraries:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  Run the main script:
+    ```bash
+    python main.py
+    ```
+    The script simulates activity cycles, processing data and consolidating learning each "night." Outputs show evolving actions, motor commands, and emotions.
 
-Example Output
+## Example Output
+(This section can remain largely the same, as the high-level output format hasn't changed, though specific values will differ due to new algorithms.)
 text
 Day 1
-Action: 2, Motor: [0.012, -0.008, 0.005], Emotion: 1
-Starting bedtime consolidation...
-Consolidation complete.
-Day 2
-Action: 3, Motor: [0.015, -0.007, 0.006], Emotion: 0
+Action: X, Motor: [...], Emotion: Y
 Starting bedtime consolidation...
 Consolidation complete.
 ...
-Customization and Next Steps
 
-    Real Inputs: Replace random inputs with actual data (e.g., OpenCV for vision, audio libraries for text, sensor APIs for robotics).
-    Scaling Models: Add parameters dynamically (e.g., increase input_size) as AIs grow, using neural architecture search.
-    Purpose Emergence: Introduce a reward function based on environmental feedback (e.g., user praise) to guide specialization.
-    Visualization: I can generate a diagram of the AI interactions or a flowchart if you confirm you want an image.
-    Specific Use Case: If you have a scenario (e.g., robot, chatbot), I can tailor inputs and feedback to simulate it.
-    Add more sophisticated learning (e.g., RL algorithms, clustering).
-    Visualize the system (confirm for image generation).
-    Refine a module or add features (e.g., curiosity-driven exploration).
+## Customization and Next Steps
+
+    Real Inputs: Continue to expand with more diverse and real-world data. Consider OpenCV for more advanced vision tasks or audio libraries for direct sound processing by the Temporal Lobe.
+    Scaling Models: While most modules now have a hidden layer, further scaling (more layers, more neurons) or specialized architectures (e.g., convolutional layers for Occipital, recurrent layers for Temporal) can be explored.
+    Advanced RL for Frontal Lobe: The Q-learning in FrontalLobeAI can be enhanced (e.g., Deep Q-Networks (DQN) if TensorFlow/PyTorch were added, more complex state/reward definitions).
+    Purpose Emergence: Refine reward functions and feedback mechanisms to guide specialization and emergent behaviors more effectively.
+    Visualization: Develop tools to visualize network states, learned features, or decision processes.
+    Specific Use Case: Tailor inputs, outputs, and rewards to simulate specific scenarios (e.g., simple robotics, chatbot interaction).
+    Refine Modules: Continue to add features like curiosity-driven exploration, more sophisticated memory models, or attention mechanisms.
