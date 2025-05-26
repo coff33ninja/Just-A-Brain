@@ -73,20 +73,19 @@ class BrainCoordinator:
             else DEFAULT_IMAGE_PATH
         )
         if not os.path.exists(current_vision_path) and vision_input_path:
-            print(f"Warning: Vision image path {current_vision_path} not found.")
+            print(f"Warning: Vision image path {current_vision_path} not found. Using default image.")
 
         current_sensor_data = (
             np.array(sensor_data)
             if sensor_data is not None
             else np.random.randn(getattr(self.parietal, "input_size", 3))
-        )  # Parietal output is 3
+        ) 
         current_text_data = (
             text_data if isinstance(text_data, str) else "Default sample text"
         )
 
         current_feedback = feedback_data if feedback_data is not None else {}
 
-        # Construct full feedback dictionary with defaults
         feedback = {
             "action_reward": current_feedback.get(
                 "action_reward", np.random.choice([-1, 0, 1])
@@ -105,71 +104,43 @@ class BrainCoordinator:
             ),
         }
 
-        # 1. Process tasks from other lobes
         vision_result_label = self.occipital.process_task(current_vision_path)
-
-        vision_features_for_frontal = np.zeros(
-            self.occipital.output_size
-        )  # Expected size 5
+        vision_features_for_frontal = np.zeros(self.occipital.output_size)
         if 0 <= vision_result_label < self.occipital.output_size:
             vision_features_for_frontal[vision_result_label] = 1.0
 
-        spatial_result_raw = self.parietal.process_task(
-            current_sensor_data
-        )  # Expected output size 3
+        spatial_result_raw = self.parietal.process_task(current_sensor_data)
         spatial_result_1d = np.array(spatial_result_raw).flatten()
-        if spatial_result_1d.shape[0] != 3:  # Ensure parietal output is size 3
-            # print(f"Warning: Parietal output size mismatch. Expected 3, got {spatial_result_1d.shape[0]}. Adjusting.")
+        if spatial_result_1d.shape[0] != 3:
             temp_spatial = np.zeros(3)
             min_len_spatial = min(spatial_result_1d.shape[0], 3)
             temp_spatial[:min_len_spatial] = spatial_result_1d[:min_len_spatial]
             spatial_result_1d = temp_spatial
 
-        # Temporal lobe process_task (text embedding pathway)
-        # predict_visual=False ensures it returns only the text embedding
         memory_result_embedding_raw = self.temporal.process_task(
             current_text_data, predict_visual=False
-        )  # Expected output size 10
+        )
         memory_result_embedding_1d = np.array(memory_result_embedding_raw).flatten()
-        if (
-            memory_result_embedding_1d.shape[0] != 10
-        ):  # Ensure temporal output is size 10
-            # print(f"Warning: Temporal embedding size mismatch. Expected 10, got {memory_result_embedding_1d.shape[0]}. Adjusting.")
+        if memory_result_embedding_1d.shape[0] != 10:
             temp_memory = np.zeros(10)
             min_len_memory = min(memory_result_embedding_1d.shape[0], 10)
             temp_memory[:min_len_memory] = memory_result_embedding_1d[:min_len_memory]
             memory_result_embedding_1d = temp_memory
 
-        # 2. Assemble input for Frontal Lobe (State for Q-learning)
-        # Expected total size: 5 (vision) + 3 (parietal) + 10 (temporal) = 18
         concatenated_input_for_frontal = np.concatenate(
             [vision_features_for_frontal, spatial_result_1d, memory_result_embedding_1d]
         )
-
-        frontal_state = concatenated_input_for_frontal  # This is a NumPy array, FrontalLobeAI._prepare_state_vector can handle it
-
-        # 3. Frontal Lobe processes the state to choose an action
-        action = self.frontal.process_task(
-            frontal_state
-        )  # process_task expects a state vector
-
-        # Other lobes process their respective inputs (no change here)
+        frontal_state = concatenated_input_for_frontal
+        action = self.frontal.process_task(frontal_state)
         motor_command = self.cerebellum.process_task(current_sensor_data)
-        emotion = self.limbic.process_task(
-            memory_result_embedding_1d
-        )  # Limbic uses temporal embedding
+        emotion = self.limbic.process_task(memory_result_embedding_1d)
 
-        # 4. Prepare parameters for Frontal Lobe learning
         state_for_learn = frontal_state
-        action_for_learn = action  # Action taken by frontal lobe
-        reward_for_learn = feedback.get("action_reward", 0)  # Reward for the action
-
-        # For simplicity, next_state is same as current_state and episode always ends (done=True)
-        # This aligns with discount_factor_gamma = 0.0 where only immediate reward matters.
+        action_for_learn = action
+        reward_for_learn = feedback.get("action_reward", 0)
         next_state_for_learn = frontal_state
         done_for_learn = True
 
-        # 5. Learn from feedback - Update Frontal Lobe with Q-learning
         self.frontal.learn(
             state_for_learn,
             action_for_learn,
@@ -177,17 +148,11 @@ class BrainCoordinator:
             next_state_for_learn,
             done_for_learn,
         )
-
-        # Other lobes learn (no change to their learn calls here)
         self.occipital.learn(current_vision_path, feedback["vision_label"])
         self.parietal.learn(current_sensor_data, feedback["spatial_error"])
         self.temporal.learn(
-            [
-                (current_text_data, feedback["memory_target"])
-            ],  # Text processing pathway target
-            visual_label_as_context=feedback.get(
-                "vision_label"
-            ),  # Visual context for association
+            [(current_text_data, feedback["memory_target"])],
+            visual_label_as_context=feedback.get("vision_label"),
         )
         self.cerebellum.learn(current_sensor_data, feedback["motor_command"])
         self.limbic.learn(
@@ -215,69 +180,254 @@ class BrainCoordinator:
 
 
 def main():
+    # Introductory Message
+    print("Welcome to the Interactive Baby AI Simulation!\n")
+    print("This simulation allows you to observe and interact with an AI as it learns.")
+    print("You will have options to:")
+    print("- Run the simulation for a specific number of 'days'.")
+    print("- Run it indefinitely, providing input for each 'day'.")
+    print("- For each 'day', you can let the AI process pre-scheduled data, or you can")
+    print("  provide new data (images, text, feedback) to guide its learning.\n")
+    print("This interactive process allows the AI to remain active and train on data you provide.")
+    print("Let's get started!")
+    print("-------------------------------------------------------------------\n")
+
     coordinator = BrainCoordinator()
     image_text_pairs_list = load_image_text_pairs()
     sensor_data_list = load_sensor_data()
 
-    if not image_text_pairs_list:
-        print("No image-text pairs loaded. Exiting simulation.")
-        return
+    # Initialize variables to store the last used data
+    last_image_path = DEFAULT_IMAGE_PATH
+    last_text_description = "Default sample text"
+    last_sensor_data = None 
+    last_visual_label = 0   
 
-    num_simulation_days = len(image_text_pairs_list)
-    print(
-        f"Starting simulation for {num_simulation_days} days based on image-text pairs..."
-    )
+    image_path_for_processing = last_image_path
+    text_description_for_processing = last_text_description
+    sensor_data_for_processing = last_sensor_data
+    visual_label_for_processing = last_visual_label
+    
+    # Prompt for simulation mode
+    num_simulation_days = float('inf') # Default to indefinite
+    run_mode_input = input("Run for a specific number of days (d) or run indefinitely in interactive mode (i)? (Default: i): ").lower().strip()
 
-    for day_index, pair in enumerate(image_text_pairs_list):
-        print(f"Day {day_index + 1}")
-        current_image_path = pair.get("image_path")
-        current_text_description = pair.get("text_description")
-        current_visual_label = pair.get("visual_label")
+    if run_mode_input == 'd':
+        try:
+            days_input_str = input("Enter the number of days to simulate: ").strip()
+            n_days = int(days_input_str)
+            if n_days > 0:
+                num_simulation_days = n_days
+            else:
+                default_days = len(image_text_pairs_list) if image_text_pairs_list else 1
+                print(f"Number of days must be positive. Defaulting to {default_days} day(s).")
+                num_simulation_days = default_days
+        except ValueError:
+            default_days = len(image_text_pairs_list) if image_text_pairs_list else 1
+            print(f"Invalid input. Defaulting to {default_days} day(s).")
+            num_simulation_days = default_days
+    elif run_mode_input == 'i' or not run_mode_input: # Default to indefinite
+        print("Running indefinitely.")
+    else: # Invalid mode selection
+        print("Invalid mode selected. Defaulting to run indefinitely.")
 
-        if (
-            current_image_path is None
-            or current_text_description is None
-            or current_visual_label is None
-        ):
-            print(f"Skipping pair at index {day_index} due to missing data: {pair}")
-            continue
 
-        current_sensor_data = (
-            sensor_data_list[day_index % len(sensor_data_list)]
-            if sensor_data_list
-            else None
-        )
+    day_index = 0
+    # user_choice_for_current_day_data_source is what the user selected at the end of the *previous* 
+    # iteration to determine data source for the *current* day_index.
+    # It's 'n' initially to use scheduled data for the first day, unless overridden by specific conditions.
+    user_choice_for_current_day_data_source = 'n' 
 
+    while day_index < num_simulation_days:
+        day_display_str = f"--- Day {day_index + 1}"
+        if num_simulation_days != float('inf'):
+            day_display_str += f"/{int(num_simulation_days)}" # Ensure Y is int for display
+        day_display_str += " ---"
+        print(f"\n{day_display_str}")
+
+        if user_choice_for_current_day_data_source == 'i':
+            print("Provide new input for the current day (press Enter to use defaults):")
+            
+            new_image_path_input = input(f"Enter new image path (default: '{last_image_path}'): ").strip()
+            if new_image_path_input:
+                if os.path.exists(new_image_path_input):
+                    image_path_for_processing = new_image_path_input
+                else:
+                    print(f"Warning: Path '{new_image_path_input}' not found. Using last: '{last_image_path}'.")
+                    image_path_for_processing = last_image_path
+            else:
+                image_path_for_processing = last_image_path
+
+            new_text_description_input = input(f"Enter new text (default: '{last_text_description}'): ").strip()
+            text_description_for_processing = new_text_description_input if new_text_description_input else last_text_description
+
+            new_visual_label_input = input(f"Enter new visual label (int, default: {last_visual_label}): ").strip()
+            if new_visual_label_input:
+                try:
+                    visual_label_for_processing = int(new_visual_label_input)
+                except ValueError:
+                    print(f"Warning: Invalid label. Using last: {last_visual_label}.")
+                    visual_label_for_processing = last_visual_label
+            else:
+                visual_label_for_processing = last_visual_label
+            
+            generate_new_sensor_input = input(f"Generate new random sensor data? (y/n, default n - uses last): ").strip().lower()
+            if generate_new_sensor_input == 'y':
+                sensor_data_for_processing = None
+            else:
+                sensor_data_for_processing = last_sensor_data
+        
+        else: # 'n' - Use scheduled data
+            if not image_text_pairs_list:
+                # This condition means there's no scheduled data AT ALL, or we've run out.
+                if day_index == 0: 
+                    print("No scheduled image-text pairs available for Day 1.")
+                    print("Simulation cannot proceed without initial data for Day 1 if not providing input.")
+                    first_day_input_choice = input("Provide input for Day 1 (i) or quit (q)? ").lower().strip()
+                    if first_day_input_choice == 'i':
+                        user_choice_for_current_day_data_source = 'i'
+                        # day_index remains 0, next iteration will hit the 'i' block above
+                        continue 
+                    else:
+                        print("Quitting simulation.")
+                        break 
+                else: # Not the first day, but no scheduled data (e.g. list exhausted)
+                    print("No more scheduled image-text pairs available to process with 'n'.")
+                    # The loop will go to the next action prompt below.
+                    # If user then selects 'n', it will be caught by the more specific prompt there.
+                    pass
+
+
+            if image_text_pairs_list: # Proceed to try and use scheduled data
+                current_pair_index = day_index % len(image_text_pairs_list)
+                pair = image_text_pairs_list[current_pair_index]
+                
+                scheduled_image_path = pair.get("image_path")
+                scheduled_text_description = pair.get("text_description")
+                scheduled_visual_label = pair.get("visual_label")
+
+                if (
+                    scheduled_image_path is None
+                    or scheduled_text_description is None
+                    or scheduled_visual_label is None
+                ):
+                    print(f"Data missing in scheduled pair at data index {current_pair_index}: {pair}")
+                    missing_data_action = input(
+                        "Next day (n), provide input for this day (i), or quit (q)? "
+                    ).lower().strip()
+                    if missing_data_action == 'q':
+                        break
+                    elif missing_data_action == 'i':
+                        user_choice_for_current_day_data_source = 'i'
+                        # day_index is not incremented, next iteration for same day_index hits 'i' block
+                        continue 
+                    else: # 'n' or invalid
+                        if missing_data_action != 'n': print("Invalid input. Proceeding to next day.")
+                        day_index += 1 # Advance day_index to skip this problematic scheduled day
+                        user_choice_for_current_day_data_source = 'n' # Ensure next is 'n'
+                        if day_index >= num_simulation_days: # Check if skipping made us reach the end
+                            print(f"Specified number of simulation days ({int(num_simulation_days)}) reached by skipping.")
+                            break
+                        continue # To the top of the while loop for the new day_index
+                
+                image_path_for_processing = scheduled_image_path
+                text_description_for_processing = scheduled_text_description
+                visual_label_for_processing = scheduled_visual_label
+
+                if sensor_data_list:
+                    sensor_data_for_processing = sensor_data_list[day_index % len(sensor_data_list)]
+                else:
+                    # This warning applies if scheduled image/text is used but sensor_data_list is empty
+                    print("Warning: Sensor data list is empty. Using random sensor data for this day.")
+                    sensor_data_for_processing = None
+            elif not image_text_pairs_list and user_choice_for_current_day_data_source == 'n':
+                # This means image_text_pairs_list is empty (and was from start of this iteration or before)
+                # AND user wanted 'n'. Since there's no scheduled data, this 'n' cannot be fulfilled.
+                # This case is now primarily handled by the prompt at the end of the loop.
+                # If we reach here, it implies a state where 'n' was chosen but no data exists.
+                # The prompt at the end of the loop will force 'i' or 'q'.
+                # We add a continue to re-evaluate at the top, which will then lead to that prompt.
+                print("Internal state: 'n' chosen but no scheduled data. Re-evaluating action.")
+                continue
+
+
+        # --- Common Processing Logic ---
         current_feedback = {
-            "vision_label": current_visual_label,
-            "memory_target": current_text_description,
-            "action_reward": np.random.choice([-1, 0, 1]),  # Frontal lobe reward
-            # Other feedback components can remain random/default for now
+            "vision_label": visual_label_for_processing,
+            "memory_target": text_description_for_processing,
+            "action_reward": np.random.choice([-1, 0, 1]),
             "spatial_error": np.random.rand(3).tolist(),
             "motor_command": np.random.rand(3).tolist(),
-            "emotion_label": np.random.randint(
-                0, getattr(coordinator.limbic, "output_size", 3)
-            ),
+            "emotion_label": np.random.randint(0, getattr(coordinator.limbic, "output_size", 3)),
         }
+        
+        img_display_name = os.path.basename(image_path_for_processing) if image_path_for_processing else "N/A"
+        print(f"Processing: Image='{img_display_name}', Text='{text_description_for_processing}'")
 
         result = coordinator.process_day(
-            vision_input_path=current_image_path,
-            sensor_data=current_sensor_data,
-            text_data=current_text_description,
+            vision_input_path=image_path_for_processing,
+            sensor_data=sensor_data_for_processing,
+            text_data=text_description_for_processing,
             feedback_data=current_feedback,
         )
-        # Ensure result['action'] is subscriptable if it's a list/array, or handle if it's scalar
-        action_display = result["action"]
-        if isinstance(action_display, (list, np.ndarray)) and len(action_display) > 1:
-            action_display = action_display[
-                :2
-            ]  # Show first 2 elements if it's an array/list
+        
+        last_image_path = image_path_for_processing
+        last_text_description = text_description_for_processing
+        last_sensor_data = sensor_data_for_processing 
+        last_visual_label = visual_label_for_processing
 
-        print(
-            f"Processed Pair: Image='{os.path.basename(current_image_path)}', Text='{current_text_description}'. "
-            f"VisionPredLabel: {result['vision_label']}, Action: {action_display}, Emotion: {result['emotion']}"
-        )
+        action_res = result["action"]
+        action_display_str = ""
+        if isinstance(action_res, (list, np.ndarray)):
+            action_display_str = str(action_res[:2]) if len(action_res) > 1 else str(action_res[0] if len(action_res) == 1 else "")
+        else:
+            action_display_str = str(action_res)
+
+        print(f"Result: VisionPredLabel: {result['vision_label']}, Action: {action_display_str}, Emotion: {result['emotion']}")
+        
         coordinator.bedtime()
+        
+        day_index += 1 # CRITICAL: Increment day_index after all processing for the current day number is complete
+
+        if day_index >= num_simulation_days:
+            if num_simulation_days != float('inf'): # Only print if it's a finite number of days
+                print(f"Specified number of simulation days ({int(num_simulation_days)}) reached.")
+            else: # Should not happen if inf, but as a safeguard
+                print("Simulation cycle complete (indefinite run ended unexpectedly here).")
+            break 
+
+        # User prompt for next action (for the *next* day_index)
+        while True:
+            can_use_scheduled_data = bool(image_text_pairs_list) # True if there's any scheduled data at all
+            
+            if can_use_scheduled_data:
+                next_action_prompt = f"Next day ({day_index + 1}) using scheduled data (n), provide input (i), or quit (q)? "
+            else: # No scheduled data left or never existed
+                next_action_prompt = f"No scheduled data. Provide input for next day ({day_index + 1}) (i) or quit (q)? "
+
+            user_input_next_action = input(next_action_prompt).lower().strip()
+            
+            if user_input_next_action == 'n':
+                if can_use_scheduled_data:
+                    user_choice_for_current_day_data_source = 'n'
+                    break
+                else:
+                    print("Invalid choice: No scheduled data available for 'n'. Please choose 'i' or 'q'.")
+                    # Loop continues for this prompt
+            elif user_input_next_action == 'i':
+                user_choice_for_current_day_data_source = 'i'
+                break
+            elif user_input_next_action == 'q':
+                user_choice_for_current_day_data_source = 'q' # Will cause outer loop to break
+                break
+            else:
+                print("Invalid input. Please enter 'n', 'i', or 'q' (if available).")
+
+        if user_choice_for_current_day_data_source == 'q':
+            break
+        # If 'n' or 'i', the loop continues. user_choice_for_current_day_data_source will determine
+        # data source at the start of the next iteration for the new day_index.
+
+    print("Simulation ended.")
 
 
 if __name__ == "__main__":
