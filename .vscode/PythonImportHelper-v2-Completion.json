@@ -552,6 +552,14 @@
         "documentation": {}
     },
     {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
         "label": "run_command",
         "kind": 2,
         "importPath": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
@@ -1809,6 +1817,33 @@
         "description": "cerebellum",
         "peekOfCode": "class CerebellumAI:\n    def __init__(self, model_path=\"data/cerebellum_model.json\"):\n        self.input_size = 10  # Sensor feedback\n        self.hidden_size = 20 # Size of the new hidden layer\n        self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)\n        self.learning_rate_learn = 0.01\n        self.learning_rate_consolidate = 0.005\n        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size) * 0.01\n        self.bias_hidden = np.zeros((1, self.hidden_size))\n        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size) * 0.01",
         "detail": "cerebellum",
+        "documentation": {}
+    },
+    {
+        "label": "img1",
+        "kind": 5,
+        "importPath": "default_image",
+        "description": "default_image",
+        "peekOfCode": "img1 = Image.new(\"RGB\", (50, 50), color=\"red\")\nimg1.save(\"data/images/image1.png\")\n# Create image2.png (blue square)\nimg2 = Image.new(\"RGB\", (50, 50), color=\"blue\")\nimg2.save(\"data/images/image2.png\")\n# Create default_image.png (gray square)\ndefault_img = Image.new(\"RGB\", (32, 32), color=\"gray\")\ndefault_img.save(\"data/images/default_image.png\")\nprint(\"images created successfully in data/images/\")",
+        "detail": "default_image",
+        "documentation": {}
+    },
+    {
+        "label": "img2",
+        "kind": 5,
+        "importPath": "default_image",
+        "description": "default_image",
+        "peekOfCode": "img2 = Image.new(\"RGB\", (50, 50), color=\"blue\")\nimg2.save(\"data/images/image2.png\")\n# Create default_image.png (gray square)\ndefault_img = Image.new(\"RGB\", (32, 32), color=\"gray\")\ndefault_img.save(\"data/images/default_image.png\")\nprint(\"images created successfully in data/images/\")",
+        "detail": "default_image",
+        "documentation": {}
+    },
+    {
+        "label": "default_img",
+        "kind": 5,
+        "importPath": "default_image",
+        "description": "default_image",
+        "peekOfCode": "default_img = Image.new(\"RGB\", (32, 32), color=\"gray\")\ndefault_img.save(\"data/images/default_image.png\")\nprint(\"images created successfully in data/images/\")",
+        "detail": "default_image",
         "documentation": {}
     },
     {
