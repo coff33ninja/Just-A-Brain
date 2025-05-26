@@ -3,7 +3,7 @@
 ## System Design
 
     Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI.
-        - The Occipital Lobe now uses a Convolutional Neural Network (CNN) built with TensorFlow/Keras for image processing. Other sensory lobes (Temporal, Parietal, Cerebellum, Limbic) currently use two-layer numpy-based neural networks for their respective tasks.
+        - The Occipital Lobe uses a Convolutional Neural Network (CNN) and the Temporal Lobe uses a Recurrent Neural Network (RNN, specifically LSTM or GRU based) for text processing; both are built with TensorFlow/Keras. Other sensory lobes (Parietal, Cerebellum, Limbic) currently use two-layer numpy-based neural networks.
         - FrontalLobeAI uses a Deep Q-Network (DQN) built with TensorFlow/Keras for decision-making, leveraging experience replay and target networks.
     Main Script: main.py initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
     Functionality:
@@ -29,18 +29,18 @@
 
 The system provides a modular implementation for each AI, focusing on the "baby AI" concept where capabilities are learned and refined over time.
     - The Occipital Lobe uses a TensorFlow/Keras based Convolutional Neural Network (CNN) for advanced image processing. Input images for the Occipital Lobe are automatically resized to 64x64 pixels and normalized before being processed by its CNN.
-    - Most other AI modules (Temporal, Cerebellum, Limbic, Parietal) now feature two-layer neural networks, allowing for more complex pattern recognition and function approximation.
+    - The Temporal Lobe now features an RNN (LSTM/GRU based) model using TensorFlow/Keras for more advanced, sequence-aware text processing. Text input is tokenized, converted to sequences, and padded/truncated to a fixed length before being processed by its RNN. Most other AI modules (Cerebellum, Limbic, Parietal) currently use two-layer numpy-based neural networks, allowing for more complex pattern recognition and function approximation.
     - FrontalLobeAI employs a Deep Q-Network (DQN) using TensorFlow/Keras to improve its decision-making based on rewards and experience replay.
     - Data input has been enhanced to support image files (for Occipital) and paired image-text data for cross-modal learning experiments.
 
 ## Explanation
 
     Modules: Each module defines a class with:
-        - A model: The OccipitalLobeAI uses a Convolutional Neural Network (CNN) implemented with TensorFlow/Keras. FrontalLobeAI uses a Deep Q-Network (DQN) implemented with TensorFlow/Keras to approximate Q-values. Most other AI modules (Temporal, Parietal, etc.) use two-layer numpy-based neural networks.
+        - A model: The OccipitalLobeAI uses a Convolutional Neural Network (CNN) implemented with TensorFlow/Keras. The TemporalLobeAI uses an RNN (LSTM/GRU based) model implemented with TensorFlow/Keras. This includes an Embedding layer for tokenized text input and recurrent layers to process sequences, outputting a text embedding and/or predicting associated visual labels. FrontalLobeAI uses a Deep Q-Network (DQN) implemented with TensorFlow/Keras to approximate Q-values. Most other AI modules (Parietal, Cerebellum, Limbic) use two-layer numpy-based neural networks.
         - process_task: Handles inputs specific to the AI’s role.
-        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI based on feedback and experiences.
-        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI and FrontalLobeAI, this primarily involves saving the learned model weights (and for DQN, performing more replay steps).
-        - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
+        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI and TemporalLobeAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI based on feedback and experiences.
+        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI, FrontalLobeAI, and TemporalLobeAI, this primarily involves saving the learned model weights (and for DQN/Temporal, performing more replay steps).
+        - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories and tokenizer state) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
     main.py:
         - Initializes all AIs and coordinates tasks.
         - process_day: Manages data flow (including image paths and text descriptions from paired data), routes inputs to appropriate AIs, collects outputs, and applies feedback for learning.
@@ -49,9 +49,9 @@ The system provides a modular implementation for each AI, focusing on the "baby 
         - AIs start with random weights (or initial Keras model states).
         - They learn from feedback during tasks (e.g., rewards, errors, target values) and consolidate nightly.
         - OccipitalLobeAI processes images and learns to classify them using its CNN.
-        - TemporalLobeAI processes text, learns text embeddings, and can associate text with visual labels.
+        - TemporalLobeAI processes text using tokenization and an RNN (LSTM/GRU based). It learns to produce text embeddings and associate them with visual labels through its TensorFlow/Keras model.
         - FrontalLobeAI learns to choose actions using a Deep Q-Network (DQN), training on past experiences stored in a replay buffer.
-    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital Lobe's and Frontal Lobe's TensorFlow/Keras model weights are saved in specific formats (e.g., `data/occipital_model.weights.h5`, `data/frontal_model.weights.h5`). The Frontal Lobe also saves and loads its exploration epsilon parameter in a companion JSON file (e.g., `frontal_model.weights.h5_epsilon.json`).
+    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital, Frontal, and Temporal Lobes' TensorFlow/Keras model weights are saved in specific formats (e.g., `occipital_model.weights.h5`, `frontal_model.weights.h5`, `temporal_model.weights.h5`). The Temporal Lobe also saves its `Tokenizer` state as a JSON file (e.g., `temporal_tokenizer.json`), and the Frontal Lobe saves its exploration epsilon in a companion JSON file.
 
 ## Running the Command-Line Simulation (main.py)
 

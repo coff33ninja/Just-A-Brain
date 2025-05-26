@@ -1,362 +1,404 @@
-# temporal.py (Memory, Language, and Text-to-Visual Association)
+# temporal.py (Memory, Language, and Text-to-Visual Association with RNN/LSTM)
 import numpy as np
 import json
 import os
-
-# Helper function for Softmax (module-level)
-def softmax(x):
-    if x.ndim == 1:
-        e_x = np.exp(x - np.max(x))
-        return e_x / np.sum(e_x)
-    else:
-        e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
-        return e_x / np.sum(e_x, axis=-1, keepdims=True)
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, GRU # Using LSTM
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # For compatibility
 
 class TemporalLobeAI:
     def __init__(
         self,
-        model_path="data/temporal_model.json",
-        memory_path="data/temporal_memory.json",
+        model_path="data/temporal_model.weights.h5", # Updated extension
+        memory_path="data/temporal_memory.json", # For cross-modal memory
+        tokenizer_path="data/temporal_tokenizer.json"
     ):
-        self.input_size = 15
-        self.output_size = 10 # Dimension of text embeddings
-        self.visual_output_size = 5
+        # RNN/LSTM Parameters
+        self.vocab_size = 2000  # Max words in vocabulary
+        self.max_sequence_length = 20  # Max length of text sequences
+        self.embedding_dim = 50  # Dimension of word embeddings
+        self.lstm_units = 64 # Number of units in LSTM layer
+        
+        # Output sizes
+        self.output_size = 10 # Dimension of the text embedding/context vector from RNN
+        self.visual_output_size = 5 # Number of visual labels (for association)
 
-        self.text_hidden_size = 32
-        self.visual_assoc_hidden_size = 16
+        # Learning rate (can be part of optimizer, but good to have as attribute)
+        self.learning_rate_learn = 0.001 # Used in compile
 
-        self.learning_rate_learn = 0.01
-        self.learning_rate_consolidate = 0.005
-
-        # Initialize all weights and biases to None, will be set by _initialize_default_weights_biases or load_model
-        self.weights_text_input_hidden = None
-        self.bias_text_hidden = None
-        self.weights_text_hidden_embedding = None
-        self.bias_text_embedding = None
-        self.weights_embed_to_visual_hidden = None
-        self.bias_visual_assoc_hidden = None
-        self.weights_visual_hidden_to_label = None
-        self.bias_visual_assoc_label = None
-
-        self.memory_db = []
-        self.cross_modal_memory = []
-        self.max_cross_modal_memory_size = 100
-
+        self.tokenizer = Tokenizer(num_words=self.vocab_size, oov_token="<unk>")
+        
         self.model_path = model_path
-        self.memory_path = memory_path
+        self.tokenizer_path = tokenizer_path
+        self.memory_path = memory_path # Stores cross-modal associations
 
-        self.load_model()
+        # Memory for cross-modal associations (text_input_str, visual_label)
+        self.cross_modal_memory = []
+        self.max_cross_modal_memory_size = 200 # Increased size
 
-    def _initialize_default_weights_biases(self):
-        self.weights_text_input_hidden = np.random.randn(self.input_size, self.text_hidden_size) * 0.01
-        self.bias_text_hidden = np.zeros((1, self.text_hidden_size))
-        self.weights_text_hidden_embedding = np.random.randn(self.text_hidden_size, self.output_size) * 0.01
-        self.bias_text_embedding = np.zeros((1, self.output_size))
+        # Build and compile the model
+        self.model = self._build_model() # This also compiles the model
+        
+        # Load tokenizer and model weights
+        self.load_model() # Handles both tokenizer and weights
 
-        self.weights_embed_to_visual_hidden = np.random.randn(self.output_size, self.visual_assoc_hidden_size) * 0.01
-        self.bias_visual_assoc_hidden = np.zeros((1, self.visual_assoc_hidden_size))
-        self.weights_visual_hidden_to_label = np.random.randn(self.visual_assoc_hidden_size, self.visual_output_size) * 0.01
-        self.bias_visual_assoc_label = np.zeros((1, self.visual_output_size))
+    def _build_model(self):
+        # Text processing pathway
+        text_input = Input(shape=(self.max_sequence_length,), name="text_input")
+        embedding_layer = Embedding(input_dim=self.vocab_size, 
+                                    output_dim=self.embedding_dim, 
+                                    input_length=self.max_sequence_length,
+                                    name="embedding")(text_input)
+        lstm_layer = LSTM(self.lstm_units, name="lstm")(embedding_layer)
+        
+        # Output 1: Text Embedding (context vector)
+        text_embedding_output = Dense(self.output_size, activation='tanh', name="text_embedding")(lstm_layer)
 
-    def _to_numerical_vector(self, data, size, context="input"):
-        if isinstance(data, str):
-            hash_val = hash(data)
-            np.random.seed(hash_val % (2**32 -1))
-            vec = np.random.rand(size)
-            np.random.seed(None)
-            return vec
-        try:
-            vec = np.array(data, dtype=float).flatten()
-        except ValueError:
-            return np.zeros(size)
-        if vec.shape[0] == size:
-            return vec
-        elif vec.shape[0] < size:
-            return np.concatenate((vec, np.zeros(size - vec.shape[0])))
-        else: return vec[:size]
+        # Output 2: Visual Label Prediction (from text embedding)
+        visual_pred_hidden = Dense(32, activation='relu', name="visual_pred_hidden")(text_embedding_output) 
+        visual_label_output = Dense(self.visual_output_size, activation='softmax', name="visual_label_pred")(visual_pred_hidden)
 
-    def _forward_prop_text(self, input_text_1d):
-        if input_text_1d.shape[0] != self.input_size:
-            input_text_1d = self._to_numerical_vector(input_text_1d, self.input_size)
-        input_text_2d = input_text_1d.reshape(1, -1)
-        text_hidden_input = input_text_2d @ self.weights_text_input_hidden + self.bias_text_hidden
-        text_hidden_output = np.tanh(text_hidden_input)
-        text_embedding_scores = text_hidden_output @ self.weights_text_hidden_embedding + self.bias_text_embedding
-        return input_text_1d, text_hidden_output.flatten(), text_embedding_scores.flatten()
+        model = Model(inputs=text_input, outputs=[text_embedding_output, visual_label_output], name="temporal_lobe_model")
+        
+        optimizer = LegacyAdam(learning_rate=self.learning_rate_learn)
+        model.compile(optimizer=optimizer,
+                      loss={'visual_label_pred': 'sparse_categorical_crossentropy', 
+                            'text_embedding': None}, # No direct loss on embedding for now
+                      metrics={'visual_label_pred': 'accuracy'})
+        # model.summary() # Uncomment to print summary when an instance is created
+        return model
 
-    def _forward_prop_visual_assoc(self, text_embedding_1d):
-        if text_embedding_1d.shape[0] != self.output_size:
-            text_embedding_1d = np.zeros(self.output_size)
-        text_embedding_2d = text_embedding_1d.reshape(1, -1)
-        visual_hidden_input = text_embedding_2d @ self.weights_embed_to_visual_hidden + self.bias_visual_assoc_hidden
-        visual_hidden_output = np.tanh(visual_hidden_input)
-        visual_label_scores = visual_hidden_output @ self.weights_visual_hidden_to_label + self.bias_visual_assoc_label
-        return text_embedding_1d, visual_hidden_output.flatten(), visual_label_scores.flatten()
+    def _fit_tokenizer_if_needed(self, texts):
+        if not self.tokenizer.word_index: # Check if tokenizer has been fit (word_index is empty)
+            print("Temporal Lobe: Fitting tokenizer for the first time on provided texts...")
+            self.tokenizer.fit_on_texts(texts)
+            # Optional: Save tokenizer immediately after fitting, though save_model handles this too.
+            # self._save_tokenizer() 
+            print("Temporal Lobe: Tokenizer fitting complete.")
+
+    def _preprocess_text(self, text_input_list):
+        if not text_input_list or not isinstance(text_input_list, list) or not all(isinstance(t, str) for t in text_input_list):
+            print("Temporal Lobe: Error - _preprocess_text expects a list of strings.")
+            # Return a dummy sequence of the correct shape if input is invalid
+            return np.zeros((len(text_input_list if isinstance(text_input_list, list) else 1), self.max_sequence_length))
+
+        self._fit_tokenizer_if_needed(text_input_list) # Ensure tokenizer is fit
+        
+        sequences = self.tokenizer.texts_to_sequences(text_input_list)
+        padded_sequences = pad_sequences(sequences, maxlen=self.max_sequence_length, padding='post', truncating='post')
+        return padded_sequences
 
     def process_task(self, input_data_item, predict_visual=False):
-        actual_input_data = input_data_item[-1] if isinstance(input_data_item, list) and input_data_item else input_data_item
-        input_text_1d = self._to_numerical_vector(actual_input_data, self.input_size)
-        _, _, text_embedding = self._forward_prop_text(input_text_1d)
-        if predict_visual:
-            _, _, visual_label_scores = self._forward_prop_visual_assoc(text_embedding)
-            return (text_embedding.tolist(), np.argmax(visual_label_scores))
+        # Determine the actual text string from various possible input formats
+        if isinstance(input_data_item, list) and input_data_item:
+            actual_input_data = input_data_item[-1] # Assume last item if list
         else:
-            return text_embedding.tolist()
+            actual_input_data = input_data_item
+
+        if not isinstance(actual_input_data, str) or not actual_input_data.strip():
+            print(f"Temporal Lobe: Invalid or empty text input for process_task ('{actual_input_data}'). Using default.")
+            actual_input_data = "default empty text" # Default text
+
+        print(f"Temporal Lobe: Processing task with text: '{actual_input_data}'")
+        processed_sequence = self._preprocess_text([actual_input_data]) # Expects a list
+        
+        try:
+            embedding_output, visual_prediction_scores = self.model.predict(processed_sequence, verbose=0)
+        except Exception as e:
+            print(f"Temporal Lobe: Error during model prediction: {e}")
+            # Return default values matching the expected output structure
+            default_embedding = np.zeros(self.output_size).tolist()
+            if predict_visual:
+                return (default_embedding, -1) # -1 for error in visual prediction
+            else:
+                return default_embedding
+
+        embedding_vector = embedding_output[0] # predict returns a batch, get the first item
+
+        if predict_visual:
+            predicted_visual_label = np.argmax(visual_prediction_scores[0])
+            print(f"Temporal Lobe: Text embedding: {embedding_vector.tolist()}, Predicted visual label: {int(predicted_visual_label)}")
+            return (embedding_vector.tolist(), int(predicted_visual_label))
+        else:
+            print(f"Temporal Lobe: Text embedding: {embedding_vector.tolist()}")
+            return embedding_vector.tolist()
 
     def learn(self, sequence, visual_label_as_context=None):
-        # --- A. Text Processing Learning ---
-        if isinstance(sequence, list) and sequence and all(isinstance(item, tuple) and len(item) == 2 for item in sequence):
-            self.memory_db.append(sequence)
-            if len(self.memory_db) > 100: self.memory_db.pop(0)
+        texts_for_tokenizer_fitting = []
+        if isinstance(sequence, list) and sequence:
+            for item in sequence:
+                if isinstance(item, tuple) and len(item) == 2:
+                    texts_for_tokenizer_fitting.append(str(item[0])) # Input text
+                    texts_for_tokenizer_fitting.append(str(item[1])) # Target text (if used for embedding learning)
+                elif isinstance(item, str): # If sequence is just a list of texts
+                     texts_for_tokenizer_fitting.append(item)
 
-            for input_data, target_output in sequence:
-                input_text_1d = self._to_numerical_vector(input_data, self.input_size)
-                target_text_embedding_1d = self._to_numerical_vector(target_output, self.output_size)
 
-                actual_input_text_1d, text_hidden_out_1d, text_embedding_scores_1d = self._forward_prop_text(input_text_1d)
-
-                # Error at text embedding layer
-                delta_text_embedding = text_embedding_scores_1d - target_text_embedding_1d
-
-                # Gradients for text_hidden-to-embedding
-                delta_weights_he = np.outer(text_hidden_out_1d, delta_text_embedding)
-                delta_bias_te = delta_text_embedding
-
-                # Error at text hidden layer
-                error_prop_to_text_hidden = delta_text_embedding @ self.weights_text_hidden_embedding.T
-                deriv_tanh_text = 1 - text_hidden_out_1d**2
-                delta_text_hidden = error_prop_to_text_hidden * deriv_tanh_text
-
-                # Gradients for text_input-to-hidden
-                delta_weights_ih = np.outer(actual_input_text_1d, delta_text_hidden)
-                delta_bias_th = delta_text_hidden
-
-                # Update Text Processing Weights/Biases
-                self.weights_text_hidden_embedding -= self.learning_rate_learn * delta_weights_he
-                self.bias_text_embedding -= self.learning_rate_learn * delta_bias_te.reshape(1, -1)
-                self.weights_text_input_hidden -= self.learning_rate_learn * delta_weights_ih
-                self.bias_text_hidden -= self.learning_rate_learn * delta_bias_th.reshape(1, -1)
-
-        # --- B. Visual Association Learning ---
-        if visual_label_as_context is not None and (0 <= visual_label_as_context < self.visual_output_size):
-            if sequence and sequence[0] and isinstance(sequence[0][0], str):
+        # --- Visual Association Learning (Primary Training Path) ---
+        if visual_label_as_context is not None:
+            text_input_str_for_assoc = None
+            if isinstance(sequence, list) and sequence and isinstance(sequence[0], tuple) and len(sequence[0]) > 0 and isinstance(sequence[0][0], str):
                 text_input_str_for_assoc = sequence[0][0]
-                self.cross_modal_memory.append((text_input_str_for_assoc, visual_label_as_context))
-                if len(self.cross_modal_memory) > self.max_cross_modal_memory_size: self.cross_modal_memory.pop(0)
+            elif isinstance(sequence, str): # If sequence itself is the input string
+                 text_input_str_for_assoc = sequence
+            
+            if text_input_str_for_assoc:
+                if not texts_for_tokenizer_fitting: # If not already populated
+                    texts_for_tokenizer_fitting.append(text_input_str_for_assoc)
+                
+                self._fit_tokenizer_if_needed(list(set(texts_for_tokenizer_fitting))) # Fit with unique texts
 
-                assoc_input_text_1d = self._to_numerical_vector(text_input_str_for_assoc, self.input_size)
+                print(f"Temporal Lobe: Learning visual association for text '{text_input_str_for_assoc}' with label {visual_label_as_context}")
+                input_sequence_for_assoc = self._preprocess_text([text_input_str_for_assoc])
+                
+                try:
+                    target_visual_label_val = int(visual_label_as_context)
+                except ValueError:
+                    print(f"Temporal Lobe: Invalid visual label '{visual_label_as_context}'. Must be an integer. Skipping.")
+                    return
 
-                # Forward prop text path to get current embedding
-                _, text_hidden_out_for_assoc_1d, current_text_embedding_1d = self._forward_prop_text(assoc_input_text_1d)
+                if not (0 <= target_visual_label_val < self.visual_output_size):
+                    print(f"Temporal Lobe: Visual label {target_visual_label_val} out of range (0-{self.visual_output_size-1}). Skipping.")
+                    return
+                
+                target_visual_label_array = np.array([target_visual_label_val])
 
-                # Forward prop visual association path
-                _, visual_hidden_out_1d, visual_label_scores_1d = self._forward_prop_visual_assoc(current_text_embedding_1d)
+                try:
+                    history = self.model.fit(
+                        input_sequence_for_assoc,
+                        {'visual_label_pred': target_visual_label_array}, # Training only the visual prediction output
+                        epochs=1,
+                        verbose=0
+                    )
+                    loss = history.history.get('visual_label_pred_loss', [float('nan')])[0]
+                    accuracy = history.history.get('visual_label_pred_accuracy', [float('nan')])[0] # Key might vary
+                    print(f"Temporal Lobe: Visual association training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
+                    
+                    # Store this experience
+                    self.cross_modal_memory.append((text_input_str_for_assoc, visual_label_as_context))
+                    if len(self.cross_modal_memory) > self.max_cross_modal_memory_size:
+                        self.cross_modal_memory.pop(0)
+                except Exception as e:
+                    print(f"Temporal Lobe: Error during visual association training: {e}")
+            else:
+                print("Temporal Lobe: No valid text input found in sequence for visual association learning.")
+        
+        elif texts_for_tokenizer_fitting: # If only text sequence provided (no visual label), just fit tokenizer
+             self._fit_tokenizer_if_needed(list(set(texts_for_tokenizer_fitting)))
+             print("Temporal Lobe: Tokenizer fitted with provided text sequence. No visual label for training.")
 
-                true_visual_one_hot = np.zeros(self.visual_output_size)
-                true_visual_one_hot[visual_label_as_context] = 1.0
-                visual_output_probabilities = softmax(visual_label_scores_1d)
 
-                delta_visual_label_output = visual_output_probabilities - true_visual_one_hot
+    def _save_tokenizer(self):
+        print("Temporal Lobe: Saving tokenizer...")
+        os.makedirs(os.path.dirname(self.tokenizer_path), exist_ok=True)
+        try:
+            tokenizer_json = self.tokenizer.to_json()
+            with open(self.tokenizer_path, 'w', encoding='utf-8') as f:
+                f.write(json.dumps(tokenizer_json, ensure_ascii=False))
+            print("Temporal Lobe: Tokenizer saved.")
+        except Exception as e:
+            print(f"Temporal Lobe: Error saving tokenizer: {e}")
 
-                delta_weights_vhl = np.outer(visual_hidden_out_1d, delta_visual_label_output)
-                delta_bias_vl = delta_visual_label_output
+    def _load_tokenizer(self):
+        if os.path.exists(self.tokenizer_path):
+            print("Temporal Lobe: Loading tokenizer...")
+            try:
+                with open(self.tokenizer_path, 'r', encoding='utf-8') as f:
+                    tokenizer_json_str = f.read() # Read the whole file
+                    # Keras tokenizer_from_json expects a string, not a dict from json.load
+                    self.tokenizer = tf.keras.preprocessing.text.tokenizer_from_json(tokenizer_json_str)
+                print("Temporal Lobe: Tokenizer loaded successfully.")
+            except Exception as e:
+                print(f"Temporal Lobe: Error loading tokenizer: {e}. Using new tokenizer.")
+                self.tokenizer = Tokenizer(num_words=self.vocab_size, oov_token="<unk>")
+        else:
+            print("Temporal Lobe: No saved tokenizer found. Using new tokenizer.")
+            self.tokenizer = Tokenizer(num_words=self.vocab_size, oov_token="<unk>")
 
-                error_prop_to_visual_hidden = delta_visual_label_output @ self.weights_visual_hidden_to_label.T
-                deriv_tanh_visual = 1 - visual_hidden_out_1d**2
-                delta_visual_assoc_hidden = error_prop_to_visual_hidden * deriv_tanh_visual
-
-                delta_weights_evh = np.outer(current_text_embedding_1d, delta_visual_assoc_hidden)
-                delta_bias_vh = delta_visual_assoc_hidden
-
-                self.weights_visual_hidden_to_label -= self.learning_rate_learn * delta_weights_vhl
-                self.bias_visual_assoc_label -= self.learning_rate_learn * delta_bias_vl.reshape(1, -1)
-                self.weights_embed_to_visual_hidden -= self.learning_rate_learn * delta_weights_evh
-                self.bias_visual_assoc_hidden -= self.learning_rate_learn * delta_bias_vh.reshape(1, -1)
-
-                # --- C. Error Backpropagation from Visual Path to Text Embedding Layer ---
-                error_from_visual_to_embedding = delta_visual_assoc_hidden @ self.weights_embed_to_visual_hidden.T
-
-                # This error (delta_text_embedding_from_visual) applies to current_text_embedding_1d
-                delta_text_embedding_from_visual = error_from_visual_to_embedding # Shape (output_size,)
-
-                # Update weights_text_hidden_embedding
-                # text_hidden_out_for_assoc_1d is the output of the text hidden layer for this specific input
-                delta_weights_he_from_visual = np.outer(text_hidden_out_for_assoc_1d, delta_text_embedding_from_visual)
-                delta_bias_te_from_visual = delta_text_embedding_from_visual
-                self.weights_text_hidden_embedding -= self.learning_rate_learn * delta_weights_he_from_visual
-                self.bias_text_embedding -= self.learning_rate_learn * delta_bias_te_from_visual.reshape(1, -1)
-
-                # Propagate this error further back to text_input_hidden weights
-                error_prop_to_text_hidden_from_visual = delta_text_embedding_from_visual @ self.weights_text_hidden_embedding.T
-                deriv_tanh_text_for_assoc = 1 - text_hidden_out_for_assoc_1d**2
-                delta_text_hidden_from_visual = error_prop_to_text_hidden_from_visual * deriv_tanh_text_for_assoc
-
-                delta_weights_ih_from_visual = np.outer(assoc_input_text_1d, delta_text_hidden_from_visual)
-                delta_bias_th_from_visual = delta_text_hidden_from_visual
-
-                self.weights_text_input_hidden -= self.learning_rate_learn * delta_weights_ih_from_visual
-                self.bias_text_hidden -= self.learning_rate_learn * delta_bias_th_from_visual.reshape(1, -1)
-
-    def consolidate(self):
-        lr = self.learning_rate_consolidate
-        # Consolidate text processing (memory_db)
-        for sequence_item in list(self.memory_db):
-            if not (isinstance(sequence_item, list) and sequence_item and all(isinstance(p, tuple) and len(p)==2 for p in sequence_item)): continue
-            for input_data, target_output in sequence_item:
-                input_text_1d = self._to_numerical_vector(input_data, self.input_size)
-                target_text_embedding_1d = self._to_numerical_vector(target_output, self.output_size)
-                actual_input_text_1d, text_hidden_out_1d, text_embedding_scores_1d = self._forward_prop_text(input_text_1d)
-                delta_text_embedding = text_embedding_scores_1d - target_text_embedding_1d
-                delta_weights_he = np.outer(text_hidden_out_1d, delta_text_embedding)
-                delta_bias_te = delta_text_embedding
-                error_prop_to_text_hidden = delta_text_embedding @ self.weights_text_hidden_embedding.T
-                deriv_tanh_text = 1 - text_hidden_out_1d**2
-                delta_text_hidden = error_prop_to_text_hidden * deriv_tanh_text
-                delta_weights_ih = np.outer(actual_input_text_1d, delta_text_hidden)
-                delta_bias_th = delta_text_hidden
-                self.weights_text_hidden_embedding -= lr * delta_weights_he
-                self.bias_text_embedding -= lr * delta_bias_te.reshape(1, -1)
-                self.weights_text_input_hidden -= lr * delta_weights_ih
-                self.bias_text_hidden -= lr * delta_bias_th.reshape(1, -1)
-
-        # Consolidate visual association (cross_modal_memory)
-        for text_input_str, true_visual_label in list(self.cross_modal_memory):
-            if not (0 <= true_visual_label < self.visual_output_size): continue
-
-            assoc_input_text_1d = self._to_numerical_vector(text_input_str, self.input_size)
-            _, text_hidden_out_for_assoc_1d, current_text_embedding_1d = self._forward_prop_text(assoc_input_text_1d)
-            _, visual_hidden_out_1d, visual_label_scores_1d = self._forward_prop_visual_assoc(current_text_embedding_1d)
-
-            true_visual_one_hot = np.zeros(self.visual_output_size); true_visual_one_hot[true_visual_label] = 1.0
-            visual_output_probabilities = softmax(visual_label_scores_1d)
-            delta_visual_label_output = visual_output_probabilities - true_visual_one_hot
-            delta_weights_vhl = np.outer(visual_hidden_out_1d, delta_visual_label_output)
-            delta_bias_vl = delta_visual_label_output
-            error_prop_to_visual_hidden = delta_visual_label_output @ self.weights_visual_hidden_to_label.T
-            deriv_tanh_visual = 1 - visual_hidden_out_1d**2
-            delta_visual_assoc_hidden = error_prop_to_visual_hidden * deriv_tanh_visual
-            delta_weights_evh = np.outer(current_text_embedding_1d, delta_visual_assoc_hidden)
-            delta_bias_vh = delta_visual_assoc_hidden
-            self.weights_visual_hidden_to_label -= lr * delta_weights_vhl
-            self.bias_visual_assoc_label -= lr * delta_bias_vl.reshape(1, -1)
-            self.weights_embed_to_visual_hidden -= lr * delta_weights_evh
-            self.bias_visual_assoc_hidden -= lr * delta_bias_vh.reshape(1, -1)
-
-            error_from_visual_to_embedding = delta_visual_assoc_hidden @ self.weights_embed_to_visual_hidden.T
-            delta_text_embedding_from_visual = error_from_visual_to_embedding
-            delta_weights_he_from_visual = np.outer(text_hidden_out_for_assoc_1d, delta_text_embedding_from_visual)
-            delta_bias_te_from_visual = delta_text_embedding_from_visual
-            self.weights_text_hidden_embedding -= lr * delta_weights_he_from_visual
-            self.bias_text_embedding -= lr * delta_bias_te_from_visual.reshape(1, -1)
-            error_prop_to_text_hidden_from_visual = delta_text_embedding_from_visual @ self.weights_text_hidden_embedding.T
-            deriv_tanh_text_for_assoc = 1 - text_hidden_out_for_assoc_1d**2
-            delta_text_hidden_from_visual = error_prop_to_text_hidden_from_visual * deriv_tanh_text_for_assoc
-            delta_weights_ih_from_visual = np.outer(assoc_input_text_1d, delta_text_hidden_from_visual)
-            delta_bias_th_from_visual = delta_text_hidden_from_visual
-            self.weights_text_input_hidden -= lr * delta_weights_ih_from_visual
-            self.bias_text_hidden -= lr * delta_bias_th_from_visual.reshape(1, -1)
-
-        self.save_model()
-        self.save_memory()
 
     def save_model(self):
-        model_data_to_save = {
-            "weights_text_input_hidden": self.weights_text_input_hidden.tolist(),
-            "bias_text_hidden": self.bias_text_hidden.tolist(),
-            "weights_text_hidden_embedding": self.weights_text_hidden_embedding.tolist(),
-            "bias_text_embedding": self.bias_text_embedding.tolist(),
-            "weights_embed_to_visual_hidden": self.weights_embed_to_visual_hidden.tolist(),
-            "bias_visual_assoc_hidden": self.bias_visual_assoc_hidden.tolist(),
-            "weights_visual_hidden_to_label": self.weights_visual_hidden_to_label.tolist(),
-            "bias_visual_assoc_label": self.bias_visual_assoc_label.tolist(),
-            "input_size": self.input_size, "text_hidden_size": self.text_hidden_size,
-            "output_size": self.output_size, "visual_assoc_hidden_size": self.visual_assoc_hidden_size,
-            "visual_output_size": self.visual_output_size
-        }
+        print(f"Temporal Lobe: Saving model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
-        with open(self.model_path, "w") as f: json.dump(model_data_to_save, f)
-
-    def save_memory(self):
-        os.makedirs(os.path.dirname(self.memory_path), exist_ok=True)
-        with open(self.memory_path, "w") as f: json.dump({
-            "memory_db": self.memory_db, "cross_modal_memory": self.cross_modal_memory
-        }, f)
-
-    def _initialize_default_weights_biases(self):
-        self.weights_text_input_hidden = np.random.randn(self.input_size, self.text_hidden_size) * 0.01
-        self.bias_text_hidden = np.zeros((1, self.text_hidden_size))
-        self.weights_text_hidden_embedding = np.random.randn(self.text_hidden_size, self.output_size) * 0.01
-        self.bias_text_embedding = np.zeros((1, self.output_size))
-        self.weights_embed_to_visual_hidden = np.random.randn(self.output_size, self.visual_assoc_hidden_size) * 0.01
-        self.bias_visual_assoc_hidden = np.zeros((1, self.visual_assoc_hidden_size))
-        self.weights_visual_hidden_to_label = np.random.randn(self.visual_assoc_hidden_size, self.visual_output_size) * 0.01
-        self.bias_visual_assoc_label = np.zeros((1, self.visual_output_size))
+        try:
+            self.model.save_weights(self.model_path)
+            self._save_tokenizer() # Save tokenizer along with model weights
+            self._save_memory() # Save cross-modal memory
+            print("Temporal Lobe: Model weights, tokenizer, and memory saved.")
+        except Exception as e:
+            print(f"Temporal Lobe: Error saving model/tokenizer/memory: {e}")
 
     def load_model(self):
+        # Tokenizer must be loaded before model if vocab_size in _build_model depends on it.
+        # Here, vocab_size is fixed, but it's good practice.
+        self._load_tokenizer() 
         if os.path.exists(self.model_path):
+            print(f"Temporal Lobe: Loading model weights from {self.model_path}...")
             try:
-                with open(self.model_path, "r") as f: model_data = json.load(f)
-                arch_compatible = all(model_data.get(k) == getattr(self, k) for k in ['input_size', 'text_hidden_size', 'output_size', 'visual_assoc_hidden_size', 'visual_output_size'])
-                required_keys = ["weights_text_input_hidden", "bias_text_hidden", "weights_text_hidden_embedding", "bias_text_embedding", "weights_embed_to_visual_hidden", "bias_visual_assoc_hidden", "weights_visual_hidden_to_label", "bias_visual_assoc_label"]
-                if arch_compatible and all(k in model_data for k in required_keys):
-                    self.weights_text_input_hidden = np.array(model_data["weights_text_input_hidden"])
-                    self.bias_text_hidden = np.array(model_data["bias_text_hidden"])
-                    self.weights_text_hidden_embedding = np.array(model_data["weights_text_hidden_embedding"])
-                    self.bias_text_embedding = np.array(model_data["bias_text_embedding"])
-                    self.weights_embed_to_visual_hidden = np.array(model_data["weights_embed_to_visual_hidden"])
-                    self.bias_visual_assoc_hidden = np.array(model_data["bias_visual_assoc_hidden"])
-                    self.weights_visual_hidden_to_label = np.array(model_data["weights_visual_hidden_to_label"])
-                    self.bias_visual_assoc_label = np.array(model_data["bias_visual_assoc_label"])
-                    # Shape validation after loading
-                    if any(getattr(self, name).shape != expected_shape for name, expected_shape in [
-                        ('weights_text_input_hidden', (self.input_size, self.text_hidden_size)),
-                        ('bias_text_hidden', (1, self.text_hidden_size)),
-                        ('weights_text_hidden_embedding', (self.text_hidden_size, self.output_size)),
-                        ('bias_text_embedding', (1, self.output_size)),
-                        ('weights_embed_to_visual_hidden', (self.output_size, self.visual_assoc_hidden_size)),
-                        ('bias_visual_assoc_hidden', (1, self.visual_assoc_hidden_size)),
-                        ('weights_visual_hidden_to_label', (self.visual_assoc_hidden_size, self.visual_output_size)),
-                        ('bias_visual_assoc_label', (1, self.visual_output_size))
-                    ]): self._initialize_default_weights_biases()
-                else: self._initialize_default_weights_biases()
-            except Exception: self._initialize_default_weights_biases()
-        else: self._initialize_default_weights_biases()
+                # Ensure model is built before loading weights (already done in __init__)
+                self.model.load_weights(self.model_path)
+                print("Temporal Lobe: Model weights loaded successfully.")
+            except Exception as e:
+                print(f"Temporal Lobe: Error loading model weights: {e}. Model remains initialized.")
+        else:
+            print(f"Temporal Lobe: No pre-trained weights found at {self.model_path}. Model is newly initialized.")
+        self._load_memory() # Load cross-modal memory
+
+    def _save_memory(self):
+        print("Temporal Lobe: Saving cross-modal memory...")
+        os.makedirs(os.path.dirname(self.memory_path), exist_ok=True)
+        try:
+            with open(self.memory_path, "w") as f:
+                json.dump({"cross_modal_memory": self.cross_modal_memory}, f)
+            print("Temporal Lobe: Cross-modal memory saved.")
+        except Exception as e:
+            print(f"Temporal Lobe: Error saving cross-modal memory: {e}")
+            
+    def _load_memory(self):
         if os.path.exists(self.memory_path):
+            print("Temporal Lobe: Loading cross-modal memory...")
             try:
-                with open(self.memory_path, "r") as f: loaded_memory_data = json.load(f)
-                if isinstance(loaded_memory_data, dict):
-                    self.memory_db = loaded_memory_data.get("memory_db", [])
-                    self.cross_modal_memory = loaded_memory_data.get("cross_modal_memory", [])
-                elif isinstance(loaded_memory_data, list):
-                    self.memory_db = loaded_memory_data; self.cross_modal_memory = []
-                else: self.memory_db = []; self.cross_modal_memory = []
-            except Exception: self.memory_db = []; self.cross_modal_memory = []
-        if not isinstance(self.memory_db, list): self.memory_db = []
-        if not isinstance(self.cross_modal_memory, list): self.cross_modal_memory = []
-        self.memory_db = [item for item in self.memory_db if isinstance(item, list) and all(isinstance(p, tuple) and len(p)==2 for p in item)]
-        self.cross_modal_memory = [item for item in self.cross_modal_memory if isinstance(item, tuple) and len(item)==2]
+                with open(self.memory_path, "r") as f:
+                    loaded_data = json.load(f)
+                    self.cross_modal_memory = loaded_data.get("cross_modal_memory", [])
+                # Ensure loaded memory is a list of tuples
+                self.cross_modal_memory = [tuple(item) for item in self.cross_modal_memory if isinstance(item, list) and len(item) == 2]
+                print("Temporal Lobe: Cross-modal memory loaded.")
+            except Exception as e:
+                print(f"Temporal Lobe: Error loading cross-modal memory: {e}. Initializing empty memory.")
+                self.cross_modal_memory = []
+        else:
+            print("Temporal Lobe: No cross-modal memory file found. Initializing empty memory.")
+            self.cross_modal_memory = []
+
+
+    def consolidate(self):
+        print("Temporal Lobe: Starting consolidation (replaying cross-modal memory)...")
+        if not self.cross_modal_memory:
+            print("Temporal Lobe: No experiences in cross-modal memory to consolidate.")
+        else:
+            # Replay from cross_modal_memory
+            num_replays = min(len(self.cross_modal_memory), 32) # Replay up to 32 samples or all if fewer
+            print(f"Temporal Lobe: Replaying {num_replays} experiences for consolidation.")
+            
+            # Create batches for more efficient training if many samples
+            texts_to_train = [item[0] for item in self.cross_modal_memory[:num_replays]]
+            labels_to_train = np.array([int(item[1]) for item in self.cross_modal_memory[:num_replays]])
+            
+            input_sequences = self._preprocess_text(texts_to_train)
+
+            if input_sequences.shape[0] > 0 : # Check if any valid sequences produced
+                try:
+                    self.model.fit(
+                        input_sequences,
+                        {'visual_label_pred': labels_to_train},
+                        epochs=1, # Could be more for consolidation
+                        verbose=0,
+                        batch_size=min(input_sequences.shape[0], 16) # Smaller batch size for consolidation
+                    )
+                    print("Temporal Lobe: Consolidation replay training complete.")
+                except Exception as e:
+                    print(f"Temporal Lobe: Error during consolidation replay training: {e}")
+            else:
+                print("Temporal Lobe: No valid sequences to train on during consolidation after preprocessing.")
+
+        self.save_model() # Saves weights, tokenizer, and memory
+        print("Temporal Lobe: Consolidation complete.")
+
 
 # Example Usage
-if __name__ == "__main__":
-    ai = TemporalLobeAI(model_path="data/test_temporal_model_full_bp.json", memory_path="data/test_temporal_memory_full_bp.json")
-    print("TemporalLobeAI initialized for full backpropagation.")
+if __name__ == '__main__':
+    print("\n--- Testing TemporalLobeAI (RNN/LSTM) ---")
+    test_model_path = "data/test_temporal_rnn.weights.h5"
+    test_tokenizer_path = "data/test_temporal_rnn_tokenizer.json"
+    test_memory_path = "data/test_temporal_rnn_memory.json"
 
-    text_seq = [("a red block", "a red block")] # Target is itself for auto-encoding like embedding
-    visual_label = 0 # e.g. "red things"
+    # Clean up old test files
+    for f_path in [test_model_path, test_tokenizer_path, test_memory_path]:
+        if os.path.exists(f_path): os.remove(f_path)
 
-    print("Initial weights (sample from text_input_hidden):", ai.weights_text_input_hidden[0,0])
-    print("Initial weights (sample from embed_to_visual_label):", ai.weights_visual_hidden_to_label[0,0])
+    temporal_ai = TemporalLobeAI(
+        model_path=test_model_path,
+        tokenizer_path=test_tokenizer_path,
+        memory_path=test_memory_path
+    )
+    temporal_ai.model.summary()
 
-    ai.learn(text_seq, visual_label_as_context=visual_label)
-    print("After learn:")
-    print("  weights_text_input_hidden (sample):", ai.weights_text_input_hidden[0,0])
-    print("  weights_visual_hidden_to_label (sample):", ai.weights_visual_hidden_to_label[0,0])
+    print("\n--- Testing Tokenizer Fitting (Implicit via learn/process) ---")
+    sample_texts_for_fitting = [
+        "hello world", "this is a test", "another sample text", "world of AI"
+    ]
+    temporal_ai._fit_tokenizer_if_needed(sample_texts_for_fitting)
+    if temporal_ai.tokenizer.word_index:
+        print(f"Tokenizer fitted. Vocab size (actual): {len(temporal_ai.tokenizer.word_index)}")
+        print(f"Word for 'world': {temporal_ai.tokenizer.word_index.get('world')}")
+    else:
+        print("Tokenizer fitting failed or no texts provided.")
 
-    ai.consolidate()
-    print("After consolidate:")
-    print("  weights_text_input_hidden (sample):", ai.weights_text_input_hidden[0,0])
-    print("  weights_visual_hidden_to_label (sample):", ai.weights_visual_hidden_to_label[0,0])
+    print("\n--- Testing Text Preprocessing ---")
+    test_text = ["hello world of AI"]
+    preprocessed = temporal_ai._preprocess_text(test_text)
+    print(f"Original: '{test_text[0]}', Preprocessed: {preprocessed}")
+    
+    print("\n--- Testing process_task (Embedding only) ---")
+    embedding = temporal_ai.process_task(test_text[0], predict_visual=False)
+    print(f"Embedding for '{test_text[0]}': shape {np.array(embedding).shape}")
 
-    if os.path.exists("data/test_temporal_model_full_bp.json"): os.remove("data/test_temporal_model_full_bp.json")
-    if os.path.exists("data/test_temporal_memory_full_bp.json"): os.remove("data/test_temporal_memory_full_bp.json")
-    print("Temporal Lobe AI full backpropagation test finished.")
+    print("\n--- Testing process_task (Embedding + Visual Prediction) ---")
+    embedding_pv, visual_pred_pv = temporal_ai.process_task(test_text[0], predict_visual=True)
+    print(f"For '{test_text[0]}': Embedding shape {np.array(embedding_pv).shape}, Visual Pred: {visual_pred_pv}")
+
+    print("\n--- Testing learn (Visual Association) ---")
+    # Example sequence for learn: list of (input_text, target_text_for_embedding)
+    # For now, we simplify learn to focus on visual association using the first text.
+    learn_text_sequence = [("the quick brown fox", "the quick brown fox")] # Dummy target text for embedding
+    visual_label_for_learn = 3 
+    temporal_ai.learn(learn_text_sequence, visual_label_as_context=visual_label_for_learn)
+    
+    learn_text_sequence_2 = [("a blue sphere", "a blue sphere")]
+    visual_label_for_learn_2 = 1
+    temporal_ai.learn(learn_text_sequence_2, visual_label_as_context=visual_label_for_learn_2)
+    
+    print(f"Cross-modal memory size after learning: {len(temporal_ai.cross_modal_memory)}")
+
+    print("\n--- Testing Consolidation ---")
+    temporal_ai.consolidate()
+
+    print("\n--- Testing Save/Load ---")
+    temporal_ai.save_model() # Should save weights, tokenizer, memory
+    
+    # Create new instance to test loading
+    print("\nCreating new TemporalLobeAI instance for loading test...")
+    temporal_ai_loaded = TemporalLobeAI(
+        model_path=test_model_path,
+        tokenizer_path=test_tokenizer_path,
+        memory_path=test_memory_path
+    )
+    
+    if temporal_ai_loaded.tokenizer.word_index and \
+       temporal_ai_loaded.tokenizer.word_index.get('world') == temporal_ai.tokenizer.word_index.get('world'):
+        print("Tokenizer loaded successfully.")
+    else:
+        print("Tokenizer loading failed or mismatch.")
+        
+    if len(temporal_ai_loaded.cross_modal_memory) == len(temporal_ai.cross_modal_memory):
+        print(f"Cross-modal memory loaded successfully with {len(temporal_ai_loaded.cross_modal_memory)} items.")
+    else:
+        print("Cross-modal memory loading failed or mismatch.")
+
+    # Test if model weights were loaded (simple check on one layer's weights)
+    original_weights_lstm = temporal_ai.model.get_layer("lstm").get_weights()[0]
+    loaded_weights_lstm = temporal_ai_loaded.model.get_layer("lstm").get_weights()[0]
+    if np.array_equal(original_weights_lstm, loaded_weights_lstm):
+        print("Model weights loaded successfully (LSTM layer sample weights match).")
+    else:
+        print("Model weights loading failed or mismatch.")
+
+    # Clean up
+    for f_path in [test_model_path, test_tokenizer_path, test_memory_path]:
+        if os.path.exists(f_path): os.remove(f_path)
+    print("\nCleaned up test files.")
+    
+    print("\nTemporal Lobe AI (RNN/LSTM) test script finished.")
