@@ -501,7 +501,7 @@
         "documentation": {}
     },
     {
-        "label": "Adam",
+        "label": "# type: ignore\r\n    Adam",
         "importPath": "tensorflow.keras.optimizers.legacy",
         "description": "tensorflow.keras.optimizers.legacy",
         "isExtraImport": true,
@@ -530,15 +530,6 @@
         "description": "tensorflow.keras.optimizers.legacy",
         "isExtraImport": true,
         "detail": "tensorflow.keras.optimizers.legacy",
-        "documentation": {}
-    },
-    {
-        "label": "tensorflow",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "tensorflow",
-        "description": "tensorflow",
-        "detail": "tensorflow",
         "documentation": {}
     },
     {
@@ -556,6 +547,15 @@
         "description": "collections",
         "isExtraImport": true,
         "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "tensorflow",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tensorflow",
+        "description": "tensorflow",
+        "detail": "tensorflow",
         "documentation": {}
     },
     {

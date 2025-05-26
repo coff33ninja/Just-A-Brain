@@ -2,10 +2,9 @@
 import numpy as np
 import json  # For memory persistence
 import os
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam  # For compatibility
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
 
 
 class LimbicSystemAI:
@@ -75,13 +74,13 @@ class LimbicSystemAI:
             return np.array(data_list[: self.input_size], dtype=float)
 
     def process_task(self, processed_temporal_data):
-        print(f"Limbic System: Processing task with temporal data...")
+        print("Limbic System: Processing task with temporal data...")
         input_vec_1d = self._ensure_input_vector_shape(processed_temporal_data)
 
         if not np.any(input_vec_1d) and not np.all(
             np.array(processed_temporal_data, dtype=float) == 0
         ):
-            print(
+            print( # Converted F541
                 "Limbic System: Input vector became all zeros after preparation. Returning default emotion."
             )
             return np.random.randint(0, self.output_size)  # Default random emotion

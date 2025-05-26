@@ -2,12 +2,11 @@
 import numpy as np
 import json
 import os
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense # type: ignore
 
 # from tensorflow.keras.optimizers import Adam # Standard Adam
-from tensorflow.keras.optimizers.legacy import (
+from tensorflow.keras.optimizers.legacy import ( # type: ignore
     Adam as LegacyAdam,
 )  # For M1/M2 Mac compatibility if needed
 import random
@@ -90,7 +89,7 @@ class FrontalLobeAI:
                 # print(f"Warning: State data was longer than input_size. Truncated. Original len: {current_len}")
             return state_vector_1d
         except Exception as e:  # Catch broader exceptions during conversion/shaping
-            # print(f"Error preparing state vector from data '{state_data}': {e}. Using zero vector.")
+            print(f"Error preparing state vector from data '{state_data}': {e}. Using zero vector.")
             return np.zeros(self.input_size)
 
     def remember(self, state, action, reward, next_state, done):
