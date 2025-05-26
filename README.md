@@ -3,8 +3,7 @@
 ## System Design
 
     Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI.
-        - The Occipital Lobe (CNN), Temporal Lobe (RNN/LSTM), Parietal Lobe (Dense NN), and Cerebellum (Dense NN) are built with TensorFlow/Keras. The Limbic System currently uses a simpler two-layer numpy-based neural network.
-        - FrontalLobeAI uses a Deep Q-Network (DQN) built with TensorFlow/Keras for decision-making, leveraging experience replay and target networks.
+        - All AI modules—Occipital Lobe (CNN), Temporal Lobe (RNN/LSTM), Parietal Lobe (Dense NN), Cerebellum (Dense NN), Frontal Lobe (DQN), and Limbic System (Dense NN)—are now built with TensorFlow/Keras, replacing their original numpy-based implementations.
     Main Script: main.py initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
     Functionality:
         Each AI processes tasks relevant to its brain region.
@@ -31,17 +30,17 @@ The system provides a modular implementation for each AI, focusing on the "baby 
     - The Occipital Lobe uses a TensorFlow/Keras based Convolutional Neural Network (CNN) for advanced image processing. Input images for the Occipital Lobe are automatically resized to 64x64 pixels and normalized before being processed by its CNN.
     - The Temporal Lobe now features an RNN (LSTM/GRU based) model using TensorFlow/Keras for more advanced, sequence-aware text processing. Text input is tokenized, converted to sequences, and padded/truncated to a fixed length before being processed by its RNN. 
     - The Parietal Lobe now uses a TensorFlow/Keras based Dense feed-forward neural network for sensory integration and spatial awareness tasks. 
-    - The Cerebellum now uses a TensorFlow/Keras based Dense feed-forward neural network for motor control and coordination, typically outputting commands scaled between -1 and 1 (e.g., using a `tanh` activation on its output layer). The Limbic System currently uses a two-layer numpy-based neural network.
+    - The Cerebellum now uses a TensorFlow/Keras based Dense feed-forward neural network for motor control and coordination. Similarly, the Limbic System now uses a TensorFlow/Keras Dense feed-forward neural network for emotion classification, typically taking text embeddings as input and outputting an emotion category using a `softmax` activation.
     - FrontalLobeAI employs a Deep Q-Network (DQN) using TensorFlow/Keras to improve its decision-making based on rewards and experience replay.
     - Data input has been enhanced to support image files (for Occipital) and paired image-text data for cross-modal learning experiments.
 
 ## Explanation
 
     Modules: Each module defines a class with:
-        - A model: The OccipitalLobeAI (CNN), TemporalLobeAI (RNN/LSTM), FrontalLobeAI (DQN), ParietalLobeAI (Dense NN), and CerebellumAI (Dense NN) are implemented with TensorFlow/Keras. The Limbic System currently uses a two-layer numpy-based neural network.
+        - A model: All AI modules—OccipitalLobeAI (CNN), TemporalLobeAI (RNN/LSTM), FrontalLobeAI (DQN), ParietalLobeAI (Dense NN), CerebellumAI (Dense NN), and LimbicSystemAI (Dense NN)—are implemented with TensorFlow/Keras, each tailored to its specific processing task (e.g., image classification, text processing, decision making, sensor integration, motor control, emotion classification).
         - process_task: Handles inputs specific to the AI’s role.
-        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI, TemporalLobeAI, ParietalLobeAI, and CerebellumAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI based on feedback and experiences.
-        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI, FrontalLobeAI, TemporalLobeAI, and ParietalLobeAI, this primarily involves saving the learned model weights (and for DQN/Temporal/Parietal, performing more replay steps or saving memory).
+        - learn: Updates weights via Keras model training (`fit` for OccipitalLobeAI, TemporalLobeAI, ParietalLobeAI, CerebellumAI, and LimbicSystemAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI based on feedback and experiences. The Limbic System's Keras training incorporates reward signals by using them to compute `sample_weight` for its `fit` method during learning and consolidation.
+        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI, FrontalLobeAI, TemporalLobeAI, ParietalLobeAI, and LimbicSystemAI, this primarily involves saving the learned model weights (and for DQN/Temporal/Parietal/Limbic, performing more replay steps or saving memory).
         - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories and tokenizer state) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
     main.py:
         - Initializes all AIs and coordinates tasks.
@@ -53,7 +52,7 @@ The system provides a modular implementation for each AI, focusing on the "baby 
         - OccipitalLobeAI processes images and learns to classify them using its CNN.
         - TemporalLobeAI processes text using tokenization and an RNN (LSTM/GRU based). It learns to produce text embeddings and associate them with visual labels through its TensorFlow/Keras model.
         - FrontalLobeAI learns to choose actions using a Deep Q-Network (DQN), training on past experiences stored in a replay buffer.
-    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital, Frontal, Temporal, Parietal, and Cerebellum Lobes' TensorFlow/Keras model weights are saved in specific formats (e.g., `occipital_model.weights.h5`, `frontal_model.weights.h5`, `temporal_model.weights.h5`, `parietal_model.weights.h5`, `cerebellum_model.weights.h5`). The Temporal Lobe also saves its `Tokenizer` state, the Frontal Lobe saves its exploration epsilon, and the Parietal and Cerebellum Lobes save their replay memory, typically as JSON files.
+    Storage: Models and memories are saved in the `data/` folder. The Occipital, Frontal, Temporal, Parietal, Cerebellum, and Limbic Lobes' TensorFlow/Keras model weights are saved in specific formats (e.g., `occipital_model.weights.h5`, ..., `limbic_model.weights.h5`). The Temporal Lobe also saves its `Tokenizer` state, the Frontal Lobe saves its exploration epsilon, and the Parietal, Cerebellum, and Limbic Lobes save their replay memory (experiences including rewards for the Limbic System), typically as JSON files.
 
 ## Running the Command-Line Simulation (main.py)
 
