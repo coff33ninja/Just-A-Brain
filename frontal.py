@@ -3,12 +3,8 @@ import numpy as np
 import json
 import os
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense # type: ignore
-
-# from tensorflow.keras.optimizers import Adam # Standard Adam
-from tensorflow.keras.optimizers.legacy import ( # type: ignore
-    Adam as LegacyAdam,
-)  # For M1/M2 Mac compatibility if needed
+from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.optimizers import Adam # type: ignore
 import random
 from collections import deque  # For replay buffer
 
@@ -50,21 +46,19 @@ class FrontalLobeAI:
     def _build_model(self):
         model = Sequential(
             [
+                Input(shape=(self.input_size,), name="input_layer"), # Added Input layer
                 Dense(
-                    32, input_dim=self.input_size, activation="relu", name="dense_input"
+                    32, activation="relu", name="dense_hidden_1" # Changed from dense_input, removed input_dim
                 ),
-                Dense(32, activation="relu", name="dense_hidden_1"),
+                Dense(32, activation="relu", name="dense_hidden_2"), # Renamed from dense_hidden_1
                 Dense(
                     self.output_size, activation="linear", name="dense_output"
                 ),  # Q-values for each action
             ]
         )
-        # Using LegacyAdam for broader compatibility, especially on M1/M2 Macs.
-        # For other systems, tf.keras.optimizers.Adam can be used.
-        optimizer = LegacyAdam(learning_rate=self.learning_rate_dqn)
+        optimizer = Adam(learning_rate=self.learning_rate_dqn)
         model.compile(
-            optimizer=optimizer, loss="mse"
-        )  # Mean Squared Error for Q-learning
+            optimizer=optimizer, loss="mse")  # Mean Squared Error for Q-learning
         return model
 
     def _prepare_state_vector(self, state_data):

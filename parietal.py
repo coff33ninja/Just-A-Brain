@@ -4,7 +4,7 @@ import json # Still needed for memory persistence if desired, though Keras handl
 import os
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Input # type: ignore
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
+from tensorflow.keras.optimizers import Adam # type: ignore
 
 class ParietalLobeAI:
     def __init__(self, model_path="data/parietal_model.weights.h5"): # Updated extension
@@ -37,7 +37,7 @@ class ParietalLobeAI:
             # Dense(16, activation='relu', name='dense_hidden2'), # Optional second hidden layer
             Dense(self.output_size, activation='linear', name='dense_output') # Linear activation for regression
         ])
-        optimizer = LegacyAdam(learning_rate=self.learning_rate_learn)
+        optimizer = Adam(learning_rate=self.learning_rate_learn)
         model.compile(optimizer=optimizer, loss='mse') # Mean Squared Error for regression
         # model.summary() # Uncomment to print summary when an instance is created
         return model

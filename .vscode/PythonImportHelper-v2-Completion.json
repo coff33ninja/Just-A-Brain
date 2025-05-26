@@ -333,6 +333,14 @@
         "documentation": {}
     },
     {
+        "label": "Input",
+        "importPath": "tensorflow.keras.layers",
+        "description": "tensorflow.keras.layers",
+        "isExtraImport": true,
+        "detail": "tensorflow.keras.layers",
+        "documentation": {}
+    },
+    {
         "label": "Dense",
         "importPath": "tensorflow.keras.layers",
         "description": "tensorflow.keras.layers",
@@ -493,14 +501,6 @@
         "documentation": {}
     },
     {
-        "label": "# type: ignore\r\n    Adam",
-        "importPath": "tensorflow.keras.optimizers.legacy",
-        "description": "tensorflow.keras.optimizers.legacy",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.optimizers.legacy",
-        "documentation": {}
-    },
-    {
         "label": "Adam",
         "importPath": "tensorflow.keras.optimizers.legacy",
         "description": "tensorflow.keras.optimizers.legacy",
@@ -510,18 +510,26 @@
     },
     {
         "label": "Adam",
-        "importPath": "tensorflow.keras.optimizers.legacy",
-        "description": "tensorflow.keras.optimizers.legacy",
+        "importPath": "tensorflow.keras.optimizers",
+        "description": "tensorflow.keras.optimizers",
         "isExtraImport": true,
-        "detail": "tensorflow.keras.optimizers.legacy",
+        "detail": "tensorflow.keras.optimizers",
         "documentation": {}
     },
     {
         "label": "Adam",
-        "importPath": "tensorflow.keras.optimizers.legacy",
-        "description": "tensorflow.keras.optimizers.legacy",
+        "importPath": "tensorflow.keras.optimizers",
+        "description": "tensorflow.keras.optimizers",
         "isExtraImport": true,
-        "detail": "tensorflow.keras.optimizers.legacy",
+        "detail": "tensorflow.keras.optimizers",
+        "documentation": {}
+    },
+    {
+        "label": "Adam",
+        "importPath": "tensorflow.keras.optimizers",
+        "description": "tensorflow.keras.optimizers",
+        "isExtraImport": true,
+        "detail": "tensorflow.keras.optimizers",
         "documentation": {}
     },
     {

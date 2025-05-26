@@ -4,7 +4,7 @@ import json  # For memory persistence
 import os
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Input # type: ignore
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
+from tensorflow.keras.optimizers import Adam # type: ignore
 
 
 class LimbicSystemAI:
@@ -42,7 +42,7 @@ class LimbicSystemAI:
                 ),  # Softmax for classification
             ]
         )
-        optimizer = LegacyAdam(learning_rate=self.learning_rate_learn)
+        optimizer = Adam(learning_rate=self.learning_rate_learn)
         model.compile(
             optimizer=optimizer,
             loss="sparse_categorical_crossentropy",
