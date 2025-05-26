@@ -2,10 +2,9 @@
 import numpy as np
 import json # Still needed for memory persistence if desired, though Keras handles model weights
 import os
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # For compatibility
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
 
 class ParietalLobeAI:
     def __init__(self, model_path="data/parietal_model.weights.h5"): # Updated extension
@@ -82,7 +81,7 @@ class ParietalLobeAI:
             return np.array(target_list[:self.output_size], dtype=float)
 
     def process_task(self, sensory_data):
-        print(f"Parietal Lobe: Processing task with sensory data...")
+        print("Parietal Lobe: Processing task with sensory data...")
         input_vec_1d = self._prepare_input_vector(sensory_data)
         
         # Check if input_vec_1d is all zeros, which might indicate a preparation error or actual zero input
@@ -102,7 +101,7 @@ class ParietalLobeAI:
             return [0.0] * self.output_size
 
     def learn(self, sensory_data, true_coords): # Assuming true_coords, not spatial_error
-        print(f"Parietal Lobe: Learning with sensory data and true coordinates...")
+        print("Parietal Lobe: Learning with sensory data and true coordinates...")
         input_vec_1d = self._prepare_input_vector(sensory_data)
         target_coords_1d = self._prepare_target_coords_vector(true_coords)
 
@@ -223,7 +222,8 @@ if __name__ == "__main__":
     test_model_path = "data/test_parietal_keras.weights.h5"
     
     # Clean up old test files
-    if os.path.exists(test_model_path): os.remove(test_model_path)
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
     if os.path.exists(test_model_path.replace(".weights.h5", "_memory.json")):
         os.remove(test_model_path.replace(".weights.h5", "_memory.json"))
 
@@ -289,7 +289,8 @@ if __name__ == "__main__":
         print("Memory loading failed or mismatch.")
 
     # Clean up
-    if os.path.exists(test_model_path): os.remove(test_model_path)
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
     if os.path.exists(test_model_path.replace(".weights.h5", "_memory.json")):
         os.remove(test_model_path.replace(".weights.h5", "_memory.json"))
     print("\nCleaned up test files.")

@@ -301,7 +301,7 @@ def main():
 
             generate_new_sensor_input = (
                 input(
-                    f"Generate new random sensor data? (y/n, default n - uses last): "
+                    "Generate new random sensor data? (y/n, default n - uses last): "
                 )
                 .strip()
                 .lower()

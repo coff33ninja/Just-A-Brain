@@ -1,9 +1,8 @@
 # occipital.py (Visual Processing)
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense # type: ignore
 import numpy as np
-import os
+import os # type: ignore
 from PIL import Image  # Still needed for image loading and preprocessing
 
 
