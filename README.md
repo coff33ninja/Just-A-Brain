@@ -4,7 +4,7 @@
 
     Modules: Six Python modules (frontal.py, parietal.py, temporal.py, occipital.py, cerebellum.py, limbic.py), each containing a class for its respective AI.
         - The Occipital Lobe now uses a Convolutional Neural Network (CNN) built with TensorFlow/Keras for image processing. Other sensory lobes (Temporal, Parietal, Cerebellum, Limbic) currently use two-layer numpy-based neural networks for their respective tasks.
-        - FrontalLobeAI has been upgraded to use Q-learning for decision-making.
+        - FrontalLobeAI uses a Deep Q-Network (DQN) built with TensorFlow/Keras for decision-making, leveraging experience replay and target networks.
     Main Script: main.py initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
     Functionality:
         Each AI processes tasks relevant to its brain region.
@@ -30,16 +30,16 @@
 The system provides a modular implementation for each AI, focusing on the "baby AI" concept where capabilities are learned and refined over time.
     - The Occipital Lobe uses a TensorFlow/Keras based Convolutional Neural Network (CNN) for advanced image processing. Input images for the Occipital Lobe are automatically resized to 64x64 pixels and normalized before being processed by its CNN.
     - Most other AI modules (Temporal, Cerebellum, Limbic, Parietal) now feature two-layer neural networks, allowing for more complex pattern recognition and function approximation.
-    - FrontalLobeAI employs Q-learning to improve its decision-making based on rewards.
+    - FrontalLobeAI employs a Deep Q-Network (DQN) using TensorFlow/Keras to improve its decision-making based on rewards and experience replay.
     - Data input has been enhanced to support image files (for Occipital) and paired image-text data for cross-modal learning experiments.
 
 ## Explanation
 
     Modules: Each module defines a class with:
-        - A model: The OccipitalLobeAI uses a Convolutional Neural Network (CNN) implemented with TensorFlow/Keras. Most other AI modules (Temporal, Parietal, etc.) use two-layer numpy-based neural networks. FrontalLobeAI uses a Q-table approximated by a linear model.
+        - A model: The OccipitalLobeAI uses a Convolutional Neural Network (CNN) implemented with TensorFlow/Keras. FrontalLobeAI uses a Deep Q-Network (DQN) implemented with TensorFlow/Keras to approximate Q-values. Most other AI modules (Temporal, Parietal, etc.) use two-layer numpy-based neural networks.
         - process_task: Handles inputs specific to the AI’s role.
-        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI), or Q-learning updates (FrontalLobeAI) based on feedback and experiences.
-        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI, this primarily involves saving the learned model weights.
+        - learn: Updates weights via backpropagation (for numpy-based modules), Keras model training (`fit` for OccipitalLobeAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI based on feedback and experiences.
+        - consolidate: Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models like OccipitalLobeAI and FrontalLobeAI, this primarily involves saving the learned model weights (and for DQN, performing more replay steps).
         - save_model/load_model: Persists weights (and for TemporalLobeAI, structured memories) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
     main.py:
         - Initializes all AIs and coordinates tasks.
@@ -50,8 +50,8 @@ The system provides a modular implementation for each AI, focusing on the "baby 
         - They learn from feedback during tasks (e.g., rewards, errors, target values) and consolidate nightly.
         - OccipitalLobeAI processes images and learns to classify them using its CNN.
         - TemporalLobeAI processes text, learns text embeddings, and can associate text with visual labels.
-        - FrontalLobeAI learns to choose actions using Q-learning.
-    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital Lobe's TensorFlow/Keras model weights are saved in a specific format (e.g., `data/occipital_model.weights.h5`).
+        - FrontalLobeAI learns to choose actions using a Deep Q-Network (DQN), training on past experiences stored in a replay buffer.
+    Storage: Models and memories are saved in the `data/` folder. While most modules save their models as JSON files, the Occipital Lobe's and Frontal Lobe's TensorFlow/Keras model weights are saved in specific formats (e.g., `data/occipital_model.weights.h5`, `data/frontal_model.weights.h5`). The Frontal Lobe also saves and loads its exploration epsilon parameter in a companion JSON file (e.g., `frontal_model.weights.h5_epsilon.json`).
 
 ## Running the Command-Line Simulation (main.py)
 
@@ -120,7 +120,7 @@ Consolidation complete.
 
     Real Inputs: Continue to expand with more diverse and real-world data. Consider OpenCV for more advanced vision tasks or audio libraries for direct sound processing by the Temporal Lobe.
     Scaling Models: While most modules now have a hidden layer, further scaling (more layers, more neurons) or specialized architectures (e.g., convolutional layers for Occipital, recurrent layers for Temporal) can be explored.
-    Advanced RL for Frontal Lobe: The Q-learning in FrontalLobeAI can be enhanced (e.g., Deep Q-Networks (DQN) if TensorFlow/PyTorch were added, more complex state/reward definitions).
+    Advanced RL for Frontal Lobe: The FrontalLobeAI now uses a Deep Q-Network (DQN). This can be further enhanced with techniques like Prioritized Experience Replay, Dueling DQN architectures, or by exploring more complex state representations and reward functions. The current `done` signal (always True) and `next_state` (same as current state) in `main.py`'s simulation loop also limit long-term planning; refining this would enable more sophisticated learning.
     Purpose Emergence: Refine reward functions and feedback mechanisms to guide specialization and emergent behaviors more effectively.
     Visualization: Develop tools to visualize network states, learned features, or decision processes.
     Specific Use Case: Tailor inputs, outputs, and rewards to simulate specific scenarios (e.g., simple robotics, chatbot interaction).
