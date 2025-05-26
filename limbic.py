@@ -1,43 +1,54 @@
 # limbic.py (Emotion, Motivation using Keras)
 import numpy as np
-import json # For memory persistence
+import json  # For memory persistence
 import os
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # For compatibility
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam  # For compatibility
+
 
 class LimbicSystemAI:
-    def __init__(self, model_path="data/limbic_model.weights.h5"): # Updated extension
+    def __init__(self, model_path="data/limbic_model.weights.h5"):  # Updated extension
         self.input_size = 10  # Processed output from TemporalLobeAI (size 10)
         self.output_size = 3  # Emotion labels (e.g., happy, urgent, sad)
 
         # Learning rate for the Keras optimizer
-        self.learning_rate_learn = 0.001 # Standard Keras learning rate
+        self.learning_rate_learn = 0.001  # Standard Keras learning rate
 
         self.model_path = model_path
-        self.memory_path = self.model_path.replace(".weights.h5", "_memory.json") # Path for memory
+        self.memory_path = self.model_path.replace(
+            ".weights.h5", "_memory.json"
+        )  # Path for memory
 
         # Build and compile the Keras model
         self.model = self._build_model()
-        
+
         # Load model weights if they exist
         self.load_model()
 
         # Memory stores (processed_temporal_data_list, true_emotion_label, reward)
         self.memory = []
-        self.max_memory_size = 100 
-        self._load_memory() # Load memory if it exists
+        self.max_memory_size = 100
+        self._load_memory()  # Load memory if it exists
 
     def _build_model(self):
-        model = Sequential([
-            Input(shape=(self.input_size,), name="input_layer"),
-            Dense(16, activation='relu', name='dense_hidden1'),
-            # Dense(8, activation='relu', name='dense_hidden2'), # Optional
-            Dense(self.output_size, activation='softmax', name='dense_output_softmax') # Softmax for classification
-        ])
+        model = Sequential(
+            [
+                Input(shape=(self.input_size,), name="input_layer"),
+                Dense(16, activation="relu", name="dense_hidden1"),
+                # Dense(8, activation='relu', name='dense_hidden2'), # Optional
+                Dense(
+                    self.output_size, activation="softmax", name="dense_output_softmax"
+                ),  # Softmax for classification
+            ]
+        )
         optimizer = LegacyAdam(learning_rate=self.learning_rate_learn)
-        model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        model.compile(
+            optimizer=optimizer,
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
+        )
         # model.summary() # Uncomment to print summary when an instance is created
         return model
 
@@ -48,89 +59,117 @@ class LimbicSystemAI:
         elif isinstance(data_list_or_array, list):
             data_list = data_list_or_array
         else:
-            print(f"Limbic System: Warning: Unexpected input data type {type(data_list_or_array)}. Using zeros.")
+            print(
+                f"Limbic System: Warning: Unexpected input data type {type(data_list_or_array)}. Using zeros."
+            )
             data_list = [0.0] * self.input_size
 
         current_len = len(data_list)
         if current_len == self.input_size:
             return np.array(data_list, dtype=float)
         elif current_len < self.input_size:
-            return np.array(data_list + [0.0] * (self.input_size - current_len), dtype=float)
+            return np.array(
+                data_list + [0.0] * (self.input_size - current_len), dtype=float
+            )
         else:
-            return np.array(data_list[:self.input_size], dtype=float)
+            return np.array(data_list[: self.input_size], dtype=float)
 
     def process_task(self, processed_temporal_data):
         print(f"Limbic System: Processing task with temporal data...")
         input_vec_1d = self._ensure_input_vector_shape(processed_temporal_data)
-        
-        if not np.any(input_vec_1d) and not np.all(np.array(processed_temporal_data, dtype=float) == 0):
-            print("Limbic System: Input vector became all zeros after preparation. Returning default emotion.")
-            return np.random.randint(0, self.output_size) # Default random emotion
+
+        if not np.any(input_vec_1d) and not np.all(
+            np.array(processed_temporal_data, dtype=float) == 0
+        ):
+            print(
+                "Limbic System: Input vector became all zeros after preparation. Returning default emotion."
+            )
+            return np.random.randint(0, self.output_size)  # Default random emotion
 
         input_batch = np.reshape(input_vec_1d, [1, self.input_size])
-        
+
         try:
             predictions_batch = self.model.predict(input_batch, verbose=0)
             predicted_emotion_label = np.argmax(predictions_batch[0])
-            print(f"Limbic System: Predicted emotion label: {int(predicted_emotion_label)}")
+            print(
+                f"Limbic System: Predicted emotion label: {int(predicted_emotion_label)}"
+            )
             return int(predicted_emotion_label)
         except Exception as e:
             print(f"Limbic System: Error during model prediction: {e}")
-            return np.random.randint(0, self.output_size) # Default random emotion on error
+            return np.random.randint(
+                0, self.output_size
+            )  # Default random emotion on error
 
     def learn(self, processed_temporal_data, true_emotion_label, reward):
-        print(f"Limbic System: Learning with temporal data, emotion label {true_emotion_label}, reward {reward}...")
+        print(
+            f"Limbic System: Learning with temporal data, emotion label {true_emotion_label}, reward {reward}..."
+        )
         input_vec_1d = self._ensure_input_vector_shape(processed_temporal_data)
 
-        if not np.any(input_vec_1d) and not np.all(np.array(processed_temporal_data, dtype=float) == 0):
-            print("Limbic System: Input vector for learning is all zeros after preparation. Skipping learning.")
+        if not np.any(input_vec_1d) and not np.all(
+            np.array(processed_temporal_data, dtype=float) == 0
+        ):
+            print(
+                "Limbic System: Input vector for learning is all zeros after preparation. Skipping learning."
+            )
             return
 
         try:
             valid_emotion_label = int(true_emotion_label)
         except ValueError:
-            print(f"Limbic System: Invalid true_emotion_label '{true_emotion_label}'. Must be an integer. Skipping learning.")
+            print(
+                f"Limbic System: Invalid true_emotion_label '{true_emotion_label}'. Must be an integer. Skipping learning."
+            )
             return
-            
+
         if not (0 <= valid_emotion_label < self.output_size):
-            print(f"Limbic System: true_emotion_label {valid_emotion_label} is out of range (0-{self.output_size-1}). Skipping learning.")
+            print(
+                f"Limbic System: true_emotion_label {valid_emotion_label} is out of range (0-{self.output_size-1}). Skipping learning."
+            )
             return
 
         input_batch = np.reshape(input_vec_1d, [1, self.input_size])
         target_label_array = np.array([valid_emotion_label])
-        
+
         # Simple reward application: Adjust sample weight.
         # Keras `fit` expects sample_weight to be a 1D array with one weight per sample.
         # A positive reward could mean higher weight, negative lower or zero.
         # This is a basic interpretation; more complex reward schemes exist.
-        sample_weight_value = 1.0 # Neutral
+        sample_weight_value = 1.0  # Neutral
         if reward > 0:
-            sample_weight_value = 1.5 # Emphasize positive experiences
+            sample_weight_value = 1.5  # Emphasize positive experiences
         elif reward < 0:
-            sample_weight_value = 0.5 # De-emphasize negative experiences (or even 0 to ignore)
-        
-        sample_weights_for_fit = np.array([sample_weight_value])
+            sample_weight_value = (
+                0.5  # De-emphasize negative experiences (or even 0 to ignore)
+            )
 
+        sample_weights_for_fit = np.array([sample_weight_value])
 
         try:
             history = self.model.fit(
-                input_batch, 
-                target_label_array, 
-                epochs=1, 
+                input_batch,
+                target_label_array,
+                epochs=1,
                 verbose=0,
-                sample_weight=sample_weights_for_fit # Apply reward as sample weight
+                sample_weight=sample_weights_for_fit,  # Apply reward as sample weight
             )
-            loss = history.history.get('loss', [float('nan')])[0]
-            accuracy = history.history.get('accuracy', [float('nan')])[0]
-            print(f"Limbic System: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}, Sample Weight: {sample_weight_value}")
+            loss = history.history.get("loss", [float("nan")])[0]
+            accuracy = history.history.get("accuracy", [float("nan")])[0]
+            print(
+                f"Limbic System: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}, Sample Weight: {sample_weight_value}"
+            )
 
-            data_to_store = processed_temporal_data.tolist() if isinstance(processed_temporal_data, np.ndarray) else list(processed_temporal_data)
+            data_to_store = (
+                processed_temporal_data.tolist()
+                if isinstance(processed_temporal_data, np.ndarray)
+                else list(processed_temporal_data)
+            )
             self.memory.append((data_to_store, valid_emotion_label, reward))
             if len(self.memory) > self.max_memory_size:
                 self.memory.pop(0)
         except Exception as e:
             print(f"Limbic System: Error during model training: {e}")
-
 
     def save_model(self):
         print(f"Limbic System: Saving model weights to {self.model_path}...")
@@ -145,14 +184,18 @@ class LimbicSystemAI:
         if os.path.exists(self.model_path):
             print(f"Limbic System: Loading model weights from {self.model_path}...")
             try:
-                if not hasattr(self, 'model') or self.model is None:
-                     self.model = self._build_model()
+                if not hasattr(self, "model") or self.model is None:
+                    self.model = self._build_model()
                 self.model.load_weights(self.model_path)
                 print("Limbic System: Model weights loaded successfully.")
             except Exception as e:
-                print(f"Limbic System: Error loading model weights: {e}. Model remains initialized.")
+                print(
+                    f"Limbic System: Error loading model weights: {e}. Model remains initialized."
+                )
         else:
-            print(f"Limbic System: No pre-trained weights found at {self.model_path}. Model is newly initialized.")
+            print(
+                f"Limbic System: No pre-trained weights found at {self.model_path}. Model is newly initialized."
+            )
 
     def _save_memory(self):
         print("Limbic System: Saving memory...")
@@ -172,12 +215,15 @@ class LimbicSystemAI:
                     loaded_data = json.load(f)
                     self.memory = loaded_data.get("memory", [])
                 self.memory = [
-                    (list(item[0]), int(item[1]), float(item[2])) for item in self.memory 
+                    (list(item[0]), int(item[1]), float(item[2]))
+                    for item in self.memory
                     if isinstance(item, (list, tuple)) and len(item) == 3
                 ]
                 print("Limbic System: Memory loaded.")
             except Exception as e:
-                print(f"Limbic System: Error loading memory: {e}. Initializing empty memory.")
+                print(
+                    f"Limbic System: Error loading memory: {e}. Initializing empty memory."
+                )
                 self.memory = []
         else:
             print("Limbic System: No memory file found. Initializing empty memory.")
@@ -188,56 +234,67 @@ class LimbicSystemAI:
         if not self.memory:
             print("Limbic System: Memory is empty. Nothing to consolidate.")
         else:
-            print(f"Limbic System: Consolidating {len(self.memory)} experiences from memory.")
-            
+            print(
+                f"Limbic System: Consolidating {len(self.memory)} experiences from memory."
+            )
+
             input_data_list = []
             target_labels_list = []
-            sample_weights_list = [] # For reward-weighted consolidation
+            sample_weights_list = []  # For reward-weighted consolidation
 
             for p_data, label, reward_val in self.memory:
                 input_data_list.append(self._ensure_input_vector_shape(p_data))
                 target_labels_list.append(int(label))
-                
+
                 # Apply reward weighting similar to learn method
                 s_weight = 1.0
-                if reward_val > 0: s_weight = 1.5
-                elif reward_val < 0: s_weight = 0.5
+                if reward_val > 0:
+                    s_weight = 1.5
+                elif reward_val < 0:
+                    s_weight = 0.5
                 sample_weights_list.append(s_weight)
-            
+
             if input_data_list:
                 input_data_np = np.array(input_data_list)
                 target_labels_np = np.array(target_labels_list)
                 sample_weights_np = np.array(sample_weights_list)
-                
-                print(f"Limbic System: Training consolidation batch of size {input_data_np.shape[0]}...")
+
+                print(
+                    f"Limbic System: Training consolidation batch of size {input_data_np.shape[0]}..."
+                )
                 try:
                     self.model.fit(
-                        input_data_np, 
-                        target_labels_np, 
-                        epochs=1, # Could be more for consolidation
-                        verbose=0, 
+                        input_data_np,
+                        target_labels_np,
+                        epochs=1,  # Could be more for consolidation
+                        verbose=0,
                         batch_size=16,
-                        sample_weight=sample_weights_np # Use stored rewards as sample weights
-                    ) 
+                        sample_weight=sample_weights_np,  # Use stored rewards as sample weights
+                    )
                     print("Limbic System: Consolidation training complete.")
                 except Exception as e:
                     print(f"Limbic System: Error during consolidation training: {e}")
             else:
-                print("Limbic System: No valid data prepared for consolidation training.")
+                print(
+                    "Limbic System: No valid data prepared for consolidation training."
+                )
 
-        self.save_model() 
-        self._save_memory() 
+        self.save_model()
+        self._save_memory()
         print("Limbic System: Consolidation complete.")
+
 
 # Example Usage
 if __name__ == "__main__":
     print("\n--- Testing LimbicSystemAI (Keras FFN) ---")
     test_model_path = "data/test_limbic_keras.weights.h5"
-    
+
     # Clean up old test files
-    if os.path.exists(test_model_path): os.remove(test_model_path)
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
     memory_file = test_model_path.replace(".weights.h5", "_memory.json")
-    if os.path.exists(memory_file): os.remove(memory_file)
+    if os.path.exists(memory_file):
+        os.remove(memory_file)
 
     limbic_ai = LimbicSystemAI(model_path=test_model_path)
     limbic_ai.model.summary()
@@ -247,7 +304,7 @@ if __name__ == "__main__":
     prepared_input = limbic_ai._ensure_input_vector_shape(sample_temporal_data_short)
     print(f"Prepared input for short data: shape {prepared_input.shape}")
     assert prepared_input.shape == (limbic_ai.input_size,)
-    
+
     print("\n--- Testing process_task ---")
     temporal_input = np.random.rand(limbic_ai.input_size).tolist()
     predicted_emotion = limbic_ai.process_task(temporal_input)
@@ -255,10 +312,10 @@ if __name__ == "__main__":
     assert 0 <= predicted_emotion < limbic_ai.output_size
 
     print("\n--- Testing learn ---")
-    true_emotion_label = 1 
+    true_emotion_label = 1
     reward_value_positive = 1.0
     reward_value_negative = -1.0
-    
+
     print("Learning with positive reward:")
     limbic_ai.learn(temporal_input, true_emotion_label, reward_value_positive)
     print(f"Memory size after one learn call (positive): {len(limbic_ai.memory)}")
@@ -269,7 +326,6 @@ if __name__ == "__main__":
 
     print("Learning with invalid label:")
     limbic_ai.learn(temporal_input, limbic_ai.output_size + 1, reward_value_positive)
-
 
     for i in range(5):
         t_data = np.random.rand(limbic_ai.input_size).tolist()
@@ -282,21 +338,28 @@ if __name__ == "__main__":
     limbic_ai.consolidate()
 
     print("\n--- Testing Save/Load ---")
-    limbic_ai.save_model() 
-    
+    limbic_ai.save_model()
+
     print("\nCreating new LimbicSystemAI instance for loading test...")
     limbic_ai_loaded = LimbicSystemAI(model_path=test_model_path)
-    
-    if hasattr(limbic_ai.model.get_layer("dense_output_softmax"), "kernel") and \
-       hasattr(limbic_ai_loaded.model.get_layer("dense_output_softmax"), "kernel"):
-        original_weights_output = limbic_ai.model.get_layer("dense_output_softmax").kernel.numpy()
-        loaded_weights_output = limbic_ai_loaded.model.get_layer("dense_output_softmax").kernel.numpy()
+
+    if hasattr(limbic_ai.model.get_layer("dense_output_softmax"), "kernel") and hasattr(
+        limbic_ai_loaded.model.get_layer("dense_output_softmax"), "kernel"
+    ):
+        original_weights_output = limbic_ai.model.get_layer(
+            "dense_output_softmax"
+        ).kernel.numpy()
+        loaded_weights_output = limbic_ai_loaded.model.get_layer(
+            "dense_output_softmax"
+        ).kernel.numpy()
         if np.array_equal(original_weights_output, loaded_weights_output):
             print("Model weights loaded successfully.")
         else:
             print("Model weights loading failed or mismatch.")
     else:
-         print("Could not access kernel weights for 'dense_output_softmax' layer to compare.")
+        print(
+            "Could not access kernel weights for 'dense_output_softmax' layer to compare."
+        )
 
     if len(limbic_ai_loaded.memory) == len(limbic_ai.memory):
         print(f"Memory loaded successfully with {len(limbic_ai_loaded.memory)} items.")
@@ -304,8 +367,10 @@ if __name__ == "__main__":
         print("Memory loading failed or mismatch.")
 
     # Clean up
-    if os.path.exists(test_model_path): os.remove(test_model_path)
-    if os.path.exists(memory_file): os.remove(memory_file)
+    if os.path.exists(test_model_path):
+        os.remove(test_model_path)
+    if os.path.exists(memory_file):
+        os.remove(memory_file)
     print("\nCleaned up test files.")
-    
+
     print("\nLimbic System AI (Keras FFN) test script finished.")
