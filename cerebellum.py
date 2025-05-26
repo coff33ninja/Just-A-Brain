@@ -2,11 +2,10 @@
 import numpy as np
 import json  # For memory persistence
 import os
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam  # For compatibility
-
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
+ 
 
 class CerebellumAI:
     def __init__(
@@ -99,15 +98,15 @@ class CerebellumAI:
         return prepared_array
 
     def process_task(self, sensor_data):
-        print(f"Cerebellum Lobe: Processing task with sensor data...")
+        print("Cerebellum Lobe: Processing task with sensor data...")
         input_vec_1d = self._prepare_input_vector(sensor_data)
 
         if not np.any(input_vec_1d) and not np.all(
             np.array(sensor_data, dtype=float) == 0
         ):
-            print(
+            print( # Converted F541
                 "Cerebellum Lobe: Input vector became all zeros after preparation. Returning default command."
-            )
+            ) 
             return [0.0] * self.output_size
 
         input_batch = np.reshape(input_vec_1d, [1, self.input_size])
@@ -125,7 +124,7 @@ class CerebellumAI:
 
     def learn(self, sensor_data, target_motor_commands):
         print(
-            f"Cerebellum Lobe: Learning with sensor data and target motor commands..."
+            "Cerebellum Lobe: Learning with sensor data and target motor commands..."
         )
         input_vec_1d = self._prepare_input_vector(sensor_data)
         target_commands_1d = self._prepare_target_command_vector(target_motor_commands)
@@ -133,9 +132,9 @@ class CerebellumAI:
         if not np.any(input_vec_1d) and not np.all(
             np.array(sensor_data, dtype=float) == 0
         ):
-            print(
+            print( # Converted F541
                 "Cerebellum Lobe: Input vector for learning is all zeros after preparation. Skipping learning."
-            )
+            ) 
             return
 
         input_batch = np.reshape(input_vec_1d, [1, self.input_size])

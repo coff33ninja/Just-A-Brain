@@ -2,12 +2,11 @@
 import numpy as np
 import json
 import os
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, GRU # Using LSTM
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # For compatibility
+from tensorflow.keras.models import Model # type: ignore
+from tensorflow.keras.layers import Input, Embedding, LSTM, Dense # Using LSTM # type: ignore
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json # type: ignore
+from tensorflow.keras.preprocessing.sequence import pad_sequences # type: ignore
+from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam # type: ignore # For compatibility
 
 class TemporalLobeAI:
     def __init__(
@@ -82,8 +81,13 @@ class TemporalLobeAI:
     def _preprocess_text(self, text_input_list):
         if not text_input_list or not isinstance(text_input_list, list) or not all(isinstance(t, str) for t in text_input_list):
             print("Temporal Lobe: Error - _preprocess_text expects a list of strings.")
-            # Return a dummy sequence of the correct shape if input is invalid
-            return np.zeros((len(text_input_list if isinstance(text_input_list, list) else 1), self.max_sequence_length))
+            # Return a dummy sequence of the correct shape if input is invalid.
+            # The first dimension is the batch size.
+            if isinstance(text_input_list, list):
+                first_dim = len(text_input_list)
+            else:
+                first_dim = 1 # Default batch size for non-list input
+            return np.zeros((first_dim, self.max_sequence_length))
 
         self._fit_tokenizer_if_needed(text_input_list) # Ensure tokenizer is fit
         
@@ -208,8 +212,8 @@ class TemporalLobeAI:
             try:
                 with open(self.tokenizer_path, 'r', encoding='utf-8') as f:
                     tokenizer_json_str = f.read() # Read the whole file
-                    # Keras tokenizer_from_json expects a string, not a dict from json.load
-                    self.tokenizer = tf.keras.preprocessing.text.tokenizer_from_json(tokenizer_json_str)
+                    # Use the directly imported tokenizer_from_json
+                    self.tokenizer = tokenizer_from_json(tokenizer_json_str)
                 print("Temporal Lobe: Tokenizer loaded successfully.")
             except Exception as e:
                 print(f"Temporal Lobe: Error loading tokenizer: {e}. Using new tokenizer.")
@@ -289,7 +293,7 @@ class TemporalLobeAI:
             
             input_sequences = self._preprocess_text(texts_to_train)
 
-            if input_sequences.shape[0] > 0 : # Check if any valid sequences produced
+            if input_sequences.shape[0] > 0: # Check if any valid sequences produced
                 try:
                     self.model.fit(
                         input_sequences,
@@ -317,7 +321,8 @@ if __name__ == '__main__':
 
     # Clean up old test files
     for f_path in [test_model_path, test_tokenizer_path, test_memory_path]:
-        if os.path.exists(f_path): os.remove(f_path)
+        if os.path.exists(f_path):
+            os.remove(f_path)
 
     temporal_ai = TemporalLobeAI(
         model_path=test_model_path,
@@ -398,7 +403,8 @@ if __name__ == '__main__':
 
     # Clean up
     for f_path in [test_model_path, test_tokenizer_path, test_memory_path]:
-        if os.path.exists(f_path): os.remove(f_path)
+        if os.path.exists(f_path):
+            os.remove(f_path)
     print("\nCleaned up test files.")
     
     print("\nTemporal Lobe AI (RNN/LSTM) test script finished.")

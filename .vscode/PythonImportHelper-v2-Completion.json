@@ -221,15 +221,6 @@
         "documentation": {}
     },
     {
-        "label": "tensorflow",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "tensorflow",
-        "description": "tensorflow",
-        "detail": "tensorflow",
-        "documentation": {}
-    },
-    {
         "label": "Model",
         "importPath": "tensorflow.keras.models",
         "description": "tensorflow.keras.models",
@@ -311,14 +302,6 @@
     },
     {
         "label": "Dense",
-        "importPath": "tensorflow.keras.layers",
-        "description": "tensorflow.keras.layers",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.layers",
-        "documentation": {}
-    },
-    {
-        "label": "GRU",
         "importPath": "tensorflow.keras.layers",
         "description": "tensorflow.keras.layers",
         "isExtraImport": true,
@@ -470,6 +453,14 @@
         "documentation": {}
     },
     {
+        "label": "tokenizer_from_json",
+        "importPath": "tensorflow.keras.preprocessing.text",
+        "description": "tensorflow.keras.preprocessing.text",
+        "isExtraImport": true,
+        "detail": "tensorflow.keras.preprocessing.text",
+        "documentation": {}
+    },
+    {
         "label": "Tokenizer",
         "importPath": "tensorflow.keras.preprocessing.text",
         "description": "tensorflow.keras.preprocessing.text",
@@ -539,6 +530,15 @@
         "description": "tensorflow.keras.optimizers.legacy",
         "isExtraImport": true,
         "detail": "tensorflow.keras.optimizers.legacy",
+        "documentation": {}
+    },
+    {
+        "label": "tensorflow",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tensorflow",
+        "description": "tensorflow",
+        "detail": "tensorflow",
         "documentation": {}
     },
     {
