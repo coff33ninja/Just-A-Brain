@@ -525,16 +525,37 @@ class TemporalLobeAI:
                     self.cross_modal_memory = []
 
                 # Apply filters for data integrity
-                self.memory_db = [
-                    item for item in self.memory_db if isinstance(item, list) and
-                    all(isinstance(p, tuple) and len(p) == 2 for p in item)
-                ] if isinstance(self.memory_db, list) else []
-                self.cross_modal_memory = [
-                    item for item in self.cross_modal_memory if isinstance(item, tuple) and len(item) == 2
-                ] if isinstance(self.cross_modal_memory, list) else []
+                # After json.load, tuples become lists. Validate accordingly and convert back.
+                temp_memory_db = []
+                if isinstance(self.memory_db, list):
+                    for item_sequence in self.memory_db:
+                        if isinstance(item_sequence, list) and all(
+                            isinstance(pair, list) and len(pair) == 2
+                            for pair in item_sequence
+                        ):
+                            temp_memory_db.append(
+                                [tuple(p) for p in item_sequence]
+                            )  # Convert inner lists back to tuples
+                self.memory_db = temp_memory_db
+
+                temp_cross_modal_memory = []
+                if isinstance(self.cross_modal_memory, list):
+                    for item_pair in self.cross_modal_memory:
+                        if isinstance(item_pair, list) and len(item_pair) == 2:
+                            try:  # Ensure the second element (label) can be int
+                                temp_cross_modal_memory.append(
+                                    (item_pair[0], int(item_pair[1]))
+                                )
+                            except (ValueError, TypeError):
+                                print(
+                                    f"TemporalLobeAI: Skipping malformed cross_modal_memory item during load: {item_pair}"
+                                )
+                self.cross_modal_memory = temp_cross_modal_memory
                 print("TemporalLobeAI: Memory loaded.")
             except Exception as e_load_mem:
-                print(f"TemporalLobeAI: Error loading memory file {self.memory_path}: {e_load_mem}. Initializing empty memory.")
+                print(
+                    f"TemporalLobeAI: Error decoding JSON from memory file {self.memory_path}: {e_json}. Initializing empty memory."
+                )
                 self.memory_db = []
                 self.cross_modal_memory = []
         else:

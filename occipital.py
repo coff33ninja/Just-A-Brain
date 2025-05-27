@@ -52,6 +52,8 @@ class OccipitalLobeAI:
         print(f"Saving Occipital Lobe model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
         try:
+            if not self.model_path.endswith(".weights.h5"):
+                print(f"Occipital Lobe: Warning: model_path '{self.model_path}' does not end with '.weights.h5'. Keras save_weights prefers this extension.")
             self.model.save_weights(self.model_path)
             print("Occipital Lobe model weights saved.")
         except Exception as e:
