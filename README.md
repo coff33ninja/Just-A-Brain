@@ -127,6 +127,21 @@ Like a human baby, this AI system learns through repeated exposure to sensory da
 
 For more details on the architecture and future plans, see the [Whitepaper](./Whitepaper.md).
 
+## How This AI Learns (From Scratch)
+
+This AI does **not** use any pre-trained models or transformer architectures. All neural modules (vision, language, decision, etc.) are built from scratch and learn only from the data you provide during training. The system forms associations between inputs (images, text, sensor data) and feedback, gradually improving its predictions and responses through repeated exposure and feedback.
+
+### Teaching the AI
+- **Text/Language:** Use the 'Text Data' and 'Expected Response' fields to teach associations (e.g., Q&A, next-sentence, or dialogue pairs).
+- **Images:** Upload images and provide labels to train visual recognition.
+- **Books:** Use the 'Book Training' section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs.
+- **Correction:** If the AI's output is wrong, use the 'Correct AI Output' field to provide the right answer and reinforce learning.
+- **Feedback:** Use the reward and label fields to guide the AI's learning for each modality.
+
+### Limitations
+- The AI's language and reasoning abilities are limited to the patterns and associations it has seen during training. It does not have deep understanding or generative capabilities like transformer-based models.
+- For best results, provide clear, consistent, and well-structured training data.
+
 ## Customization and Next Steps
 
 - **Real Inputs:** Expand with more diverse and real-world data. Consider OpenCV for advanced vision tasks or audio libraries for direct sound processing by the Temporal Lobe.
