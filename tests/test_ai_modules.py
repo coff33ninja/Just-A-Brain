@@ -825,15 +825,20 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertEqual(loaded_ai.bias_output.shape, (1, self.ai.output_size))
 
     def test_load_model_shape_mismatch_parietal(self):
-        np.random.seed(0)  # Ensure reproducible random initializations
-        self.ai.save_model() # Save a valid new model first
-        with open(TEST_PARIETAL_MODEL_PATH, 'r') as f:
-            model_data = json.load(f)
+        # Overwrite the model file with invalid data
         with open(TEST_PARIETAL_MODEL_PATH, 'w') as f:
-            json.dump(model_data, f)
-        if os.path.exists("fresh_parietal_defaults.json"):
-            os.remove("fresh_parietal_defaults.json")
+            f.write('not a valid json file')
+        # Should not crash, should reinitialize
+        ai = ParietalLobeAI(model_path=TEST_PARIETAL_MODEL_PATH)
+        self.assertIsNotNone(ai.weights_input_hidden, "weights_input_hidden should be initialized after loading corrupted file.")
+        self.assertEqual(ai.weights_input_hidden.shape, (self.ai.input_size, self.ai.hidden_size))
+        self.assertIsNotNone(ai.bias_hidden, "bias_hidden should be initialized after loading corrupted file.")
+        self.assertEqual(ai.bias_hidden.shape, (1, self.ai.hidden_size))
+        self.assertIsNotNone(ai.weights_hidden_output, "weights_hidden_output should be initialized after loading corrupted file.")
+        self.assertEqual(ai.weights_hidden_output.shape, (self.ai.hidden_size, self.ai.output_size))
+        self.assertIsNotNone(ai.bias_output, "bias_output should be initialized after loading corrupted file.")
+        self.assertEqual(ai.bias_output.shape, (1, self.ai.output_size))
 
-
+    # ...existing code...
 if __name__ == '__main__':
     unittest.main()
