@@ -4,3 +4,4 @@ gradio
 tensorflow
 tf_keras
 pytest
+gradio

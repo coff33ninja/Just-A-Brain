@@ -658,7 +658,8 @@ class TestCerebellumAI(unittest.TestCase):
         # This means comparing them to what a fresh instance would have.
         fresh_defaults = CerebellumAI(model_path="fresh_defaults.json") # This will init defaults
         np.testing.assert_array_almost_equal(loaded_ai.weights_input_hidden, fresh_defaults.weights_input_hidden, decimal=5, err_msg="Corrupted weights_input_hidden not reset to new default.")
-        if os.path.exists("fresh_defaults.json"): os.remove("fresh_defaults.json")
+        if os.path.exists("fresh_defaults.json"):
+            os.remove("fresh_defaults.json")
 
 # Updated Test Class for ParietalLobeAI
 class TestParietalLobeAI(unittest.TestCase):
@@ -803,7 +804,8 @@ class TestParietalLobeAI(unittest.TestCase):
         # Check if weights were re-initialized to new defaults
         fresh_defaults = ParietalLobeAI(model_path="fresh_parietal_defaults.json")
         np.testing.assert_array_almost_equal(loaded_ai.weights_input_hidden, fresh_defaults.weights_input_hidden, decimal=5, err_msg="Corrupted parietal weights_input_hidden not reset to new default.")
-        if os.path.exists("fresh_parietal_defaults.json"): os.remove("fresh_parietal_defaults.json")
+        if os.path.exists("fresh_parietal_defaults.json"):
+            os.remove("fresh_parietal_defaults.json")
 
 
 if __name__ == '__main__':
