@@ -1,89 +1,11 @@
 [
     {
-        "label": "subprocess",
+        "label": "unittest",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "subprocess",
-        "description": "subprocess",
-        "detail": "subprocess",
-        "documentation": {}
-    },
-    {
-        "label": "sys",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "sys",
-        "description": "sys",
-        "detail": "sys",
-        "documentation": {}
-    },
-    {
-        "label": "math,",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "math.",
-        "description": "math.",
-        "detail": "math.",
-        "documentation": {}
-    },
-    {
-        "label": "dill",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "dill",
-        "description": "dill",
-        "detail": "dill",
-        "documentation": {}
-    },
-    {
-        "label": "StringIO",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "StringIO",
-        "description": "StringIO",
-        "detail": "StringIO",
-        "documentation": {}
-    },
-    {
-        "label": "pands",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "pands",
-        "description": "pands",
-        "detail": "pands",
-        "documentation": {}
-    },
-    {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
-        "documentation": {}
-    },
-    {
-        "label": "Object",
-        "importPath": "my_lib",
-        "description": "my_lib",
-        "isExtraImport": true,
-        "detail": "my_lib",
-        "documentation": {}
-    },
-    {
-        "label": "Object3",
-        "importPath": "my_lib",
-        "description": "my_lib",
-        "isExtraImport": true,
-        "detail": "my_lib",
-        "documentation": {}
-    },
-    {
-        "label": "Object2",
-        "importPath": "my_lib",
-        "description": "my_lib",
-        "isExtraImport": true,
-        "detail": "my_lib",
+        "importPath": "unittest",
+        "description": "unittest",
+        "detail": "unittest",
         "documentation": {}
     },
     {
@@ -96,290 +18,21 @@
         "documentation": {}
     },
     {
-        "label": "lib15",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib1",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib2",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib3",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib4",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib5",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib6",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib7",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib8",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib9",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib10",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib11",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib12",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib13",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib14",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "lib3",
-        "importPath": "third_party",
-        "description": "third_party",
-        "isExtraImport": true,
-        "detail": "third_party",
-        "documentation": {}
-    },
-    {
-        "label": "absolute_import",
-        "importPath": "__future__",
-        "description": "__future__",
-        "isExtraImport": true,
-        "detail": "__future__",
-        "documentation": {}
-    },
-    {
-        "label": "argparse",
+        "label": "sys",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "argparse",
-        "description": "argparse",
-        "detail": "argparse",
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
         "documentation": {}
     },
     {
-        "label": "re",
+        "label": "json",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
-        "documentation": {}
-    },
-    {
-        "label": "google.protobuf.descriptor_pb2",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "google.protobuf.descriptor_pb2",
-        "description": "google.protobuf.descriptor_pb2",
-        "detail": "google.protobuf.descriptor_pb2",
-        "documentation": {}
-    },
-    {
-        "label": "Bar",
-        "importPath": "source",
-        "description": "source",
-        "isExtraImport": true,
-        "detail": "source",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "pairwise",
-        "importPath": "itertools",
-        "description": "itertools",
-        "isExtraImport": true,
-        "detail": "itertools",
-        "documentation": {}
-    },
-    {
-        "label": "islice",
-        "importPath": "itertools",
-        "description": "itertools",
-        "isExtraImport": true,
-        "detail": "itertools",
-        "documentation": {}
-    },
-    {
-        "label": "string",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "string",
-        "description": "string",
-        "detail": "string",
-        "documentation": {}
-    },
-    {
-        "label": "Callable",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Iterator",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Union",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Enum",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "collections",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "collections",
-        "description": "collections",
-        "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "deque",
-        "importPath": "collections",
-        "description": "collections",
-        "isExtraImport": true,
-        "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "unittest",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "unittest",
-        "description": "unittest",
-        "detail": "unittest",
-        "documentation": {}
-    },
-    {
-        "label": "numpy",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "numpy",
-        "description": "numpy",
-        "detail": "numpy",
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
         "documentation": {}
     },
     {
@@ -392,6 +45,87 @@
         "documentation": {}
     },
     {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "# noqa: E402\r\n    load_sensor_data",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "load_image_text_pairs",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "load_vision_data",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "load_text_data",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "BrainCoordinator",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_IMAGE_PATH",
+        "importPath": "main",
+        "description": "main",
+        "isExtraImport": true,
+        "detail": "main",
+        "documentation": {}
+    },
+    {
         "label": "TemporalLobeAI",
         "importPath": "temporal",
         "description": "temporal",
@@ -488,38 +222,6 @@
         "documentation": {}
     },
     {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Model",
-        "importPath": "tensorflow.keras.models",
-        "description": "tensorflow.keras.models",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.models",
-        "documentation": {}
-    },
-    {
         "label": "Sequential",
         "importPath": "tensorflow.keras.models",
         "description": "tensorflow.keras.models",
@@ -541,38 +243,6 @@
         "description": "tensorflow.keras.models",
         "isExtraImport": true,
         "detail": "tensorflow.keras.models",
-        "documentation": {}
-    },
-    {
-        "label": "Input",
-        "importPath": "tensorflow.keras.layers",
-        "description": "tensorflow.keras.layers",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.layers",
-        "documentation": {}
-    },
-    {
-        "label": "Embedding",
-        "importPath": "tensorflow.keras.layers",
-        "description": "tensorflow.keras.layers",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.layers",
-        "documentation": {}
-    },
-    {
-        "label": "LSTM",
-        "importPath": "tensorflow.keras.layers",
-        "description": "tensorflow.keras.layers",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.layers",
-        "documentation": {}
-    },
-    {
-        "label": "Dense",
-        "importPath": "tensorflow.keras.layers",
-        "description": "tensorflow.keras.layers",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.layers",
         "documentation": {}
     },
     {
@@ -640,35 +310,11 @@
         "documentation": {}
     },
     {
-        "label": "Tokenizer",
-        "importPath": "tensorflow.keras.preprocessing.text",
-        "description": "tensorflow.keras.preprocessing.text",
+        "label": "Input",
+        "importPath": "tensorflow.keras.layers",
+        "description": "tensorflow.keras.layers",
         "isExtraImport": true,
-        "detail": "tensorflow.keras.preprocessing.text",
-        "documentation": {}
-    },
-    {
-        "label": "tokenizer_from_json",
-        "importPath": "tensorflow.keras.preprocessing.text",
-        "description": "tensorflow.keras.preprocessing.text",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.preprocessing.text",
-        "documentation": {}
-    },
-    {
-        "label": "pad_sequences",
-        "importPath": "tensorflow.keras.preprocessing.sequence",
-        "description": "tensorflow.keras.preprocessing.sequence",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.preprocessing.sequence",
-        "documentation": {}
-    },
-    {
-        "label": "Adam",
-        "importPath": "tensorflow.keras.optimizers.legacy",
-        "description": "tensorflow.keras.optimizers.legacy",
-        "isExtraImport": true,
-        "detail": "tensorflow.keras.optimizers.legacy",
+        "detail": "tensorflow.keras.layers",
         "documentation": {}
     },
     {
@@ -697,1074 +343,37 @@
         "documentation": {}
     },
     {
-        "label": "run_command",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "description": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "peekOfCode": "def run_command(cmd):\n    \"\"\"\n    Execute a shell command and return its exit code, stdout, and stderr.\n    Args:\n        cmd: List of command arguments to execute\n    Returns:\n        Tuple containing (return_code, stdout, stderr)\n    \"\"\"\n    try:\n        process = subprocess.Popen(",
-        "detail": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
+        "label": "deque",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
         "documentation": {}
     },
     {
-        "label": "update_cmd",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "description": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "peekOfCode": "update_cmd = [\"terraform-docs\", \".\"]\nreturn_code, stdout, stderr = run_command(update_cmd)\nif stderr:\n    print(f\"terraform-docs error: Warning during execution:\\n{stderr}\", file=sys.stderr)\n# Check git status for unstaged README changes\nstatus_cmd = [\"git\", \"status\", \"--porcelain\"]\nreturn_code, stdout, stderr = run_command(status_cmd)\n# Look for any README.md files in the unstaged changes\nunstaged_readmes = [\n    line.split()[-1]",
-        "detail": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "documentation": {}
-    },
-    {
-        "label": "status_cmd",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "description": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "peekOfCode": "status_cmd = [\"git\", \"status\", \"--porcelain\"]\nreturn_code, stdout, stderr = run_command(status_cmd)\n# Look for any README.md files in the unstaged changes\nunstaged_readmes = [\n    line.split()[-1]\n    for line in stdout.splitlines()\n    if line.startswith(\" M\") and line.endswith(\"README.md\")\n]\n# Check if we found any unstaged README files\nif len(unstaged_readmes) > 0:",
-        "detail": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "documentation": {}
-    },
-    {
-        "label": "unstaged_readmes",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "description": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "peekOfCode": "unstaged_readmes = [\n    line.split()[-1]\n    for line in stdout.splitlines()\n    if line.startswith(\" M\") and line.endswith(\"README.md\")\n]\n# Check if we found any unstaged README files\nif len(unstaged_readmes) > 0:\n    print(\"terraform-docs error: Please stage any README changes before committing.\")\n    sys.exit(1)\nprint(\"terraform-docs: Documentation is up to date\")",
-        "detail": ".trunk.plugins.trunk.actions.terraform-docs.terraform-docs",
-        "documentation": {}
-    },
-    {
-        "label": "Example3",
+        "label": "gradio",
         "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "peekOfCode": "class Example3(   object ):\n    def __init__    ( self, bar ):\n     #Comments should have a space after the hash.\n     if bar : bar+=1;  bar=bar* bar   ; return bar\n     else:\n                    some_string = \"\"\"\n                       Indentation in multiline strings should not be touched.\nOnly actual code should be reindented.\n\"\"\"\n                    return (sys.path, some_string)",
-        "detail": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
+        "isExtraImport": true,
+        "importPath": "gradio",
+        "description": "gradio",
+        "detail": "gradio",
         "documentation": {}
     },
     {
-        "label": "example1",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "peekOfCode": "def example1():\n    ####This is a long comment. This should be wrapped to fit within 72 characters.\n    some_tuple=(   1,2, 3,'a'  );\n    some_variable={'long':'Long code lines should be wrapped within 79 characters.',\n    'other':[math.pi, 100,200,300,9876543210,'This is a long string that goes on'],\n    'more':{'inner':'This whole logical line should be wrapped.',some_tuple:[1,\n    20,300,40000,500000000,60000000000000000]}}\n    return (some_tuple, some_variable)\ndef example2(): return {'has_key() is deprecated':True}.has_key({'f':2}.has_key(''));\nclass Example3(   object ):",
-        "detail": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
+        "label": "StringIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
         "documentation": {}
     },
     {
-        "label": "example2",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "peekOfCode": "def example2(): return {'has_key() is deprecated':True}.has_key({'f':2}.has_key(''));\nclass Example3(   object ):\n    def __init__    ( self, bar ):\n     #Comments should have a space after the hash.\n     if bar : bar+=1;  bar=bar* bar   ; return bar\n     else:\n                    some_string = \"\"\"\n                       Indentation in multiline strings should not be touched.\nOnly actual code should be reindented.\n\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.autopep8.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "pick",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "peekOfCode": "pick = dill.dumps({\"a\": \"b\", \"c\": \"d\"})\nprint(dill.loads(pick))\nfile_obj = StringIO.StringIO()\ndill.dump([1, 2, \"3\"], file_obj)",
-        "detail": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "file_obj",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "peekOfCode": "file_obj = StringIO.StringIO()\ndill.dump([1, 2, \"3\"], file_obj)",
-        "detail": ".trunk.plugins.trunk.linters.bandit.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "NoDocstring",
+        "label": "traceback",
         "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "peekOfCode": "class NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1\nclass Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n    def __inti__(self):\n        prit(\"this is not a valid method\")\n        callbak = lamda x: x * 2\n    varName1 = \"helol ym anme is var\"",
-        "detail": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "Globe",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "peekOfCode": "class Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n    def __inti__(self):\n        prit(\"this is not a valid method\")\n        callbak = lamda x: x * 2\n    varName1 = \"helol ym anme is var\"\ncachedir = \"/tmp\"",
-        "detail": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "peekOfCode": "def main():\n    try:\n        pass\n    except (Exception, TypeError):\n        pass\nimport sys\nimport pands\nclass NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1",
-        "detail": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "cachedir",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "peekOfCode": "cachedir = \"/tmp\"",
-        "detail": ".trunk.plugins.trunk.linters.codespell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "peekOfCode": "def to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "peekOfCode": "def main(argv):\n    results = []\n    for line in sys.stdin.readlines():\n        filename, line_number, message = line.split(\":\")\n        results.append(\n            to_result_sarif(\n                filename, int(line_number), 0, \"misspelled\", message.strip()\n            )\n        )\n    sarif = {",
-        "detail": ".trunk.plugins.trunk.linters.codespell.codespell_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "NoDocstring",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "peekOfCode": "class NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1\nclass Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n    def __inti__(self):\n        prit(\"this is not a valid method\")\n        callbak = lamda x: x * 2\n    varName1 = \"helol ym anme is var\"",
-        "detail": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "Globe",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "peekOfCode": "class Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n    def __inti__(self):\n        prit(\"this is not a valid method\")\n        callbak = lamda x: x * 2\n    varName1 = \"helol ym anme is var\"\ncachedir = \"/tmp\"",
-        "detail": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "peekOfCode": "def main():\n    try:\n        pass\n    except (Exception, TypeError):\n        pass\nimport sys\nimport pands\nclass NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1",
-        "detail": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "cachedir",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "description": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "peekOfCode": "cachedir = \"/tmp\"",
-        "detail": ".trunk.plugins.trunk.linters.cspell.test_data.basic_py.in",
-        "documentation": {}
-    },
-    {
-        "label": "NoDocstring",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "peekOfCode": "class NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1\nclass Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'",
-        "detail": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "Globe",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "peekOfCode": "class Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'",
-        "detail": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "peekOfCode": "def main():\n    try:\n        pass\n    except (Exception, TypeError):\n        pass\nimport sys\n# trunk-ignore(flake8/F401): this will trigger a warning to verify that the config is applied\nclass NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1",
-        "detail": ".trunk.plugins.trunk.linters.flake8.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "aws_access_key_id",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "peekOfCode": "aws_access_key_id = \"AKIAIO5FODNN7EXAMPLE\"\naws_token = \"AKIALALEMEL33243OLIA\"\nprivate_key = \"\"\"-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XAAAAJDiKO3C4ijt\nwgAAAAtzc2gtZWQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XA\nAAAECzmj8DGxg5YHtBK4AmBttMXDQHsPAaCyYHQjJ4YujRBTxhYpjO266/FQgyiZzfO/Q5\n1cJPnsJzZxFi7dMxtf1cAAAADHJvb3RAZGV2aG9zdAE=\n-----END OPENSSH PRIVATE KEY-----\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "aws_token",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "peekOfCode": "aws_token = \"AKIALALEMEL33243OLIA\"\nprivate_key = \"\"\"-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XAAAAJDiKO3C4ijt\nwgAAAAtzc2gtZWQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XA\nAAAECzmj8DGxg5YHtBK4AmBttMXDQHsPAaCyYHQjJ4YujRBTxhYpjO266/FQgyiZzfO/Q5\n1cJPnsJzZxFi7dMxtf1cAAAADHJvb3RAZGV2aG9zdAE=\n-----END OPENSSH PRIVATE KEY-----\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "private_key",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "peekOfCode": "private_key = \"\"\"-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XAAAAJDiKO3C4ijt\nwgAAAAtzc2gtZWQyNTUxOQAAACA8YWKYztuuvxUIMomc3zv0OdXCT57Cc2cRYu3TMbX9XA\nAAAECzmj8DGxg5YHtBK4AmBttMXDQHsPAaCyYHQjJ4YujRBTxhYpjO266/FQgyiZzfO/Q5\n1cJPnsJzZxFi7dMxtf1cAAAADHJvb3RAZGV2aG9zdAE=\n-----END OPENSSH PRIVATE KEY-----\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.gitleaks.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "description": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "peekOfCode": "def to_result_sarif(path: str, lineno: int, colno: int, rule_id: str, message: str):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,\n                    },\n                    \"region\": {",
-        "detail": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "description": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "peekOfCode": "def main(argv):\n    output_json = json.load(sys.stdin)\n    errors = output_json.get(\"errors\", [])\n    results = []\n    for error in errors:\n        rule = error.get(\"rule\", \"\")\n        message = error.get(\"message\", \"\")\n        location = error.get(\"location\")\n        if location:\n            path = location.get(\"file\", \"\")",
-        "detail": ".trunk.plugins.trunk.linters.graphql-schema-linter.parse",
-        "documentation": {}
-    },
-    {
-        "label": "try_find_string_in_file",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "description": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "peekOfCode": "def try_find_string_in_file(filename, search_string):\n    with open(filename, \"r\") as f:\n        for i, line in enumerate(f):\n            index = line.find(search_string)\n            if index != -1:\n                return i + 1, index + 1\n    return 0, 0\ndef to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):",
-        "detail": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "description": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "peekOfCode": "def to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "description": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "peekOfCode": "def main(argv):\n    parser = argparse.ArgumentParser(description=\"Parse output of markdown-link-check\")\n    parser.add_argument(\"--target\", dest=\"target\")\n    args = parser.parse_args()\n    results = []\n    # Line numbers are not reported out of the tool right now - so we regex parse the output to extract issue codes\n    for line in sys.stdin:\n        parse_reg = \"\\s*(\\[.*\\])\\s(.*)→.*Status:\\s*(\\d*)(.*)\"\n        filename = args.target\n        parse_result = re.fullmatch(parse_reg, line, flags=re.DOTALL)",
-        "detail": ".trunk.plugins.trunk.linters.markdown-link-check.parse",
-        "documentation": {}
-    },
-    {
-        "label": "greeting",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "peekOfCode": "def greeting(name: str) -> str:\n    return \"Hello \" + name\ndef printer() -> None:\n    print(\"Hello\")\ngreeting(3)\ngreeting(b\"Alice\")\na = printer()\nc: str = 4\nfrom source import Bar\ndef bad_foo(bar: Bar) -> str:",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "printer",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "peekOfCode": "def printer() -> None:\n    print(\"Hello\")\ngreeting(3)\ngreeting(b\"Alice\")\na = printer()\nc: str = 4\nfrom source import Bar\ndef bad_foo(bar: Bar) -> str:\n  return bar.a + bar.b",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "bad_foo",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "peekOfCode": "def bad_foo(bar: Bar) -> str:\n  return bar.a + bar.b",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "a",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "peekOfCode": "a = printer()\nc: str = 4\nfrom source import Bar\ndef bad_foo(bar: Bar) -> str:\n  return bar.a + bar.b",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.basic",
-        "documentation": {}
-    },
-    {
-        "label": "Bar",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "peekOfCode": "class Bar:\n  a: int\n  b: int\ndef bad_function() -> int:\n  print(\"returns nothing\")",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "documentation": {}
-    },
-    {
-        "label": "bad_function",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "description": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "peekOfCode": "def bad_function() -> int:\n  print(\"returns nothing\")",
-        "detail": ".trunk.plugins.trunk.linters.mypy.test_data.source",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.nancy.parse",
-        "description": ".trunk.plugins.trunk.linters.nancy.parse",
-        "peekOfCode": "def to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.nancy.parse",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.nancy.parse",
-        "description": ".trunk.plugins.trunk.linters.nancy.parse",
-        "peekOfCode": "def main(argv):\n    results = []\n    nancy_output = json.load(sys.stdin)\n    for vuln_entry in nancy_output.get(\"vulnerable\", []):\n        for vuln in vuln_entry.get(\"Vulnerabilities\", []):\n            results.append(\n                to_result_sarif(\n                    \".\",\n                    0,\n                    0,",
-        "detail": ".trunk.plugins.trunk.linters.nancy.parse",
-        "documentation": {}
-    },
-    {
-        "label": "get_sarif_severity",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "def get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"database_specific\" not in vuln:\n        return DEFAULT_SARIF_SEVERITY\n    vuln_metadata = vuln[\"database_specific\"]\n    if \"severity\" not in vuln_metadata:\n        return DEFAULT_SARIF_SEVERITY\n    severity = vuln_metadata[\"severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)\ndef to_result_sarif(",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "def to_result_sarif(\n    path: str, lineno: int, vuln_id: str, description: str, severity: str\n):\n    return {\n        \"level\": severity,\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "join_common_sets",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "def join_common_sets(lst):\n    init_len = 0\n    final_len = 1\n    while init_len != final_len:\n        init_len = len(lst)\n        ret = []\n        for s in lst:\n            unique = True\n            for stored_set in ret:\n                if len(stored_set.intersection(s)) > 0:",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "get_preferred_alias",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "def get_preferred_alias(aliases):\n    for rx in PREFERRED_ORDER:\n        found_aliases = sorted(alias for alias in aliases if re.match(rx, alias))\n        if len(found_aliases) > 0:\n            return found_aliases[0]\n    return sorted(aliases)[0]\ndef main(argv):\n    try:\n        # On Windows, Unicode characters in the osv-scanner output cause json parsing errors. Filter them out since we don't care about their fields.\n        if sys.platform == \"win32\":",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "def main(argv):\n    try:\n        # On Windows, Unicode characters in the osv-scanner output cause json parsing errors. Filter them out since we don't care about their fields.\n        if sys.platform == \"win32\":\n            filtered_stdin = \"\".join(i for i in sys.stdin.read() if ord(i) < 256)\n            osv_json = json.loads(filtered_stdin)\n        else:\n            osv_json = json.load(sys.stdin)\n    except json.decoder.JSONDecodeError as err:\n        if str(err) == \"Expecting value: line 1 column 1 (char 0)\":",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "SARIF_SEVERITY_BY_OSV_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "SARIF_SEVERITY_BY_OSV_SEVERITY = {\n    \"CRITICAL\": \"error\",\n    \"HIGH\": \"error\",\n    \"MODERATE\": \"warning\",\n    \"MEDIUM\": \"warning\",\n    \"LOW\": \"note\",\n}\nDEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "DEFAULT_SARIF_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "DEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"database_specific\" not in vuln:\n        return DEFAULT_SARIF_SEVERITY\n    vuln_metadata = vuln[\"database_specific\"]\n    if \"severity\" not in vuln_metadata:\n        return DEFAULT_SARIF_SEVERITY\n    severity = vuln_metadata[\"severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "PREFERRED_ORDER",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "peekOfCode": "PREFERRED_ORDER = [\"GHSA-.*\", \"CVE-.*\", \"PYSEC-.*\"]\ndef get_preferred_alias(aliases):\n    for rx in PREFERRED_ORDER:\n        found_aliases = sorted(alias for alias in aliases if re.match(rx, alias))\n        if len(found_aliases) > 0:\n            return found_aliases[0]\n    return sorted(aliases)[0]\ndef main(argv):\n    try:\n        # On Windows, Unicode characters in the osv-scanner output cause json parsing errors. Filter them out since we don't care about their fields.",
-        "detail": ".trunk.plugins.trunk.linters.osv-scanner.osv_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.phpstan.phpstan_parser",
-        "description": ".trunk.plugins.trunk.linters.phpstan.phpstan_parser",
-        "peekOfCode": "def main():\n    phpstan_json = json.loads(sys.stdin.read())\n    results = []\n    for file_name in phpstan_json[\"files\"]:\n        file_result = phpstan_json[\"files\"][file_name]\n        for result in file_result[\"messages\"]:\n            result = {\n                # We do not have a ruleId\n                \"message\": {\n                    \"text\": result[\"message\"],",
-        "detail": ".trunk.plugins.trunk.linters.phpstan.phpstan_parser",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "peekOfCode": "def to_result_sarif(path: str, description: str, line: int = 0, column: int = 0):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,\n                    },\n                    \"region\": {",
-        "detail": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "peekOfCode": "def main(argv):\n    if len(argv) < 2:\n        print(\"Usage: trivy_to_sarif.py <exit_code>)\")\n        sys.exit(1)\n    if argv[1] == \"0\":\n        results = []\n        sarif = {\n            \"$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\",\n            \"version\": \"2.1.0\",\n            \"runs\": [{\"results\": results}],",
-        "detail": ".trunk.plugins.trunk.linters.prettier.prettier_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "shift",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "peekOfCode": "shift = 3\nchoice = raw_input(\"would you like to encode or decode?\")\nword = raw_input(\"Please enter text\")\nletters = string.ascii_letters + string.punctuation + string.digits\nencoded = \"\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "choice",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "peekOfCode": "choice = raw_input(\"would you like to encode or decode?\")\nword = raw_input(\"Please enter text\")\nletters = string.ascii_letters + string.punctuation + string.digits\nencoded = \"\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "word",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "peekOfCode": "word = raw_input(\"Please enter text\")\nletters = string.ascii_letters + string.punctuation + string.digits\nencoded = \"\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "letters",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "peekOfCode": "letters = string.ascii_letters + string.punctuation + string.digits\nencoded = \"\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "encoded",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "peekOfCode": "encoded = \"\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "foo",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.pylint.test_data.severity",
-        "description": ".trunk.plugins.trunk.linters.pylint.test_data.severity",
-        "peekOfCode": "def foo():\n    return \"bar\"",
-        "detail": ".trunk.plugins.trunk.linters.pylint.test_data.severity",
-        "documentation": {}
-    },
-    {
-        "label": "A",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "class A:\n    def method1(self) -> None:\n        self.x = 1\n    def method2(self) -> None:\n        self.x = \"\" # Mypy treats this as an error because `x` is implicitly declared as `int`\na = A()\nreveal_type(a.x)\na.x = \"\" # Pyright allows this because the type of `x` is `int | str`\na.x = 3.0 # Pyright treats this as an error because the type of `x` is `int | str`\nclass A:",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "A",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "class A:\n    x: int = 0 # Regular class variable\n    y: ClassVar[int] = 0 # Pure class variable\n    def __init__(self):\n        self.z = 0 # Pure instance variable\nprint(A.x)\nprint(A.y)\nprint(A.z) # pyright shows error, mypy shows no error\nclass Color(Enum):\n    RED = 1",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "Color",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "class Color(Enum):\n    RED = 1\n    BLUE = 2\ndef is_red(color: Color) -> bool:\n    if color == Color.RED:\n        return True\n    elif color == Color.BLUE:\n        return False\n    # mypy reports error: Missing return statement\ndef func(val: int | None):",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "wrong_type",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "def wrong_type(x: int) -> str:\n    return x  # error: Incompatible return value type (got \"int\", expected \"str\")\nclass A:\n    def method1(self) -> None:\n        self.x = 1\n    def method2(self) -> None:\n        self.x = \"\" # Mypy treats this as an error because `x` is implicitly declared as `int`\na = A()\nreveal_type(a.x)\na.x = \"\" # Pyright allows this because the type of `x` is `int | str`",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "is_red",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "def is_red(color: Color) -> bool:\n    if color == Color.RED:\n        return True\n    elif color == Color.BLUE:\n        return False\n    # mypy reports error: Missing return statement\ndef func(val: int | None):\n    if val is not None:\n        def inner_1() -> None:\n            reveal_type(val)",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "func",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "def func(val: int | None):\n    if val is not None:\n        def inner_1() -> None:\n            reveal_type(val)\n            print(val + 1)  # mypy produces a false positive error here\n        inner_2 = lambda: reveal_type(val) + 1\n        inner_1()\n        inner_2()",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "a",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "a = A()\nreveal_type(a.x)\na.x = \"\" # Pyright allows this because the type of `x` is `int | str`\na.x = 3.0 # Pyright treats this as an error because the type of `x` is `int | str`\nclass A:\n    x: int = 0 # Regular class variable\n    y: ClassVar[int] = 0 # Pure class variable\n    def __init__(self):\n        self.z = 0 # Pure instance variable\nprint(A.x)",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "a.x",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "a.x = \"\" # Pyright allows this because the type of `x` is `int | str`\na.x = 3.0 # Pyright treats this as an error because the type of `x` is `int | str`\nclass A:\n    x: int = 0 # Regular class variable\n    y: ClassVar[int] = 0 # Pure class variable\n    def __init__(self):\n        self.z = 0 # Pure instance variable\nprint(A.x)\nprint(A.y)\nprint(A.z) # pyright shows error, mypy shows no error",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "a.x",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "peekOfCode": "a.x = 3.0 # Pyright treats this as an error because the type of `x` is `int | str`\nclass A:\n    x: int = 0 # Regular class variable\n    y: ClassVar[int] = 0 # Pure class variable\n    def __init__(self):\n        self.z = 0 # Pure instance variable\nprint(A.x)\nprint(A.y)\nprint(A.z) # pyright shows error, mypy shows no error\nclass Color(Enum):",
-        "detail": ".trunk.plugins.trunk.linters.pyright.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "results",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "peekOfCode": "results = []\nfor result in json.load(sys.stdin)[\"generalDiagnostics\"]:\n    parse = {\n        \"level\": result[\"severity\"] if result[\"severity\"] != \"information\" else \"note\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": result[\"file\"],\n                    },",
-        "detail": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "sarif",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "peekOfCode": "sarif = {\n    \"$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\",\n    \"version\": \"2.1.0\",\n    \"runs\": [{\"results\": results}],\n}\nprint(json.dumps(sarif, indent=2))",
-        "detail": ".trunk.plugins.trunk.linters.pyright.pyright_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "description": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "peekOfCode": "def to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "description": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "peekOfCode": "def main(argv):\n    results = []\n    content_json = sys.stdin.read()\n    content = json.loads(content_json)\n    for file_content in content:\n        messages = file_content.get(\"messages\", [])\n        if messages:\n            for msg in messages:\n                results.append(\n                    to_result_sarif(",
-        "detail": ".trunk.plugins.trunk.linters.remark-lint.parse",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.renovate.parse",
-        "description": ".trunk.plugins.trunk.linters.renovate.parse",
-        "peekOfCode": "def to_result_sarif(\n    path: str, line_number: int, column_number: int, rule_id: str, message: str\n):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.renovate.parse",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.renovate.parse",
-        "description": ".trunk.plugins.trunk.linters.renovate.parse",
-        "peekOfCode": "def main(argv):\n    results = []\n    content = sys.stdin.read()\n    parse_reg = \"(.*WARN:.*could not be parsed)(.*)\"\n    error_section = content.find('\"errors\": [')\n    parse_result = re.fullmatch(parse_reg, content, flags=re.DOTALL)\n    if parse_result:\n        warn_section = parse_result.group(2)\n        json_content = \"{\" + warn_section + \"}\"\n        error_output = json.loads(json_content)",
-        "detail": ".trunk.plugins.trunk.linters.renovate.parse",
-        "documentation": {}
-    },
-    {
-        "label": "map_severity",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "peekOfCode": "def map_severity(severity):\n    if severity in [\"convention\", \"refactor\", \"info\"]:\n        return \"note\"\n    if severity in [\"warning\"]:\n        return \"warning\"\n    if severity in [\"error\", \"fatal\"]:\n        return \"error\"\n    return \"none\"\nresults = []\nfor file in json.load(sys.stdin)[\"files\"]:",
-        "detail": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "results",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "peekOfCode": "results = []\nfor file in json.load(sys.stdin)[\"files\"]:\n    for offense in file[\"offenses\"]:\n        parse = {\n            \"level\": map_severity(offense[\"severity\"]),\n            \"locations\": [\n                {\n                    \"physicalLocation\": {\n                        \"artifactLocation\": {\n                            \"uri\": file[\"path\"],",
-        "detail": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "sarif",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "peekOfCode": "sarif = {\n    \"$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\",\n    \"version\": \"2.1.0\",\n    \"runs\": [{\"results\": results}],\n}\nprint(json.dumps(sarif, indent=2))",
-        "detail": ".trunk.plugins.trunk.linters.rubocop.rubocop_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "NoDocstring",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "peekOfCode": "class NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1\nclass Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'",
-        "detail": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "Globe",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "peekOfCode": "class Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'",
-        "detail": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "peekOfCode": "def main():\n    try:\n        pass\n    except (Exception, TypeError):\n        pass\nimport sys\n# trunk-ignore(ruff/F401)\nimport json\nclass NoDocstring(object):\n    def __init__(self, arg1):",
-        "detail": ".trunk.plugins.trunk.linters.ruff.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "f",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.test_data.syntax.in",
-        "description": ".trunk.plugins.trunk.linters.ruff.test_data.syntax.in",
-        "peekOfCode": "def f(): {",
-        "detail": ".trunk.plugins.trunk.linters.ruff.test_data.syntax.in",
-        "documentation": {}
-    },
-    {
-        "label": "get_region",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "peekOfCode": "def get_region(entry, column_offset=0):\n    location = entry[\"location\"]\n    region = {\n        \"startColumn\": location[\"column\"] + column_offset,\n        \"startLine\": location[\"row\"],\n    }\n    if \"end_location\" in entry:\n        end_location = entry[\"end_location\"]\n        region[\"endColumn\"] = end_location[\"column\"] + column_offset\n        region[\"endLine\"] = end_location[\"row\"]",
-        "detail": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "results",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "peekOfCode": "results = []\ndef get_region(entry, column_offset=0):\n    location = entry[\"location\"]\n    region = {\n        \"startColumn\": location[\"column\"] + column_offset,\n        \"startLine\": location[\"row\"],\n    }\n    if \"end_location\" in entry:\n        end_location = entry[\"end_location\"]\n        region[\"endColumn\"] = end_location[\"column\"] + column_offset",
-        "detail": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "ruff_column_index",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "peekOfCode": "ruff_column_index = 1\nif len(sys.argv) > 1:\n    ruff_column_index = int(sys.argv[1])\nfor result in json.load(sys.stdin):\n    # As of ruff v0.0.260, some autofixable diagnostics may appear redundantly\n    if \"location\" not in result:\n        continue\n    filepath = result[\"filename\"]\n    # Ruff will set code to null for syntax errors\n    rule_id = result[\"code\"] or \"E999\"",
-        "detail": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "sarif",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "peekOfCode": "sarif = {\n    \"$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\",\n    \"version\": \"2.1.0\",\n    \"runs\": [{\"results\": results}],\n}\nprint(json.dumps(sarif, indent=2))",
-        "detail": ".trunk.plugins.trunk.linters.ruff.ruff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "unvalidated_value",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.semgrep.test_data.request",
-        "description": ".trunk.plugins.trunk.linters.semgrep.test_data.request",
-        "peekOfCode": "def unvalidated_value(request):\n    value = request.GET.get('something')\n    function = globals().get(value)\n    if function:\n        return function(request)",
-        "detail": ".trunk.plugins.trunk.linters.semgrep.test_data.request",
-        "documentation": {}
-    },
-    {
-        "label": "test",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "peekOfCode": "def test():\n  substitution = \"hello %s\" % test\n  my_list = List()\n  try:\n    pass\n  except Exception:\n    raise Exception(\"test\")",
-        "detail": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "test",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "peekOfCode": "test = \"world\"\ndef test():\n  substitution = \"hello %s\" % test\n  my_list = List()\n  try:\n    pass\n  except Exception:\n    raise Exception(\"test\")",
-        "detail": ".trunk.plugins.trunk.linters.sourcery.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "peekOfCode": "def to_result_sarif(\n    path: str,\n    start_line_number: int,\n    start_column_number: int,\n    end_line_number: Optional[int],\n    end_column_number: Optional[int],\n    rule_id: str,\n    message: str,\n):\n    region = {",
-        "detail": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "peekOfCode": "def main(argv):\n    sqlfluff_json = json.load(sys.stdin)\n    results = []\n    for result in sqlfluff_json:\n        filepath = result[\"filepath\"]\n        for violation in result[\"violations\"]:\n            # In sqlfluff 3.0.0, line_no/line_pos replaced with start_*/end_*\n            start_line_number = violation.get(\"start_line_no\", violation.get(\"line_no\"))\n            start_column_number = violation.get(\n                \"start_line_pos\", violation.get(\"line_pos\")",
-        "detail": ".trunk.plugins.trunk.linters.sqlfluff.sqlfluff_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.terrascan.sarif_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.terrascan.sarif_to_sarif",
-        "peekOfCode": "def main(argv):\n    input_sarif = json.load(sys.stdin)\n    # strip \"file:\" from the beginning of each value in the 'file' field in the 'location' object in sarif format\n    for run in input_sarif[\"runs\"]:\n        for result in run[\"results\"]:\n            for location in result[\"locations\"]:\n                location[\"physicalLocation\"][\"artifactLocation\"][\"uri\"] = location[\n                    \"physicalLocation\"\n                ][\"artifactLocation\"][\"uri\"][5:]\n    print(json.dumps(input_sarif, indent=2))",
-        "detail": ".trunk.plugins.trunk.linters.terrascan.sarif_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.tfsec.parse",
-        "description": ".trunk.plugins.trunk.linters.tfsec.parse",
-        "peekOfCode": "def main():\n    original_input = sys.stdin.read()\n    try:\n        index = original_input.index(\"{\")\n        print(original_input[index:])\n    except ValueError:\n        print(original_input)\nif __name__ == \"__main__\":\n    main()",
-        "detail": ".trunk.plugins.trunk.linters.tfsec.parse",
-        "documentation": {}
-    },
-    {
-        "label": "aws_access_key_id",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "description": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "peekOfCode": "aws_access_key_id = \"AKIAXYZDQCEN4EXAMPLE\"\naws_secret_access_key = \"Tg0pz8Jii8hkLx4+PnUisM8GmKs3a2DK+EXAMPLE\"\n# The below keys are copied from https://github.com/dustin-decker/secretsandstuff\ngithub_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = \"\"\"\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu",
-        "detail": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "documentation": {}
-    },
-    {
-        "label": "aws_secret_access_key",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "description": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "peekOfCode": "aws_secret_access_key = \"Tg0pz8Jii8hkLx4+PnUisM8GmKs3a2DK+EXAMPLE\"\n# The below keys are copied from https://github.com/dustin-decker/secretsandstuff\ngithub_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = \"\"\"\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF",
-        "detail": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "documentation": {}
-    },
-    {
-        "label": "github_secret",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "description": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "peekOfCode": "github_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = \"\"\"\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH",
-        "detail": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "documentation": {}
-    },
-    {
-        "label": "basic_auth",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "description": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "peekOfCode": "basic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = \"\"\"\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH\nNT7eP19eVf4dCreibxUmRUaob5DEoHEk8WrxjKWIYUuLeD6AfcW6oXyRU2Yy8Vrt6SqFl5",
-        "detail": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "documentation": {}
-    },
-    {
-        "label": "priv_key",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "description": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "peekOfCode": "priv_key = \"\"\"\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH\nNT7eP19eVf4dCreibxUmRUaob5DEoHEk8WrxjKWIYUuLeD6AfcW6oXyRU2Yy8Vrt6SqFl5\nWAi47VMFTkDZYS/eCvG53q9UBHpCj7Qvb0vSkCZXBvBIhlw193F3PX4WvO1IXsMwvQ1D1X",
-        "detail": ".trunk.plugins.trunk.linters.trivy.test_data.secrets",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "peekOfCode": "def to_result_sarif(path: str, vuln_id: str, description: str, line: int = 0):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,\n                    },\n                    \"region\": {",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "peekOfCode": "def main(argv):\n    trivy_json = json.load(sys.stdin)\n    path = trivy_json[\"ArtifactName\"]\n    results = []\n    for result in trivy_json.get(\"Results\", []):\n        if \"Misconfigurations\" not in result:\n            continue\n        for vuln in result[\"Misconfigurations\"]:\n            vuln_id = vuln[\"ID\"]\n            message = vuln[\"Message\"]",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_config_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "get_sarif_severity",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "peekOfCode": "def get_sarif_severity(secret) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"Severity\" not in secret:\n        return DEFAULT_SARIF_SEVERITY\n    severity = secret[\"Severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)\ndef to_result_sarif(path: str, severity: str, code: str, description: str, lineno: int):\n    return {\n        \"level\": severity,\n        \"locations\": [",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "peekOfCode": "def to_result_sarif(path: str, severity: str, code: str, description: str, lineno: int):\n    return {\n        \"level\": severity,\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,\n                    },\n                    \"region\": {",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "peekOfCode": "def main(argv):\n    trivy_json = json.load(sys.stdin)\n    results = []\n    for result in trivy_json.get(\"Results\", []):\n        path = trivy_json[\"ArtifactName\"]\n        for secret in result.get(\"Secrets\", []):\n            code = secret[\"RuleID\"]\n            description = secret[\"Title\"]\n            lineno = secret.get(\"StartLine\", 0)\n            results.append(",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "SARIF_SEVERITY_BY_OSV_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "peekOfCode": "SARIF_SEVERITY_BY_OSV_SEVERITY = {\n    \"CRITICAL\": \"error\",\n    \"HIGH\": \"error\",\n    \"MODERATE\": \"warning\",\n    \"MEDIUM\": \"warning\",\n    \"LOW\": \"note\",\n}\nDEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(secret) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "DEFAULT_SARIF_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "peekOfCode": "DEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(secret) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"Severity\" not in secret:\n        return DEFAULT_SARIF_SEVERITY\n    severity = secret[\"Severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)\ndef to_result_sarif(path: str, severity: str, code: str, description: str, lineno: int):\n    return {\n        \"level\": severity,",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_secret_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "get_sarif_severity",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "peekOfCode": "def get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"Severity\" not in vuln:\n        return DEFAULT_SARIF_SEVERITY\n    severity = vuln[\"Severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)\ndef to_result_sarif(\n    path: str, severity: str, vuln_id: str, description: str, lineno: int\n):\n    return {",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "peekOfCode": "def to_result_sarif(\n    path: str, severity: str, vuln_id: str, description: str, lineno: int\n):\n    return {\n        \"level\": severity,\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "peekOfCode": "def main(argv):\n    trivy_json = json.load(sys.stdin)\n    results = []\n    lockfiles = {}\n    for result in trivy_json.get(\"Results\", []):\n        for vuln in result.get(\"Vulnerabilities\", []):\n            pkg_name = vuln[\"PkgName\"]\n            path = trivy_json[\"ArtifactName\"]\n            vuln_id = vuln[\"VulnerabilityID\"]\n            description = vuln[\"Title\"]",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "SARIF_SEVERITY_BY_OSV_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "peekOfCode": "SARIF_SEVERITY_BY_OSV_SEVERITY = {\n    \"CRITICAL\": \"error\",\n    \"HIGH\": \"error\",\n    \"MODERATE\": \"warning\",\n    \"MEDIUM\": \"warning\",\n    \"LOW\": \"note\",\n}\nDEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "DEFAULT_SARIF_SEVERITY",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "peekOfCode": "DEFAULT_SARIF_SEVERITY = \"error\"\ndef get_sarif_severity(vuln) -> str:\n    \"\"\"Get the SARIF severity appropriate for a given OSV vulnerability entry.\"\"\"\n    if \"Severity\" not in vuln:\n        return DEFAULT_SARIF_SEVERITY\n    severity = vuln[\"Severity\"].upper()\n    return SARIF_SEVERITY_BY_OSV_SEVERITY.get(severity, DEFAULT_SARIF_SEVERITY)\ndef to_result_sarif(\n    path: str, severity: str, vuln_id: str, description: str, lineno: int\n):",
-        "detail": ".trunk.plugins.trunk.linters.trivy.trivy_fs_vuln_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "aws_access_key_id",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "peekOfCode": "aws_access_key_id = \"AKIAXYZDQCEN4EXAMPLE\"\naws_secret_access_key = \"Tg0pz8Jii8hkLx4+PnUisM8GmKs3a2DK+EXAMPLE\"\n# The below keys are copied from https://github.com/dustin-decker/secretsandstuff\ngithub_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = '''\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "documentation": {}
-    },
-    {
-        "label": "aws_secret_access_key",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "peekOfCode": "aws_secret_access_key = \"Tg0pz8Jii8hkLx4+PnUisM8GmKs3a2DK+EXAMPLE\"\n# The below keys are copied from https://github.com/dustin-decker/secretsandstuff\ngithub_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = '''\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "documentation": {}
-    },
-    {
-        "label": "github_secret",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "peekOfCode": "github_secret = \"369963c1434c377428ca8531fbc46c0c43d037a0\"\nbasic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = '''\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "documentation": {}
-    },
-    {
-        "label": "basic_auth",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "peekOfCode": "basic_auth = \"https://admin:admin@the-internet.herokuapp.com/basic_auth\"\npriv_key = '''\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH\nNT7eP19eVf4dCreibxUmRUaob5DEoHEk8WrxjKWIYUuLeD6AfcW6oXyRU2Yy8Vrt6SqFl5",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "documentation": {}
-    },
-    {
-        "label": "priv_key",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "peekOfCode": "priv_key = '''\n-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAjNIZuun\nxgLkM8KuzfmQuRAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQDe3Al0EMPz\nutVNk5DixaYrGMK56RqUoqGBinke6SWVWmqom1lBcJWzor6HlnMRPPr7YCEsJKL4IpuVwu\ninRa5kdtNTyM7yyQTSR2xXCS0fUItNuq8pUktsH8VUggpMeew8hJv7rFA7tnIg3UXCl6iF\nOLZKbDA5aa24idpcD8b1I9/RzTOB1fu0of5xd9vgODzGw5JvHQSJ0FaA42aNBMGwrDhDB3\nsgnRNdWf6NNIh8KpXXMKJADf3klsyn6He8L2bPMp8a4wwys2YB35p5zQ0JURovsdewlOxH\nNT7eP19eVf4dCreibxUmRUaob5DEoHEk8WrxjKWIYUuLeD6AfcW6oXyRU2Yy8Vrt6SqFl5\nWAi47VMFTkDZYS/eCvG53q9UBHpCj7Qvb0vSkCZXBvBIhlw193F3PX4WvO1IXsMwvQ1D1X",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.test_data.secrets.in",
-        "documentation": {}
-    },
-    {
-        "label": "to_result_sarif",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "def to_result_sarif(path: str, line_number: int, vuln_id: str, description: str):\n    return {\n        \"level\": \"error\",\n        \"locations\": [\n            {\n                \"physicalLocation\": {\n                    \"artifactLocation\": {\n                        \"uri\": path,\n                    },\n                    \"region\": {",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "sliding_window",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "def sliding_window(iterable, n):\n    # sliding_window('ABCDEFG', 4) --> ABCD BCDE CDEF DEFG\n    it = iter(iterable)\n    window = collections.deque(islice(it, n - 1), maxlen=n)\n    for x in it:\n        window.append(x)\n        yield tuple(window)\nsecret_lineno_cache = {}\nfile_cache = {}\ndef find_line_number(secret, path):",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "find_line_number",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "def find_line_number(secret, path):\n    if path not in file_cache:\n        file_cache[path] = open(path).readlines()\n    if secret not in secret_lineno_cache:\n        secret_lineno_cache[secret] = []\n    secret_length = len(secret.splitlines())\n    lines = file_cache[path]\n    for lineno, window in enumerate(sliding_window(lines, secret_length), 1):\n        # trufflehog can report the same secret multiple times\n        # if it truly appears multiple times, then we want to log different lines for each issue",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "def main(argv):\n    results = []\n    for line in sys.stdin.readlines():\n        vuln_json = json.loads(line)\n        # trufflehog doesn't have vuln IDs\n        # this is the name of the detector that found the error (e.g. AWS, Github, PrivateKey)\n        vuln_id = vuln_json[\"DetectorName\"]\n        # There also isn't description of the error aside from the raw secret, the redacted secret,\n        # and the detector that found it.\n        #",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "secret_lineno_cache",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "secret_lineno_cache = {}\nfile_cache = {}\ndef find_line_number(secret, path):\n    if path not in file_cache:\n        file_cache[path] = open(path).readlines()\n    if secret not in secret_lineno_cache:\n        secret_lineno_cache[secret] = []\n    secret_length = len(secret.splitlines())\n    lines = file_cache[path]\n    for lineno, window in enumerate(sliding_window(lines, secret_length), 1):",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "file_cache",
-        "kind": 5,
-        "importPath": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "description": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "peekOfCode": "file_cache = {}\ndef find_line_number(secret, path):\n    if path not in file_cache:\n        file_cache[path] = open(path).readlines()\n    if secret not in secret_lineno_cache:\n        secret_lineno_cache[secret] = []\n    secret_length = len(secret.splitlines())\n    lines = file_cache[path]\n    for lineno, window in enumerate(sliding_window(lines, secret_length), 1):\n        # trufflehog can report the same secret multiple times",
-        "detail": ".trunk.plugins.trunk.linters.trufflehog.trufflehog_to_sarif",
-        "documentation": {}
-    },
-    {
-        "label": "NoDocstring",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "peekOfCode": "class NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1\nclass Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n#whitespace below vvv\n  #A malindented comment\nif __name__ == \"__main__\" :\n      a=4+1",
-        "detail": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "Globe",
-        "kind": 6,
-        "importPath": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "peekOfCode": "class Globe(object):\n    def __init__(self):\n        self.shape = 'spheroid'\n#whitespace below vvv\n  #A malindented comment\nif __name__ == \"__main__\" :\n      a=4+1\n      b=( 2*7 )\n      c = [1,\n           2,",
-        "detail": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "description": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
-        "peekOfCode": "def main():\n    try:\n        pass\n    except (Exception, TypeError):\n        pass\nimport sys\n# trunk-ignore(flake8/F401): this will trigger a warning to verify that the config is applied\nclass NoDocstring(object):\n    def __init__(self, arg1):\n        self._attr1 = arg1",
-        "detail": ".trunk.plugins.trunk.linters.yapf.test_data.basic.in",
+        "isExtraImport": true,
+        "importPath": "traceback",
+        "description": "traceback",
+        "detail": "traceback",
         "documentation": {}
     },
     {
@@ -1772,7 +381,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n            cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n            cls.text_content = [\"hello\", \"world\"]\n        with open(TEST_TEXT_FILE, 'w') as f: json.dump(cls.text_content, f)",
+        "peekOfCode": "class TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n        cls.text_content = [\"hello\", \"world\"]\n        with open(TEST_TEXT_FILE, 'w') as f: json.dump(cls.text_content, f)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1790,7 +399,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestLimbicSystemAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        # Ensure clean state before AI initialization\n        if os.path.exists(TEST_LIMBIC_MODEL_PATH): os.remove(TEST_LIMBIC_MODEL_PATH)\n        self.ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)\n        self.ai._initialize_default_weights_biases()\n        self.ai.save_model()\n        self.sample_temporal_output = np.random.rand(self.ai.input_size).tolist()\n        self.sample_true_emotion = 1; self.sample_reward = 1.0",
+        "peekOfCode": "class TestLimbicSystemAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        # Ensure clean state before AI initialization\n        if os.path.exists(TEST_LIMBIC_MODEL_PATH): os.remove(TEST_LIMBIC_MODEL_PATH)\n        self.ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)\n        # _initialize_default_weights_biases is likely handled by __init__ if model file not found\n        self.ai.save_model()  # Save the freshly initialized model\n        self.sample_temporal_output = np.random.rand(self.ai.input_size).tolist()\n        self.sample_true_emotion = 1; self.sample_reward = 1.0",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1808,7 +417,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestFrontalLobeAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        if os.path.exists(TEST_FRONTAL_MODEL_PATH): # Clean up before test\n            os.remove(TEST_FRONTAL_MODEL_PATH)\n        self.ai = FrontalLobeAI(model_path=TEST_FRONTAL_MODEL_PATH)\n        # self.ai.weights is initialized in __init__ or load_model.\n        # Default exploration_rate_epsilon is set in __init__.\n        self.ai.save_model() # Save the initial model (fresh or loaded)\n        self.sample_state = np.random.rand(self.ai.input_size).tolist()",
+        "peekOfCode": "class TestFrontalLobeAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        self.epsilon_path = (\n            TEST_FRONTAL_MODEL_PATH + \"_epsilon.json\"\n        )  # Consistent with typical save logic\n        if os.path.exists(TEST_FRONTAL_MODEL_PATH):\n            os.remove(TEST_FRONTAL_MODEL_PATH)\n        if os.path.exists(self.epsilon_path):\n            os.remove(self.epsilon_path)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1827,6 +436,15 @@
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
         "peekOfCode": "class TestParietalLobeAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        # Ensure clean state before AI initialization\n        if os.path.exists(TEST_PARIETAL_MODEL_PATH):\n            os.remove(TEST_PARIETAL_MODEL_PATH)\n        self.ai = ParietalLobeAI(model_path=TEST_PARIETAL_MODEL_PATH)\n        self.ai._initialize_default_weights_biases()\n        self.ai.save_model()\n        self.sample_sensory_data = np.random.rand(self.ai.input_size).tolist() # input_size is 20",
+        "detail": "tests.test_ai_modules",
+        "documentation": {}
+    },
+    {
+        "label": "project_root",
+        "kind": 5,
+        "importPath": "tests.test_ai_modules",
+        "description": "tests.test_ai_modules",
+        "peekOfCode": "project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), \"..\"))\nif project_root not in sys.path:\n    sys.path.insert(0, project_root)\n# Now, import project modules\nfrom main import ( # noqa: E402\n    load_sensor_data,\n    load_image_text_pairs,\n    load_vision_data,\n    load_text_data,\n)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1862,7 +480,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")",
+        "peekOfCode": "TEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1871,7 +489,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI",
+        "peekOfCode": "TEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1880,7 +498,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):",
+        "peekOfCode": "TEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1889,7 +507,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):",
+        "peekOfCode": "TEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1898,7 +516,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)",
+        "peekOfCode": "TEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1907,7 +525,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}",
+        "peekOfCode": "TEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1916,7 +534,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)",
+        "peekOfCode": "TEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1925,7 +543,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n            cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]",
+        "peekOfCode": "TEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1934,7 +552,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_frontal_model.json\")\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n            cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)",
+        "peekOfCode": "TEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -1943,17 +561,8 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n            cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n            cls.text_content = [\"hello\", \"world\"]",
+        "peekOfCode": "TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n        cls.text_content = [\"hello\", \"world\"]",
         "detail": "tests.test_ai_modules",
-        "documentation": {}
-    },
-    {
-        "label": "TemporalLobeAI",
-        "kind": 6,
-        "importPath": "app",
-        "description": "app",
-        "peekOfCode": "class TemporalLobeAI:\n    def __init__(\n        self,\n        model_path=\"data/temporal_model.weights.h5\", # Updated extension\n        memory_path=\"data/temporal_memory.json\", # For cross-modal memory\n        tokenizer_path=\"data/temporal_tokenizer.json\"\n    ):\n        # RNN/LSTM Parameters\n        self.vocab_size = 2000  # Max words in vocabulary\n        self.max_sequence_length = 20  # Max length of text sequences",
-        "detail": "app",
         "documentation": {}
     },
     {
@@ -1961,7 +570,7 @@
         "kind": 6,
         "importPath": "cerebellum",
         "description": "cerebellum",
-        "peekOfCode": "class CerebellumAI:\n    def __init__(self, model_path=\"data/cerebellum_model.json\"):\n        self.input_size = 10  # Sensor feedback\n        self.hidden_size = 20  # Size of the new hidden layer\n        self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)\n        self.learning_rate_learn = 0.01\n        self.learning_rate_consolidate = 0.005\n        # Initialize weights and biases here, load_model will overwrite if successful\n        self._initialize_default_weights_biases()  # Ensure defaults are set before load_model\n        self.memory = []  # Stores (sensor_data_list, true_command_list)",
+        "peekOfCode": "class CerebellumAI:\n    def __init__(self, model_path=\"data/cerebellum_model.json\"):\n        self.input_size = 10  # Sensor feedback\n        self.hidden_size = 20  # Size of the new hidden layer\n        self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)\n        self.learning_rate_learn = 0.01\n        self.learning_rate_consolidate = 0.005\n        # Weights will be initialized by load_model or _initialize_default_weights_biases\n        self.weights_input_hidden = None\n        self.bias_hidden = None",
         "detail": "cerebellum",
         "documentation": {}
     },
@@ -2002,6 +611,159 @@
         "documentation": {}
     },
     {
+        "label": "parse_json_list",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def parse_json_list(json_string, default_value, expected_type=list):\n    if not json_string: # If string is empty or None\n        return default_value\n    try:\n        parsed = json.loads(json_string)\n        if isinstance(parsed, expected_type):\n            return parsed\n        else:\n            print(f\"Warning: Parsed JSON '{json_string}' is not of type {expected_type}. Got {type(parsed)}. Using default.\")\n            return default_value",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "run_ai_day_interface",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def run_ai_day_interface(\n    vision_input_path,\n    text_data,\n    sensor_data_str,\n    action_reward,\n    spatial_error_str,\n    memory_target,\n    vision_label,\n    motor_command_str,\n    emotion_label,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "project_root",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "project_root = os.path.abspath(os.path.dirname(__file__))\nif project_root not in sys.path:\n    sys.path.insert(0, project_root)\nfrom main import BrainCoordinator, DEFAULT_IMAGE_PATH\n# Global instance of BrainCoordinator\n# This ensures the AI models retain their state across Gradio interactions\nprint(\"Initializing BrainCoordinator for Gradio GUI...\")\ncoordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Helper to parse JSON string input for lists",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "coordinator",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "coordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Helper to parse JSON string input for lists\ndef parse_json_list(json_string, default_value, expected_type=list):\n    if not json_string: # If string is empty or None\n        return default_value\n    try:\n        parsed = json.loads(json_string)\n        if isinstance(parsed, expected_type):\n            return parsed",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "vision_input_path_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "vision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH)\ntext_data_component = gr.Textbox(label=\"Text Data\", value=\"A small red block is on the table.\", lines=2)\nsensor_data_component = gr.Textbox(\n    label=f\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=f\"Feedback: Spatial Error (JSON list)\",",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "text_data_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "text_data_component = gr.Textbox(label=\"Text Data\", value=\"A small red block is on the table.\", lines=2)\nsensor_data_component = gr.Textbox(\n    label=f\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=f\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "sensor_data_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "sensor_data_component = gr.Textbox(\n    label=f\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=f\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_action_reward_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=f\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1\n)\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=f\"Feedback: True Motor Command (JSON list)\",",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_spatial_error_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_spatial_error_component = gr.Textbox(\n    label=f\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1\n)\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=f\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_memory_target_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=f\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_vision_label_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=f\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_motor_command_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_motor_command_component = gr.Textbox(\n    label=f\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "feedback_emotion_label_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "feedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "results_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "results_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,\n    feedback_vision_label_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "log_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "log_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,\n    feedback_vision_label_component,\n    feedback_motor_command_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "inputs_list",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "inputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,\n    feedback_vision_label_component,\n    feedback_motor_command_component,\n    feedback_emotion_label_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "outputs_list",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "outputs_list = [results_component, log_component]\nwith gr.Blocks(title=\"Baby AI Interactive Simulation\", theme=gr.themes.Soft()) as demo:\n    gr.Markdown(\"# Baby AI Interactive Simulation\")\n    gr.Markdown(\"Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation.\")\n    with gr.Row():\n        with gr.Column(scale=1):\n            gr.Markdown(\"### Sensory Inputs\")\n            vision_input_path_component.render()\n            text_data_component.render()\n            sensor_data_component.render()",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
         "label": "LimbicSystemAI",
         "kind": 6,
         "importPath": "limbic",
@@ -2020,11 +782,29 @@
         "documentation": {}
     },
     {
+        "label": "load_vision_data",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)\n        # Expecting data to be a dict with \"image_paths\": [...]\n        if isinstance(data, dict) and \"image_paths\" in data and isinstance(data[\"image_paths\"], list):\n            return data[\"image_paths\"]",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
         "label": "load_sensor_data",
         "kind": 2,
         "importPath": "main",
         "description": "main",
         "peekOfCode": "def load_sensor_data(filepath=SENSOR_FILE):\n    if not os.path.exists(filepath):\n        print(\n            f\"Warning: Sensor data file not found at {filepath}. Returning empty list.\"\n        )\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)\n        return data",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "load_text_data",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def load_text_data(filepath=TEXT_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Text data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)\n        if not isinstance(data, list): # Expecting a list of strings\n            print(f\"Error: Text data file {filepath} is not a list. Returning empty list.\")\n            return []",
         "detail": "main",
         "documentation": {}
     },
@@ -2051,7 +831,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "DATA_DIR = \"data\"\nSENSOR_FILE = os.path.join(DATA_DIR, \"sensors.json\")\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_sensor_data(filepath=SENSOR_FILE):\n    if not os.path.exists(filepath):\n        print(\n            f\"Warning: Sensor data file not found at {filepath}. Returning empty list.\"\n        )\n        return []",
+        "peekOfCode": "DATA_DIR = \"data\"\nSENSOR_FILE = os.path.join(DATA_DIR, \"sensors.json\")\nVISION_FILE = os.path.join(DATA_DIR, \"vision.json\") # Added for vision data\nTEXT_FILE = os.path.join(DATA_DIR, \"text.json\")     # Added for text data\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []",
         "detail": "main",
         "documentation": {}
     },
@@ -2060,7 +840,25 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "SENSOR_FILE = os.path.join(DATA_DIR, \"sensors.json\")\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_sensor_data(filepath=SENSOR_FILE):\n    if not os.path.exists(filepath):\n        print(\n            f\"Warning: Sensor data file not found at {filepath}. Returning empty list.\"\n        )\n        return []\n    try:",
+        "peekOfCode": "SENSOR_FILE = os.path.join(DATA_DIR, \"sensors.json\")\nVISION_FILE = os.path.join(DATA_DIR, \"vision.json\") # Added for vision data\nTEXT_FILE = os.path.join(DATA_DIR, \"text.json\")     # Added for text data\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "VISION_FILE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "VISION_FILE = os.path.join(DATA_DIR, \"vision.json\") # Added for vision data\nTEXT_FILE = os.path.join(DATA_DIR, \"text.json\")     # Added for text data\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "TEXT_FILE",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "TEXT_FILE = os.path.join(DATA_DIR, \"text.json\")     # Added for text data\nIMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)",
         "detail": "main",
         "documentation": {}
     },
@@ -2069,7 +867,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "IMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_sensor_data(filepath=SENSOR_FILE):\n    if not os.path.exists(filepath):\n        print(\n            f\"Warning: Sensor data file not found at {filepath}. Returning empty list.\"\n        )\n        return []\n    try:\n        with open(filepath, \"r\") as f:",
+        "peekOfCode": "IMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, \"image_text_pairs.json\")\nDEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)\n        # Expecting data to be a dict with \"image_paths\": [...]",
         "detail": "main",
         "documentation": {}
     },
@@ -2078,7 +876,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "DEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_sensor_data(filepath=SENSOR_FILE):\n    if not os.path.exists(filepath):\n        print(\n            f\"Warning: Sensor data file not found at {filepath}. Returning empty list.\"\n        )\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)",
+        "peekOfCode": "DEFAULT_IMAGE_PATH = \"data/images/default_image.png\"\ndef load_vision_data(filepath=VISION_FILE):\n    if not os.path.exists(filepath):\n        print(f\"Warning: Vision data file not found at {filepath}. Returning empty list.\")\n        return []\n    try:\n        with open(filepath, \"r\") as f:\n            data = json.load(f)\n        # Expecting data to be a dict with \"image_paths\": [...]\n        if isinstance(data, dict) and \"image_paths\" in data and isinstance(data[\"image_paths\"], list):",
         "detail": "main",
         "documentation": {}
     },
