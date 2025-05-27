@@ -97,6 +97,36 @@ Consolidation complete.
 ...
 ```
 
+## How Training Works: The Baby Analogy and Current Limitations
+
+Like a human baby, this AI system learns through repeated exposure to sensory data and feedback. Each module specializes in a different aspect of cognition:
+- **Vision (Occipital):** Learns to recognize objects from images.
+- **Language/Association (Temporal):** Learns to associate simple words or short text with images or labels.
+- **Sensation/Spatial (Parietal):** Learns to interpret sensor data and spatial relationships.
+- **Action/Decision (Frontal):** Learns to make decisions based on experience and feedback.
+- **Motor (Cerebellum):** Learns to produce coordinated outputs.
+- **Emotion (Limbic):** Learns to associate feelings with experiences.
+
+**Current Training Modalities:**
+- The system can be trained on images (object/vision recognition) and simple text (labels or short descriptions for images).
+- There is no true language learning (e.g., grammar, conversation, or complex text understanding) yet—only basic associations between words and images.
+- No audio, video, or real-world sensor data is currently supported.
+- Feedback is limited to simple rewards or labels provided by the user.
+
+**How to Train:**
+- Each "day" (cycle), the AI processes new data (image, text, sensor values), receives feedback (reward/label), and updates its memory.
+- At "bedtime" (consolidation), it replays experiences to strengthen learning, similar to how sleep helps babies consolidate memories.
+- You can further train the AI by providing more data, giving feedback, or triggering extra consolidation cycles (like extra practice or sleep).
+- In the GUI, use the "Process Day" button for a single cycle, and (if available) a "Further Train" button to trigger additional consolidation.
+- In the CLI, you can run more cycles or add new data for continued learning.
+
+**Limitations and Future Directions:**
+- The system cannot yet learn language in a human sense (no conversation, grammar, or context).
+- It cannot learn from audio, video, or real-world interaction.
+- Future work could add richer data types, curriculum learning, or more interactive training methods.
+
+For more details on the architecture and future plans, see the [Whitepaper](./Whitepaper.md).
+
 ## Customization and Next Steps
 
 - **Real Inputs:** Expand with more diverse and real-world data. Consider OpenCV for advanced vision tasks or audio libraries for direct sound processing by the Temporal Lobe.
