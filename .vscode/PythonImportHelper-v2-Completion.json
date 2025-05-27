@@ -351,6 +351,14 @@
         "documentation": {}
     },
     {
+        "label": "deque",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
+        "documentation": {}
+    },
+    {
         "label": "gradio",
         "kind": 6,
         "isExtraImport": true,
@@ -885,7 +893,7 @@
         "kind": 6,
         "importPath": "occipital",
         "description": "occipital",
-        "peekOfCode": "class OccipitalLobeAI:\n    def __init__(\n        self, model_path=\"data/occipital_model.weights.h5\"\n    ):  # Changed extension\n        self.input_shape = (64, 64, 3)  # Height, Width, Channels (color images)\n        self.output_size = 5  # Number of object labels/classes\n        self.model_path = model_path\n        self.model = self._build_model()\n        self.model.compile(\n            optimizer=\"adam\",",
+        "peekOfCode": "class OccipitalLobeAI:\n    def __init__(\n        self, model_path=\"data/occipital_model.weights.h5\"\n    ):  # Changed extension\n        self.input_shape = (64, 64, 3)  # Height, Width, Channels (color images)\n        self.output_size = 5  # Number of object labels/classes\n        self.model_path = model_path\n        self.memory = deque(maxlen=100) # Store up to 100 recent experiences\n        self.consolidation_batch_size = 16 # Batch size for consolidation training\n        self.model = self._build_model()",
         "detail": "occipital",
         "documentation": {}
     },

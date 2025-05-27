@@ -397,10 +397,8 @@ class TestOccipitalLobeAI(unittest.TestCase):
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
         self.ai.consolidate()
         final_weights = self.ai.model.get_weights()
-        # If consolidate is a no-op, skip this assertion
-        if not any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights)):
-            self.skipTest("OccipitalLobeAI consolidate does not update weights.")
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
+        # This assertion will now run. It will likely fail if OccipitalLobeAI.consolidate() only saves the model.
         self.assertTrue(weights_changed, "Model weights did not change after consolidate")
 
     def test_model_save_load_new_architecture(self):
@@ -529,8 +527,6 @@ class TestFrontalLobeAI(unittest.TestCase):
             not np.array_equal(iw, fw)
             for iw, fw in zip(initial_model_weights, final_model_weights)
         )
-        if not weights_changed:
-            self.skipTest("FrontalLobeAI consolidate does not update weights with current memory size.")
         self.assertTrue(
             weights_changed,
             "Weights should change after consolidation if learning rate is > 0 and memory is not empty."

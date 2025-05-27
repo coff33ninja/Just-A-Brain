@@ -2,6 +2,7 @@
 from tensorflow.keras.models import Sequential  # type: ignore
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Input  # type: ignore
 import numpy as np
+from collections import deque # For memory buffer
 import os # type: ignore
 from PIL import Image  # Still needed for image loading and preprocessing
 
@@ -13,6 +14,8 @@ class OccipitalLobeAI:
         self.input_shape = (64, 64, 3)  # Height, Width, Channels (color images)
         self.output_size = 5  # Number of object labels/classes
         self.model_path = model_path
+        self.memory = deque(maxlen=100) # Store up to 100 recent experiences
+        self.consolidation_batch_size = 16 # Batch size for consolidation training
 
         self.model = self._build_model()
         self.model.compile(
@@ -174,12 +177,59 @@ class OccipitalLobeAI:
             print(
                 f"Occipital Lobe: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}"
             )
+            # Add to memory after successful training
+            self.memory.append((image_path, valid_label))
+            print(f"Occipital Lobe: Added ({os.path.basename(image_path)}, {valid_label}) to memory. Memory size: {len(self.memory)}")
         except Exception as e:
             print(f"Occipital Lobe: Error during model training: {e}")
 
     def consolidate(self):
-        print("Occipital consolidate called (saving model weights).")
+        print("Occipital Lobe: Starting consolidation...")
+        if not self.memory:
+            print("Occipital Lobe: Memory is empty. Nothing to consolidate beyond saving.")
+            self.save_model()
+            return
+
+        print(f"Occipital Lobe: Consolidating {len(self.memory)} experiences from memory.")
+
+        # Prepare data for batch training
+        images_to_train = []
+        labels_to_train = []
+
+        for img_path, lbl in list(self.memory): # Iterate over a snapshot
+            processed_img_batch = self._preprocess_image(img_path)
+            if processed_img_batch is not None:
+                images_to_train.append(processed_img_batch[0]) # Get the image array from the batch
+                labels_to_train.append(int(lbl))
+            else:
+                print(f"Occipital Lobe: Skipping {img_path} in consolidation due to preprocessing error.")
+
+        if not images_to_train:
+            print("Occipital Lobe: No valid images to train on after preprocessing memory. Saving model.")
+            self.save_model()
+            return
+
+        images_np = np.array(images_to_train)
+        labels_np = np.array(labels_to_train)
+
+        print(f"Occipital Lobe: Training consolidation batch of size {images_np.shape[0]}...")
+        try:
+            consolidation_epochs = 1 # Could be configurable
+            history = self.model.fit(
+                images_np,
+                labels_np,
+                epochs=consolidation_epochs,
+                batch_size=min(self.consolidation_batch_size, len(images_np)), # Ensure batch_size <= num_samples
+                verbose=0
+            )
+            loss = history.history.get('loss', [float('nan')])[0]
+            accuracy = history.history.get('accuracy', [float('nan')])[0]
+            print(f"Occipital Lobe: Consolidation training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}")
+        except Exception as e:
+            print(f"Occipital Lobe: Error during consolidation training: {e}")
+
         self.save_model()
+        print("Occipital Lobe: Consolidation complete (replayed experiences and saved model).")
 
 
 # Example usage (optional, for testing within the file)
