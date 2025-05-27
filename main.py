@@ -220,12 +220,25 @@ class BrainCoordinator:
             feedback["action_reward"],
         )
 
+        # Determine AI's textual response based on current memory (after learning for this cycle)
+        ai_textual_response = None
+        # Ensure current_text_data is a string for comparison
+        current_text_data_str = str(current_text_data).strip().lower()
+        for seq in self.temporal.memory_db:
+            for q, a in seq:
+                if str(q).strip().lower() == current_text_data_str:
+                    ai_textual_response = a
+                    break
+            if ai_textual_response is not None: # Check for not None, as empty string is a valid answer
+                break
+
         return {
             "action": action,
             "motor": motor_command,
             "emotion": emotion,
             "vision_label": vision_result_label,
         }
+
 
     def bedtime(self):
         print("Starting bedtime consolidation...")
@@ -528,20 +541,6 @@ def main():
         if list_qa_input == "list":
             list_learned_qa(coordinator)
 
-        # Before processing, show if AI already knows an answer
-        found_answer = None
-        for seq in coordinator.temporal.memory_db:
-            for q, a in seq:
-                if q.strip().lower() == text_description_for_processing.strip().lower():
-                    found_answer = a
-                    break
-            if found_answer:
-                break
-        if found_answer:
-            print(f"[Memory] The AI has learned this input before. Its stored answer: {found_answer}")
-        else:
-            print("[Memory] The AI has not seen this input before.")
-
         result = coordinator.process_day(
             vision_input_path=image_path_for_processing,
             sensor_data=sensor_data_for_processing,
@@ -550,6 +549,13 @@ def main():
             language_training_pair=language_training_pair,
             correction_text=None  # Will prompt for correction after output
         )
+        
+        # Get the AI's textual response from the result
+        ai_textual_response_from_day = result.get("ai_textual_response")
+        if ai_textual_response_from_day is not None:
+            print(f"[Memory] The AI's current answer for '{text_description_for_processing}': {ai_textual_response_from_day}")
+        else:
+            print(f"[Memory] The AI has no specific answer for '{text_description_for_processing}' after this cycle.")
 
         last_image_path = image_path_for_processing
         last_text_description = text_description_for_processing
@@ -572,19 +578,16 @@ def main():
         )
 
         # Compare AI output to expected/correct answer
-        ai_embedding = result.get("memory_embedding") if "memory_embedding" in result else None
-        if ai_embedding is not None:
-            print(f"[Debug] AI memory embedding (shape: {np.shape(ai_embedding)}): {ai_embedding}")
-        ai_answer = found_answer if found_answer else None
+        # Use ai_textual_response_from_day for comparison
         if expected_response:
-            if ai_answer and ai_answer.strip().lower() == expected_response.strip().lower():
+            if ai_textual_response_from_day and ai_textual_response_from_day.strip().lower() == expected_response.strip().lower():
                 print("[Check] The AI's answer matches the expected response. No correction needed.")
                 reinforce = input("Do you still want to reinforce this answer? (y/n, default n): ").strip().lower()
                 if reinforce == "y":
                     coordinator.temporal.learn([(text_description_for_processing, expected_response)])
             else:
                 print("[Check] The AI's answer does NOT match the expected response.")
-                print(f"AI's answer: {ai_answer if ai_answer else '[No answer]'}")
+                print(f"AI's answer: {ai_textual_response_from_day if ai_textual_response_from_day is not None else '[No answer]'}")
                 print(f"Expected: {expected_response}")
                 print("Reinforcing correct answer...")
                 coordinator.temporal.learn([(text_description_for_processing, expected_response)])

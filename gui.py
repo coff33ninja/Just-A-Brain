@@ -91,20 +91,6 @@ def run_ai_day_interface(
         print(f"Sensor Data (first 5): {sensor_data[:5] if sensor_data else 'N/A'}...")
         print(f"Feedback Data: {feedback_data}")
 
-        # Before processing, show if AI already knows an answer
-        found_answer = None
-        for seq in coordinator.temporal.memory_db:
-            for q, a in seq:
-                if q.strip().lower() == str(text_data).strip().lower():
-                    found_answer = a
-                    break
-            if found_answer:
-                break
-        if found_answer:
-            print(f"[Memory] The AI has learned this input before. Its stored answer: {found_answer}")
-        else:
-            print("[Memory] The AI has not seen this input before.")
-
         results = coordinator.process_day(
             vision_input_path=current_vision_path,
             sensor_data=sensor_data,
@@ -114,16 +100,22 @@ def run_ai_day_interface(
             correction_text=correction_text,
         )
 
+        # Get the AI's textual response from the result (after process_day)
+        ai_textual_response_from_day = results.get("ai_textual_response")
+        if ai_textual_response_from_day is not None:
+            print(f"[Memory] The AI's current answer for '{text_data}': {ai_textual_response_from_day}")
+        else:
+            print(f"[Memory] The AI has no specific answer for '{text_data}' after this cycle.")
+
         # Check AI answer against expected response
-        ai_answer = found_answer if found_answer else None
         if expected_response:
-            if ai_answer and ai_answer.strip().lower() == expected_response.strip().lower():
+            if ai_textual_response_from_day and ai_textual_response_from_day.strip().lower() == expected_response.strip().lower():
                 print("[Check] The AI's answer matches the expected response. No correction needed.")
                 # In GUI, we can't prompt, so just log that reinforcement is optional
                 print("You may reinforce this answer by entering it in the Correction field if desired.")
             else:
                 print("[Check] The AI's answer does NOT match the expected response.")
-                print(f"AI's answer: {ai_answer if ai_answer else '[No answer]'}")
+                print(f"AI's answer: {ai_textual_response_from_day if ai_textual_response_from_day is not None else '[No answer]'}")
                 print(f"Expected: {expected_response}")
                 print("Reinforcing correct answer...")
                 coordinator.temporal.learn([(text_data, expected_response)])
