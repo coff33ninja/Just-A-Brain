@@ -573,6 +573,8 @@ def main():
 
         # Compare AI output to expected/correct answer
         ai_embedding = result.get("memory_embedding") if "memory_embedding" in result else None
+        if ai_embedding is not None:
+            print(f"[Debug] AI memory embedding (shape: {np.shape(ai_embedding)}): {ai_embedding}")
         ai_answer = found_answer if found_answer else None
         if expected_response:
             if ai_answer and ai_answer.strip().lower() == expected_response.strip().lower():
