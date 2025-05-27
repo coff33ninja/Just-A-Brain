@@ -1,9 +1,14 @@
 # Baby AI System
 
+## Overview
+
+Baby AI System is a modular, brain-inspired artificial intelligence framework. It features six specialized neural modules (Occipital, Temporal, Parietal, Cerebellum, Frontal, Limbic), each handling a distinct cognitive function, coordinated by a central script. The system is designed for extensibility, experimentation, and educational purposes.
+
+For a detailed technical and architectural explanation, see the [Whitepaper](./Whitepaper.md).
+
 ## System Design
 
-- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI.
-    - All AI modules—Occipital Lobe (CNN), Temporal Lobe (RNN/LSTM), Parietal Lobe (Dense NN), Cerebellum (Dense NN), Frontal Lobe (DQN), and Limbic System (Dense NN)—are built with TensorFlow/Keras, replacing their original NumPy-based implementations.
+- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI. All modules are implemented with TensorFlow/Keras, replacing their original NumPy-based implementations.
 - **Main Script:** `main.py` initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
 - **Functionality:**
     - Each AI processes tasks relevant to its brain region.
@@ -28,42 +33,9 @@ project/
 └── data/  # Stores model weights and memory
 ```
 
-## Implementation
+## Quick Start
 
-The system provides a modular implementation for each AI, focusing on the "baby AI" concept where capabilities are learned and refined over time.
-
-- **Occipital Lobe:** TensorFlow/Keras-based Convolutional Neural Network (CNN) for image processing. Input images are resized to 64x64 pixels and normalized before processing.
-- **Temporal Lobe:** RNN (LSTM/GRU) model using TensorFlow/Keras for sequence-aware text processing. Text is tokenized, converted to sequences, and padded/truncated to a fixed length.
-- **Parietal Lobe:** TensorFlow/Keras-based Dense feed-forward neural network for sensory integration and spatial awareness.
-- **Cerebellum:** TensorFlow/Keras-based Dense feed-forward neural network for motor control and coordination.
-- **Limbic System:** TensorFlow/Keras Dense feed-forward neural network for emotion classification, typically taking text embeddings as input and outputting an emotion category using `softmax` activation.
-- **Frontal Lobe:** Deep Q-Network (DQN) using TensorFlow/Keras for decision-making based on rewards and experience replay.
-- **Data Input:** Supports image files (for Occipital) and paired image-text data for cross-modal learning experiments.
-
-## Explanation
-
-Each module defines a class with:
-- **A model:** All AI modules—OccipitalLobeAI (CNN), TemporalLobeAI (RNN/LSTM), FrontalLobeAI (DQN), ParietalLobeAI (Dense NN), CerebellumAI (Dense NN), and LimbicSystemAI (Dense NN)—are implemented with TensorFlow/Keras, each tailored to its specific processing task (e.g., image classification, text processing, decision making, sensor integration, motor control, emotion classification).
-- **process_task:** Handles inputs specific to the AI’s role.
-- **learn:** Updates weights via Keras model training (`fit` for OccipitalLobeAI, TemporalLobeAI, ParietalLobeAI, CerebellumAI, and LimbicSystemAI), or Deep Q-Network training (including experience replay and target network updates) for FrontalLobeAI. The Limbic System's Keras training incorporates reward signals as `sample_weight` during learning and consolidation.
-- **consolidate:** Replays experiences from memory at "bedtime," further refining weights and saving them. For Keras models, this involves saving learned model weights and, for DQN/Temporal/Parietal/Limbic, performing more replay steps or saving memory.
-- **save_model/load_model:** Persists weights (and for TemporalLobeAI, structured memories and tokenizer state) to disk. TensorFlow/Keras models use their specific weight saving/loading mechanisms.
-
-**main.py:**
-- Initializes all AIs and coordinates tasks.
-- **process_day:** Manages data flow (including image paths and text descriptions from paired data), routes inputs to appropriate AIs, collects outputs, and applies feedback for learning.
-- **bedtime:** Triggers consolidation for all AIs.
-
-**Learning and Growth:**
-- AIs start with random weights (or initial Keras model states).
-- They learn from feedback during tasks (e.g., rewards, errors, target values) and consolidate nightly.
-- OccipitalLobeAI processes images and learns to classify them using its CNN.
-- TemporalLobeAI processes text using tokenization and an RNN (LSTM/GRU). It learns to produce text embeddings and associate them with visual labels.
-- FrontalLobeAI learns to choose actions using a Deep Q-Network (DQN), training on past experiences stored in a replay buffer.
-
-**Storage:** Models and memories are saved in the `data/` folder. Model weights are saved in specific formats (e.g., `occipital_model.weights.h5`, ..., `limbic_model.weights.h5`). The Temporal Lobe also saves its `Tokenizer` state, the Frontal Lobe saves its exploration epsilon, and the Parietal, Cerebellum, and Limbic Lobes save their replay memory (including rewards for the Limbic System), typically as JSON files.
-
-## Running the Command-Line Simulation (`main.py`)
+### Command-Line Simulation
 
 1. Create the project folder structure as listed above.
 2. Ensure Python 3.8+ is installed.
@@ -77,11 +49,9 @@ Each module defines a class with:
    ```
    The script simulates activity cycles, processing data and consolidating learning each "night." Outputs show evolving actions, motor commands, and emotions. The `main.py` script also features an interactive command-line loop where you can proceed to the next day, provide new input, or quit.
 
-## Interactive Gradio Interface
+### Interactive Gradio Interface
 
 A Gradio web interface is available for real-time interaction with the AI.
-
-### Running the Gradio App
 
 1. Ensure all dependencies are installed:
    ```pwsh
@@ -93,7 +63,7 @@ A Gradio web interface is available for real-time interaction with the AI.
    ```
 3. Open your web browser to the local URL provided by Gradio (typically `http://127.0.0.1:7860` or `http://localhost:7860`).
 
-### Using the Interface
+#### Using the Interface
 
 The interface allows you to simulate the AI's 'days' interactively:
 
@@ -136,3 +106,7 @@ Consolidation complete.
 - **Visualization:** Develop tools to visualize network states, learned features, or decision processes.
 - **Specific Use Case:** Tailor inputs, outputs, and rewards to simulate specific scenarios (e.g., simple robotics, chatbot interaction).
 - **Refine Modules:** Add features like curiosity-driven exploration, more sophisticated memory models, or attention mechanisms.
+
+---
+
+For a comprehensive description of the architecture, learning mechanisms, and module details, please refer to the [Whitepaper](./Whitepaper.md).
