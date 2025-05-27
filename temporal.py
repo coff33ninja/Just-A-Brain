@@ -481,26 +481,41 @@ class TemporalLobeAI:
                         try:
                             w_t_ih = np.array(data["weights_text_input_hidden"])
                             b_t_h = np.array(data["bias_text_hidden"])
-                            # ... (load all other weights and biases) ...
+                            w_t_he = np.array(data["weights_text_hidden_embedding"])
+                            b_t_e = np.array(data["bias_text_embedding"])
+                            w_e_vh = np.array(data["weights_embed_to_visual_hidden"])
+                            b_v_ah = np.array(data["bias_visual_assoc_hidden"])
                             w_v_hl = np.array(data["weights_visual_hidden_to_label"])
                             b_v_al = np.array(data["bias_visual_assoc_label"])
 
-                            # Example shape check (do for all)
+                            # Shape checks for all weights and biases
                             if w_t_ih.shape != (self.input_size, self.text_hidden_size):
                                 raise ValueError("Shape mismatch for weights_text_input_hidden")
-                            # ... (check all other shapes) ...
+                            if b_t_h.shape != (1, self.text_hidden_size):
+                                raise ValueError("Shape mismatch for bias_text_hidden")
+                            if w_t_he.shape != (self.text_hidden_size, self.output_size):
+                                raise ValueError("Shape mismatch for weights_text_hidden_embedding")
+                            if b_t_e.shape != (1, self.output_size):
+                                raise ValueError("Shape mismatch for bias_text_embedding")
+                            if w_e_vh.shape != (self.output_size, self.visual_assoc_hidden_size):
+                                raise ValueError("Shape mismatch for weights_embed_to_visual_hidden")
+                            if b_v_ah.shape != (1, self.visual_assoc_hidden_size):
+                                raise ValueError("Shape mismatch for bias_visual_assoc_hidden")
+                            if w_v_hl.shape != (self.visual_assoc_hidden_size, self.visual_output_size):
+                                raise ValueError("Shape mismatch for weights_visual_hidden_to_label")
+                            if b_v_al.shape != (1, self.visual_output_size):
+                                raise ValueError("Shape mismatch for bias_visual_assoc_label")
 
                             # If all checks pass, assign weights
                             self.weights_text_input_hidden = w_t_ih
                             self.bias_text_hidden = b_t_h
-                            self.weights_text_hidden_embedding = np.array(data["weights_text_hidden_embedding"])
-                            self.bias_text_embedding = np.array(data["bias_text_embedding"])
-                            self.weights_embed_to_visual_hidden = np.array(data["weights_embed_to_visual_hidden"])
-                            self.bias_visual_assoc_hidden = np.array(data["bias_visual_assoc_hidden"])
+                            self.weights_text_hidden_embedding = w_t_he
+                            self.bias_text_embedding = b_t_e
+                            self.weights_embed_to_visual_hidden = w_e_vh
+                            self.bias_visual_assoc_hidden = b_v_ah
                             self.weights_visual_hidden_to_label = w_v_hl
                             self.bias_visual_assoc_label = b_v_al
                             model_loaded_successfully = True
-                            # Success message will be printed based on the flag later
                         except (ValueError, TypeError) as e_shape:
                             print(f"TemporalLobeAI: Error validating model weights/shapes: {e_shape}. Using default weights.")
                             self._initialize_default_weights_biases()  # Re-initialize
