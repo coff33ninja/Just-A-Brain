@@ -91,6 +91,20 @@ def run_ai_day_interface(
         print(f"Sensor Data (first 5): {sensor_data[:5] if sensor_data else 'N/A'}...")
         print(f"Feedback Data: {feedback_data}")
 
+        # Before processing, show if AI already knows an answer
+        found_answer = None
+        for seq in coordinator.temporal.memory_db:
+            for q, a in seq:
+                if q.strip().lower() == str(text_data).strip().lower():
+                    found_answer = a
+                    break
+            if found_answer:
+                break
+        if found_answer:
+            print(f"[Memory] The AI has learned this input before. Its stored answer: {found_answer}")
+        else:
+            print("[Memory] The AI has not seen this input before.")
+
         results = coordinator.process_day(
             vision_input_path=current_vision_path,
             sensor_data=sensor_data,
@@ -99,6 +113,20 @@ def run_ai_day_interface(
             language_training_pair=language_training_pair,
             correction_text=correction_text,
         )
+
+        # Check AI answer against expected response
+        ai_answer = found_answer if found_answer else None
+        if expected_response:
+            if ai_answer and ai_answer.strip().lower() == expected_response.strip().lower():
+                print("[Check] The AI's answer matches the expected response. No correction needed.")
+                # In GUI, we can't prompt, so just log that reinforcement is optional
+                print("You may reinforce this answer by entering it in the Correction field if desired.")
+            else:
+                print("[Check] The AI's answer does NOT match the expected response.")
+                print(f"AI's answer: {ai_answer if ai_answer else '[No answer]'}")
+                print(f"Expected: {expected_response}")
+                print("Reinforcing correct answer...")
+                coordinator.temporal.learn([(text_data, expected_response)])
 
         print("--- GUI: Day Processed. Results: {} ---".format(results))
         print("--- GUI: Starting Bedtime Consolidation ---")
@@ -156,6 +184,19 @@ def train_on_book(book_file):
         print(error_message)
         return {"error": str(e), "details": traceback.format_exc()}, error_message
 
+# Add a button to list all learned Q&A pairs in the GUI
+def list_learned_qa_gui():
+    qa_list = []
+    for idx, seq in enumerate(coordinator.temporal.memory_db):
+        for q, a in seq:
+            qa_list.append({"Q": q, "A": a})
+    if not qa_list:
+        return [{"Q": "No Q&A pairs learned yet.", "A": ""}]
+    return qa_list
+
+def qa_list_gui():
+    return list_learned_qa_gui()
+
 # Define Gradio Inputs
 vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH)
 text_data_component = gr.Textbox(label="Text Data (Sentence, Question, or Paragraph)", value="A small red block is on the table.", lines=4)
@@ -193,6 +234,10 @@ book_train_log_component = gr.Textbox(label="Book Training Log", lines=10, inter
 # Define Gradio Outputs
 results_component = gr.JSON(label="Processing Results")
 log_component = gr.Textbox(label="Log Output", lines=20, interactive=False, autoscroll=True)
+
+# Add Q&A memory display components
+qa_list_component = gr.Dataframe(headers=["Q", "A"], label="Learned Q&A Pairs", interactive=False)
+show_qa_button = gr.Button("Show All Learned Q&A Pairs", variant="secondary")
 
 inputs_list = [
     vision_input_path_component,
@@ -304,6 +349,14 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
         """
     )
+
+    gr.Markdown("---")
+    gr.Markdown("## Learned Q&A Pairs")
+    gr.Markdown("Review the Q&A pairs the AI has learned. You can use this information to guide further training or corrections.")
+    with gr.Row():
+        show_qa_button.render()
+        qa_list_component.render()
+    show_qa_button.click(fn=qa_list_gui, inputs=[], outputs=[qa_list_component])
 
 if __name__ == "__main__":
     demo.launch()

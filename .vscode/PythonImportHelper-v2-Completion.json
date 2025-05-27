@@ -646,6 +646,24 @@
         "documentation": {}
     },
     {
+        "label": "list_learned_qa_gui",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def list_learned_qa_gui():\n    qa_list = []\n    for idx, seq in enumerate(coordinator.temporal.memory_db):\n        for q, a in seq:\n            qa_list.append({\"Q\": q, \"A\": a})\n    if not qa_list:\n        return [{\"Q\": \"No Q&A pairs learned yet.\", \"A\": \"\"}]\n    return qa_list\ndef qa_list_gui():\n    return list_learned_qa_gui()",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "qa_list_gui",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def qa_list_gui():\n    return list_learned_qa_gui()\n# Define Gradio Inputs\nvision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH)\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\", value=\"A small red block is on the table.\", lines=4)\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\", value=\"The block is red.\", lines=4)\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
         "label": "project_root",
         "kind": 5,
         "importPath": "gui",
@@ -767,7 +785,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "audio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [",
+        "peekOfCode": "audio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components",
         "detail": "gui",
         "documentation": {}
     },
@@ -776,7 +794,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,",
+        "peekOfCode": "book_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -785,7 +803,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "train_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,",
+        "peekOfCode": "train_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [",
         "detail": "gui",
         "documentation": {}
     },
@@ -794,7 +812,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,",
+        "peekOfCode": "book_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,",
         "detail": "gui",
         "documentation": {}
     },
@@ -803,7 +821,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,",
+        "peekOfCode": "book_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,",
         "detail": "gui",
         "documentation": {}
     },
@@ -812,7 +830,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "results_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,",
+        "peekOfCode": "results_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,",
         "detail": "gui",
         "documentation": {}
     },
@@ -821,7 +839,25 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "log_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,\n    feedback_vision_label_component,",
+        "peekOfCode": "log_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "qa_list_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "qa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "show_qa_button",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "show_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,\n    feedback_spatial_error_component,\n    feedback_memory_target_component,\n    feedback_vision_label_component,",
         "detail": "gui",
         "documentation": {}
     },
