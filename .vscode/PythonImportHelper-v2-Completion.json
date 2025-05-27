@@ -381,7 +381,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n        cls.text_content = [\"hello\", \"world\"]\n        with open(TEST_TEXT_FILE, 'w') as f: json.dump(cls.text_content, f)",
+        "peekOfCode": "class TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f:\n            json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f:\n            json.dump(cls.sensor_content, f)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -399,7 +399,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestLimbicSystemAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        # Ensure clean state before AI initialization\n        if os.path.exists(TEST_LIMBIC_MODEL_PATH): os.remove(TEST_LIMBIC_MODEL_PATH)\n        self.ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)\n        # _initialize_default_weights_biases is likely handled by __init__ if model file not found\n        self.ai.save_model()  # Save the freshly initialized model\n        self.sample_temporal_output = np.random.rand(self.ai.input_size).tolist()\n        self.sample_true_emotion = 1; self.sample_reward = 1.0",
+        "peekOfCode": "class TestLimbicSystemAI(unittest.TestCase):\n    def setUp(self):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        if os.path.exists(TEST_LIMBIC_MODEL_PATH):\n            os.remove(TEST_LIMBIC_MODEL_PATH)\n        self.ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)\n        self.ai.save_model()\n        self.sample_temporal_output = np.random.rand(self.ai.input_size).tolist()\n        self.sample_true_emotion = 1\n        self.sample_reward = 1.0",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -408,7 +408,7 @@
         "kind": 6,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "class TestOccipitalLobeAI(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_IMAGES_SUBDIR, exist_ok=True)\n        cls.img_size=(32,32)\n        # Create a white test image and save its path\n        cls.test_img_path = os.path.join(TEST_IMAGES_SUBDIR, \"test_image.png\")\n        Image.new('L', cls.img_size, 255).save(cls.test_img_path) # 255 for white\n    @classmethod\n    def tearDownClass(cls):",
+        "peekOfCode": "class TestOccipitalLobeAI(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_IMAGES_SUBDIR, exist_ok=True)\n        cls.img_size = (32, 32)\n        cls.test_img_path = os.path.join(TEST_IMAGES_SUBDIR, \"test_image.png\")\n        Image.new('L', cls.img_size, 255).save(cls.test_img_path)\n    @classmethod\n    def tearDownClass(cls):\n        if os.path.exists(TEST_IMAGES_SUBDIR):",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -471,7 +471,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_VISION_FILE = os.path.join(TEST_DATA_DIR, \"test_vision.json\")\nTEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")",
+        "peekOfCode": "TEST_VISION_FILE = os.path.join(TEST_DATA_DIR, \"test_vision.json\")\nTEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -480,7 +480,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(",
+        "peekOfCode": "TEST_SENSOR_FILE = os.path.join(TEST_DATA_DIR, \"test_sensors.json\")\nTEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -489,7 +489,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"",
+        "peekOfCode": "TEST_TEXT_FILE = os.path.join(TEST_DATA_DIR, \"test_text.json\")\nTEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -498,7 +498,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention",
+        "peekOfCode": "TEST_PAIRS_FILE = os.path.join(TEST_DATA_DIR, \"test_pairs.json\")\n# Define paths for AI model files within TEST_DATA_DIR\nTEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -507,7 +507,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):",
+        "peekOfCode": "TEST_TEMPORAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_model.json\")\nTEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -516,7 +516,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod",
+        "peekOfCode": "TEST_TEMPORAL_MEMORY_PATH = os.path.join(TEST_DATA_DIR, \"test_temporal_memory.json\")\nTEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -525,7 +525,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):",
+        "peekOfCode": "TEST_CEREBELLUM_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_cerebellum_model.json\")\nTEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -534,7 +534,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.json\")\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)",
+        "peekOfCode": "TEST_LIMBIC_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_limbic_model.weights.h5\")  # Keras convention\nTEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -543,7 +543,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.json\")\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}",
+        "peekOfCode": "TEST_OCCIPITAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_occipital_model.weights.h5\")  # Keras convention\nTEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -552,7 +552,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)",
+        "peekOfCode": "TEST_FRONTAL_MODEL_PATH = os.path.join(\n    TEST_DATA_DIR, \"test_frontal_model.weights.h5\"\n)  # Keras convention\nTEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f:",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -561,7 +561,7 @@
         "kind": 5,
         "importPath": "tests.test_ai_modules",
         "description": "tests.test_ai_modules",
-        "peekOfCode": "TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)\n        cls.text_content = [\"hello\", \"world\"]",
+        "peekOfCode": "TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, \"test_parietal_model.json\") # Added for ParietalLobeAI\nclass TestDataLoading(unittest.TestCase):\n    @classmethod\n    def setUpClass(cls):\n        os.makedirs(TEST_DATA_DIR, exist_ok=True)\n        cls.vision_content = {\"image_paths\": [os.path.join(TEST_IMAGES_SUBDIR, \"img1.png\")]}\n        with open(TEST_VISION_FILE, 'w') as f:\n            json.dump(cls.vision_content, f)\n        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]\n        with open(TEST_SENSOR_FILE, 'w') as f:",
         "detail": "tests.test_ai_modules",
         "documentation": {}
     },
@@ -606,7 +606,7 @@
         "kind": 6,
         "importPath": "frontal",
         "description": "frontal",
-        "peekOfCode": "class FrontalLobeAI:\n    def __init__(\n        self, input_size=18, output_size=5, model_path=\"data/frontal_model.weights.h5\"\n    ):\n        self.input_size = input_size  # State size\n        self.output_size = output_size  # Action size\n        # DQN Parameters\n        self.learning_rate_dqn = 0.001\n        self.discount_factor_gamma = 0.95\n        self.replay_buffer_size = 10000",
+        "peekOfCode": "class FrontalLobeAI:\n    def __init__(\n        self, input_size=18, output_size=5, model_path=\"data/frontal_model.weights.h5\", replay_batch_size=32\n    ):\n        self.input_size = input_size  # State size\n        self.output_size = output_size  # Action size\n        # DQN Parameters\n        self.learning_rate_dqn = 0.001\n        self.discount_factor_gamma = 0.95\n        self.replay_buffer_size = 10000",
         "detail": "frontal",
         "documentation": {}
     },

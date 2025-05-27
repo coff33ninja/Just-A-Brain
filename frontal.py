@@ -11,7 +11,7 @@ from collections import deque  # For replay buffer
 
 class FrontalLobeAI:
     def __init__(
-        self, input_size=18, output_size=5, model_path="data/frontal_model.weights.h5"
+        self, input_size=18, output_size=5, model_path="data/frontal_model.weights.h5", replay_batch_size=32
     ):
         self.input_size = input_size  # State size
         self.output_size = output_size  # Action size
@@ -20,7 +20,7 @@ class FrontalLobeAI:
         self.learning_rate_dqn = 0.001
         self.discount_factor_gamma = 0.95
         self.replay_buffer_size = 10000
-        self.replay_batch_size = 32
+        self.replay_batch_size = replay_batch_size
         self.target_update_frequency = 100  # Steps
         self.learn_step_counter = 0
 
