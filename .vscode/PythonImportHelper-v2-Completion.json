@@ -907,6 +907,15 @@
         "documentation": {}
     },
     {
+        "label": "train_on_book_cli",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def train_on_book_cli(book_file_path, coordinator):\n    if not os.path.exists(book_file_path):\n        print(f\"Book file '{book_file_path}' not found.\")\n        return\n    with open(book_file_path, 'r', encoding='utf-8') as f:\n        text = f.read()\n    paragraphs = [p.strip() for p in text.split('\\n\\n') if p.strip()]\n    if len(paragraphs) < 2:\n        import re\n        paragraphs = re.split(r'(?<=[.!?]) +', text)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
         "label": "DATA_DIR",
         "kind": 5,
         "importPath": "main",

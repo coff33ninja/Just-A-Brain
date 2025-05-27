@@ -1,4 +1,21 @@
 # main.py (Central Coordinator)
+"""
+Baby AI System - Command-Line Interface
+
+Usage:
+  python main.py                # Start interactive simulation (default)
+  python main.py --book path.txt  # Train on a book (text file, Q&A log, or story)
+  python main.py --help         # Show help and usage
+
+During interactive mode, you can:
+- Provide both a 'Text Data' and an 'Expected Response' (Q&A, next-sentence, or dialogue pair)
+- Provide a correction if the AI's output is wrong (reinforces correct answer)
+- Upload a book/text file for sequential training (see --book)
+- (Audio input is not yet supported, but will be in the future)
+
+See README.md for more details.
+"""
+import sys
 import numpy as np
 from frontal import FrontalLobeAI
 from parietal import ParietalLobeAI
@@ -299,6 +316,10 @@ def main():
         day_display_str += " ---"
         print(f"\n{day_display_str}")
 
+        expected_response = None
+        correction_text = None
+        audio_input_path = None
+
         if user_choice_for_current_day_data_source == "i":
             print(
                 "Provide new input for the current day (press Enter to use defaults):"
@@ -327,6 +348,13 @@ def main():
                 else last_text_description
             )
 
+            # Q&A/Dialogue/Next-sentence training
+            expected_response_input = input(
+                "Enter expected response (answer, next sentence, or target text) [optional]: "
+            ).strip()
+            if expected_response_input:
+                expected_response = expected_response_input
+
             new_visual_label_input = input(
                 f"Enter new visual label (int, default: {last_visual_label}): "
             ).strip()
@@ -350,6 +378,11 @@ def main():
                 sensor_data_for_processing = None
             else:
                 sensor_data_for_processing = last_sensor_data
+
+            # Audio input placeholder
+            audio_input_path = input("Enter path to audio file for input (optional, not yet used): ").strip()
+            if audio_input_path:
+                print(f"Audio input received: {audio_input_path} (audio training not yet implemented)")
 
         else:  # 'n' - Use scheduled data
             if not image_text_pairs_list:
@@ -447,7 +480,6 @@ def main():
                 # This case is now primarily handled by the prompt at the end of the loop.
                 # If we reach here, it implies a state where 'n' was chosen but no data exists.
                 # The prompt at the end of the loop will force 'i' or 'q'.
-                # We add a continue to re-evaluate at the top, which will then lead to that prompt.
                 print(
                     "Internal state: 'n' chosen but no scheduled data. Re-evaluating action."
                 )
@@ -474,11 +506,20 @@ def main():
             f"Processing: Image='{img_display_name}', Text='{text_description_for_processing}'"
         )
 
+        # Prepare language training pair
+        language_training_pair = None
+        if text_description_for_processing and expected_response:
+            language_training_pair = [(text_description_for_processing, expected_response)]
+        elif text_description_for_processing:
+            language_training_pair = [(text_description_for_processing, text_description_for_processing)]
+
         result = coordinator.process_day(
             vision_input_path=image_path_for_processing,
             sensor_data=sensor_data_for_processing,
             text_data=text_description_for_processing,
             feedback_data=current_feedback,
+            language_training_pair=language_training_pair,
+            correction_text=None,  # Will prompt for correction after output
         )
 
         last_image_path = image_path_for_processing
@@ -500,6 +541,12 @@ def main():
         print(
             f"Result: VisionPredLabel: {result['vision_label']}, Action: {action_display_str}, Emotion: {result['emotion']}"
         )
+
+        # Correction/feedback mechanism
+        correction_text_input = input("If the AI output was wrong, enter the correct response here (or press Enter to skip): ").strip()
+        if correction_text_input and text_description_for_processing:
+            print("Reinforcing correct answer with correction text...")
+            coordinator.temporal.learn([(text_description_for_processing, correction_text_input)])
 
         coordinator.bedtime()
 
@@ -558,6 +605,40 @@ def main():
 
     print("Simulation ended.")
 
+def train_on_book_cli(book_file_path, coordinator):
+    if not os.path.exists(book_file_path):
+        print(f"Book file '{book_file_path}' not found.")
+        return
+    with open(book_file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+    if len(paragraphs) < 2:
+        import re
+        paragraphs = re.split(r'(?<=[.!?]) +', text)
+    pairs = []
+    for i in range(len(paragraphs) - 1):
+        pairs.append((paragraphs[i], paragraphs[i+1]))
+    if not pairs:
+        print("Book is too short for training.")
+        return
+    print(f"Training on {len(pairs)} text pairs from book...")
+    for pair in pairs:
+        coordinator.temporal.learn([pair])
+    print("Book training complete.")
 
 if __name__ == "__main__":
+    if '--help' in sys.argv or '-h' in sys.argv:
+        print(__doc__)
+        sys.exit(0)
+    if '--book' in sys.argv:
+        idx = sys.argv.index('--book')
+        if idx + 1 < len(sys.argv):
+            book_path = sys.argv[idx + 1]
+            coordinator = BrainCoordinator()
+            train_on_book_cli(book_path, coordinator)
+            sys.exit(0)
+        else:
+            print("Usage: python main.py --book path/to/book.txt")
+            sys.exit(1)
+    # ...existing code for main()...
     main()
