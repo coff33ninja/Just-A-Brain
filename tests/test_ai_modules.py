@@ -71,7 +71,8 @@ class TestDataLoading(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.exists(TEST_DATA_DIR): shutil.rmtree(TEST_DATA_DIR)
+        if os.path.exists(TEST_DATA_DIR):
+            shutil.rmtree(TEST_DATA_DIR)
 
     def test_load_vision_data_valid(self):
         data = load_vision_data(filepath=TEST_VISION_FILE)
@@ -141,7 +142,8 @@ class TestTemporalLobeAI(unittest.TestCase):
         initial_w = [p.copy() for p in [self.ai.weights_text_input_hidden, self.ai.bias_text_hidden, self.ai.weights_text_hidden_embedding, self.ai.bias_text_embedding, self.ai.weights_embed_to_visual_hidden, self.ai.bias_visual_assoc_hidden, self.ai.weights_visual_hidden_to_label, self.ai.bias_visual_assoc_label]]
         self.ai.learn([("text", "target")], visual_label_as_context=1)
         final_w = [self.ai.weights_text_input_hidden, self.ai.bias_text_hidden, self.ai.weights_text_hidden_embedding, self.ai.bias_text_embedding, self.ai.weights_embed_to_visual_hidden, self.ai.bias_visual_assoc_hidden, self.ai.weights_visual_hidden_to_label, self.ai.bias_visual_assoc_label]
-        for i_w, f_w in zip(initial_w, final_w): self.assertFalse(np.array_equal(i_w, f_w))
+        for i_w, f_w in zip(initial_w, final_w):
+            self.assertFalse(np.array_equal(i_w, f_w))
         self.assertIn([("text", "target")], self.ai.memory_db, "Sequence [('text', 'target')] not found in memory_db")
         self.assertIn(("text", 1), self.ai.cross_modal_memory)
     def test_consolidate_updates_all_weights_and_biases(self):
@@ -189,7 +191,8 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertEqual(loaded_ai.visual_output_size, self.ai.visual_output_size)
 
     def test_memory_persistence_dict_format(self):
-        self.ai.memory_db.append([("m_item","t_item")]); self.ai.cross_modal_memory.append(("cm_text",1))
+        self.ai.memory_db.append([("m_item","t_item")])
+        self.ai.cross_modal_memory.append(("cm_text",1))
         self.ai.save_memory()
         # Use keyword arguments for clarity and correctness
         new_ai = TemporalLobeAI(
@@ -287,7 +290,8 @@ class TestLimbicSystemAI(unittest.TestCase):
 
     def test_process_task_output_label_limbic(self):
         label = self.ai.process_task(self.sample_temporal_output)
-        self.assertTrue(0 <= label < self.ai.output_size)
+        # process_task now returns a dict: {"label": ..., "probabilities": ...}
+        self.assertTrue(0 <= label["label"] < self.ai.output_size)
 
     def test_learn_updates_and_memory_limbic(self):
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
