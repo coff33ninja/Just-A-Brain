@@ -5,13 +5,12 @@ import json
 import numpy as np
 from io import StringIO
 import traceback
+from main import BrainCoordinator, DEFAULT_IMAGE_PATH
 
 # Add project root to sys.path to allow imports from other project files
 project_root = os.path.abspath(os.path.dirname(__file__))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
-from main import BrainCoordinator, DEFAULT_IMAGE_PATH
 
 # Global instance of BrainCoordinator
 # This ensures the AI models retain their state across Gradio interactions
@@ -38,6 +37,7 @@ def parse_json_list(json_string, default_value, expected_type=list):
 def run_ai_day_interface(
     vision_input_path,
     text_data,
+    expected_response,
     sensor_data_str,
     action_reward,
     spatial_error_str,
@@ -45,6 +45,7 @@ def run_ai_day_interface(
     vision_label,
     motor_command_str,
     emotion_label,
+    correction_text,
 ):
     # Capture stdout for logging
     old_stdout = sys.stdout
@@ -73,7 +74,14 @@ def run_ai_day_interface(
             "emotion_label": int(emotion_label),
         }
 
-        print(f"--- GUI: Processing Day ---")
+        # Prepare new language training data
+        language_training_pair = None
+        if text_data and expected_response:
+            language_training_pair = [(text_data, expected_response)]
+        elif text_data:
+            language_training_pair = [(text_data, text_data)]  # fallback: self-association
+
+        print("--- GUI: Processing Day ---")
         print(f"Vision Path: {os.path.basename(current_vision_path) if current_vision_path else 'N/A'}")
         print(f"Text Data: '{text_data}'")
         print(f"Sensor Data (first 5): {sensor_data[:5] if sensor_data else 'N/A'}...")
@@ -84,12 +92,14 @@ def run_ai_day_interface(
             sensor_data=sensor_data,
             text_data=text_data,
             feedback_data=feedback_data,
+            language_training_pair=language_training_pair,
+            correction_text=correction_text,
         )
 
-        print(f"--- GUI: Day Processed. Results: {results} ---")
-        print(f"--- GUI: Starting Bedtime Consolidation ---")
+        print("--- GUI: Day Processed. Results: {} ---".format(results))
+        print("--- GUI: Starting Bedtime Consolidation ---")
         coordinator.bedtime()
-        print(f"--- GUI: Bedtime Consolidation Complete ---")
+        print("--- GUI: Bedtime Consolidation Complete ---")
 
         log_output = captured_output.getvalue()
         sys.stdout = old_stdout
@@ -104,27 +114,29 @@ def run_ai_day_interface(
 
 # Define Gradio Inputs
 vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH)
-text_data_component = gr.Textbox(label="Text Data", value="A small red block is on the table.", lines=2)
+text_data_component = gr.Textbox(label="Text Data (Sentence/Question)", value="A small red block is on the table.", lines=2)
+expected_response_component = gr.Textbox(label="Expected Response (Answer/Target Text)", value="The block is red.", lines=2)
 sensor_data_component = gr.Textbox(
-    label=f"Sensor Data (JSON list)",
+    label="Sensor Data (JSON list)",
     placeholder=f"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.",
     lines=2
 )
 
 feedback_action_reward_component = gr.Radio([-1, 0, 1], label="Feedback: Action Reward", value=0, type="value")
 feedback_spatial_error_component = gr.Textbox(
-    label=f"Feedback: Spatial Error (JSON list)",
+    label="Feedback: Spatial Error (JSON list)",
     placeholder=f"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.",
     lines=1
 )
 feedback_memory_target_component = gr.Textbox(label="Feedback: Memory Target Text", lines=2, placeholder="Text AI should learn for input. If blank, uses input Text Data.")
 feedback_vision_label_component = gr.Number(label="Feedback: True Vision Label (int)", value=0, precision=0)
 feedback_motor_command_component = gr.Textbox(
-    label=f"Feedback: True Motor Command (JSON list)",
+    label="Feedback: True Motor Command (JSON list)",
     placeholder=f"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.",
     lines=1
 )
 feedback_emotion_label_component = gr.Number(label="Feedback: True Emotion Label (int)", value=0, precision=0)
+correction_component = gr.Textbox(label="Correct AI Output (if AI was wrong)", value="", lines=2, placeholder="If the AI output was incorrect, enter the correct response here.")
 
 # Define Gradio Outputs
 results_component = gr.JSON(label="Processing Results")
@@ -133,6 +145,7 @@ log_component = gr.Textbox(label="Log Output", lines=20, interactive=False, auto
 inputs_list = [
     vision_input_path_component,
     text_data_component,
+    expected_response_component,  # New field
     sensor_data_component,
     feedback_action_reward_component,
     feedback_spatial_error_component,
@@ -140,10 +153,11 @@ inputs_list = [
     feedback_vision_label_component,
     feedback_motor_command_component,
     feedback_emotion_label_component,
+    correction_component,  # New field
 ]
 outputs_list = [results_component, log_component]
 
-with gr.Blocks(title="Baby AI Interactive Simulation", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
     gr.Markdown("# Baby AI Interactive Simulation")
     gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation.")
 

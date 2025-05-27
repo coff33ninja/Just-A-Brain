@@ -99,7 +99,8 @@ class BrainCoordinator:
         self.limbic = LimbicSystemAI()
 
     def process_day(
-        self, vision_input_path, sensor_data, text_data, feedback_data=None
+        self, vision_input_path, sensor_data, text_data, feedback_data=None,
+        language_training_pair=None, correction_text=None
     ):
         current_vision_path = (
             vision_input_path
@@ -190,6 +191,11 @@ class BrainCoordinator:
             [(current_text_data, feedback["memory_target"])],
             visual_label_as_context=feedback.get("vision_label"),
         )
+        # New: richer language/Q&A training
+        if language_training_pair:
+            self.temporal.learn(language_training_pair)
+        if correction_text and text_data:
+            self.temporal.learn([(text_data, correction_text)])
         self.cerebellum.learn(current_sensor_data, feedback["motor_command"])
         self.limbic.learn(
             memory_result_embedding_1d,
