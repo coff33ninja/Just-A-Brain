@@ -93,16 +93,22 @@ The system employs a hybrid approach to learning, tailored to the function of ea
 This system is a fully custom, from-scratch neural architecture. It does **not** use pre-trained transformer models or external AI bases. All learning is based on the data you provide through the UI or book upload.
 
 ### Teaching Methods
-- **Text/Language:** Use the 'Text Data' and 'Expected Response' fields in the UI to teach associations (Q&A, next-sentence, or dialogue pairs).
-- **Book Training:** Upload a text file (book) in the 'Book Training' section. The AI will learn associations between consecutive sentences or paragraphs.
-- **Correction:** Use the 'Correct AI Output' field to reinforce the correct answer if the AI's output is wrong.
-- **Images & Labels:** Upload images and provide labels for visual learning.
-- **Feedback:** Use reward and label fields to guide learning in all modalities.
+- **Text/Language:** Use the 'Text Data' and 'Expected Response' fields in the UI to teach associations (Q&A, next-sentence, or dialogue pairs). For more advanced training, you can upload structured Q&A datasets or dialogue logs as books.
+- **Book Training:** Upload a text file (book) in the 'Book Training' section. The AI will learn associations between consecutive sentences or paragraphs. For richer context, you can upload books with dialogue, stories, or even structured conversations.
+- **Correction:** Use the 'Correct AI Output' field to reinforce the correct answer if the AI's output is wrong. This enables interactive, feedback-driven learning similar to tutoring.
+- **Images & Labels:** Upload images and provide labels for visual learning. You can also pair images with descriptive text for cross-modal association.
+- **Feedback:** Use reward and label fields to guide learning in all modalities. The system supports reinforcement-like feedback for actions and emotions.
 
-### Guidance
-- The more examples and feedback you provide, the better the AI will learn.
-- The system is limited to the associations and patterns it has seen; it does not have deep generative or conversational ability like transformer-based models.
-- For best results, use clear, well-structured, and consistent data.
+### Advanced Guidance
+- The more diverse and context-rich your examples, the more nuanced the AI's associations will become. Try mixing narrative, dialogue, and factual text.
+- You can simulate curriculum learning by starting with simple examples and gradually increasing complexity.
+- For multi-turn or context-dependent tasks, provide sequences of related inputs (e.g., a short story or a Q&A chain) in your book uploads.
+- The system can be extended to support custom data formats (e.g., CSVs with input/target columns) for batch training—see the codebase for extension points.
+- While the AI does not have deep generative or conversational ability like transformer-based models, it can learn surprisingly complex associations and mimic simple dialogue or Q&A if trained with enough structured data.
+
+### Limitations
+- The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data.
+- For best results, use clear, well-structured, and consistent data, and provide feedback or corrections when possible.
 
 ---
 
