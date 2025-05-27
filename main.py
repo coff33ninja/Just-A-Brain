@@ -238,6 +238,17 @@ class BrainCoordinator:
         print("Consolidation complete.")
 
 
+def list_learned_qa(coordinator):
+    print("\n--- Learned Q&A Pairs (Temporal Lobe) ---")
+    if not coordinator.temporal.memory_db:
+        print("No Q&A pairs learned yet.")
+        return
+    for idx, seq in enumerate(coordinator.temporal.memory_db):
+        for q, a in seq:
+            print(f"{idx+1}. Q: {q}\n   A: {a}")
+    print("--- End of Q&A List ---\n")
+
+
 def main():
     # Introductory Message
     print("Welcome to the Interactive Baby AI Simulation!\n")
@@ -512,13 +523,32 @@ def main():
         elif text_description_for_processing:
             language_training_pair = [(text_description_for_processing, text_description_for_processing)]
 
+        # New: Option to list learned Q&A pairs
+        list_qa_input = input("Type 'list' to see all learned Q&A pairs, or press Enter to continue: ").strip().lower()
+        if list_qa_input == "list":
+            list_learned_qa(coordinator)
+
+        # Before processing, show if AI already knows an answer
+        found_answer = None
+        for seq in coordinator.temporal.memory_db:
+            for q, a in seq:
+                if q.strip().lower() == text_description_for_processing.strip().lower():
+                    found_answer = a
+                    break
+            if found_answer:
+                break
+        if found_answer:
+            print(f"[Memory] The AI has learned this input before. Its stored answer: {found_answer}")
+        else:
+            print("[Memory] The AI has not seen this input before.")
+
         result = coordinator.process_day(
             vision_input_path=image_path_for_processing,
             sensor_data=sensor_data_for_processing,
             text_data=text_description_for_processing,
             feedback_data=current_feedback,
             language_training_pair=language_training_pair,
-            correction_text=None,  # Will prompt for correction after output
+            correction_text=None  # Will prompt for correction after output
         )
 
         last_image_path = image_path_for_processing
@@ -540,6 +570,22 @@ def main():
         print(
             f"Result: VisionPredLabel: {result['vision_label']}, Action: {action_display_str}, Emotion: {result['emotion']}"
         )
+
+        # Compare AI output to expected/correct answer
+        ai_embedding = result.get("memory_embedding") if "memory_embedding" in result else None
+        ai_answer = found_answer if found_answer else None
+        if expected_response:
+            if ai_answer and ai_answer.strip().lower() == expected_response.strip().lower():
+                print("[Check] The AI's answer matches the expected response. No correction needed.")
+                reinforce = input("Do you still want to reinforce this answer? (y/n, default n): ").strip().lower()
+                if reinforce == "y":
+                    coordinator.temporal.learn([(text_description_for_processing, expected_response)])
+            else:
+                print("[Check] The AI's answer does NOT match the expected response.")
+                print(f"AI's answer: {ai_answer if ai_answer else '[No answer]'}")
+                print(f"Expected: {expected_response}")
+                print("Reinforcing correct answer...")
+                coordinator.temporal.learn([(text_description_for_processing, expected_response)])
 
         # Correction/feedback mechanism
         correction_text_input = input("If the AI output was wrong, enter the correct response here (or press Enter to skip): ").strip()

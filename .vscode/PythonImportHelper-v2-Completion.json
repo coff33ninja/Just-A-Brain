@@ -898,6 +898,15 @@
         "documentation": {}
     },
     {
+        "label": "list_learned_qa",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def list_learned_qa(coordinator):\n    print(\"\\n--- Learned Q&A Pairs (Temporal Lobe) ---\")\n    if not coordinator.temporal.memory_db:\n        print(\"No Q&A pairs learned yet.\")\n        return\n    for idx, seq in enumerate(coordinator.temporal.memory_db):\n        for q, a in seq:\n            print(f\"{idx+1}. Q: {q}\\n   A: {a}\")\n    print(\"--- End of Q&A List ---\\n\")\ndef main():",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
         "label": "main",
         "kind": 2,
         "importPath": "main",
