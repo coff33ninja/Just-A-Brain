@@ -88,7 +88,25 @@ The system employs a hybrid approach to learning, tailored to the function of ea
 
 ---
 
-## 4. Data Flow and Integration
+## 4. How the AI Learns (From Scratch)
+
+This system is a fully custom, from-scratch neural architecture. It does **not** use pre-trained transformer models or external AI bases. All learning is based on the data you provide through the UI or book upload.
+
+### Teaching Methods
+- **Text/Language:** Use the 'Text Data' and 'Expected Response' fields in the UI to teach associations (Q&A, next-sentence, or dialogue pairs).
+- **Book Training:** Upload a text file (book) in the 'Book Training' section. The AI will learn associations between consecutive sentences or paragraphs.
+- **Correction:** Use the 'Correct AI Output' field to reinforce the correct answer if the AI's output is wrong.
+- **Images & Labels:** Upload images and provide labels for visual learning.
+- **Feedback:** Use reward and label fields to guide learning in all modalities.
+
+### Guidance
+- The more examples and feedback you provide, the better the AI will learn.
+- The system is limited to the associations and patterns it has seen; it does not have deep generative or conversational ability like transformer-based models.
+- For best results, use clear, well-structured, and consistent data.
+
+---
+
+## 5. Data Flow and Integration
 
 The `BrainCoordinator` orchestrates the flow of information:
 1. External inputs (image, sensor data, text) are received.
@@ -102,7 +120,7 @@ The `BrainCoordinator` orchestrates the flow of information:
 
 ---
 
-## 5. Implementation Details
+## 6. Implementation Details
 
 The system is implemented primarily in Python.
 
@@ -113,7 +131,7 @@ The system is implemented primarily in Python.
 
 ---
 
-## 6. Testing and Evaluation
+## 7. Testing and Evaluation
 
 The project includes a comprehensive test suite covering:
 
@@ -126,7 +144,7 @@ The project includes a comprehensive test suite covering:
 
 ---
 
-## 7. Potential Applications and Future Work
+## 8. Potential Applications and Future Work
 
 This modular architecture serves as a foundation for building more complex AI agents. Potential applications include:
 
@@ -145,24 +163,24 @@ Future work could involve:
 
 ---
 
-## 8. Setup and Usage
+## 9. Setup and Usage
 
 For installation, setup, and usage instructions, please refer to the [README](./README.md).
 
 ---
 
-## 9. Conclusion
+## 10. Conclusion
 
 "Just-A-Brain" demonstrates the feasibility and benefits of a modular, brain-inspired approach to building AI systems. By breaking down cognitive tasks into specialized components with distinct learning mechanisms and a unified consolidation process, the project provides a flexible and extensible framework for developing more complex and capable artificial agents.
 
 ---
 
-## 10. Acknowledgements
+## 11. Acknowledgements
 
 (Include any relevant acknowledgements here.)
 
 ---
 
-## 11. Author's Note
+## 12. Author's Note
 
 This project is inspired by the idea of how an AI might work if it were built in a way similar to the human brain. I am still in deep thought about the architecture—there may be something missing, and I have not formally studied neuroscience or AI. Instead, I have followed the spirit of scientific curiosity, much like observing how fast the apple fell from the tree led to a famous equation. With a bit of help from different types of AI assistants, this project has evolved, but it is far from complete. I am still a novice when it comes to AI, Python, and biology, but I am learning as I go. This work is an ongoing experiment and an invitation for others to explore, critique, and build upon these ideas.
