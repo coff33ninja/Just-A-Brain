@@ -1,1 +1,1 @@
-{"memory_db": [[["a red square object", "a red square object"]]], "cross_modal_memory": [["a red square object", 0]]}
+{"memory_db": [[["a red square object", "a red square object"]], [["A grey red block is on the table.", "A grey red block is on the table."]], [["A grey red block is on the table.", "A grey red block is on the table."]]], "cross_modal_memory": [["a red square object", 0], ["A grey red block is on the table.", 0]]}
