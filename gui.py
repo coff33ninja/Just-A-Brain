@@ -60,13 +60,16 @@ def run_ai_day_interface(
     sys.stdout = captured_output = StringIO()
 
     try:
+        print("[DEBUG] Starting run_ai_day_interface")
         # Prepare inputs
         current_vision_path = vision_input_path if vision_input_path and os.path.exists(vision_input_path) else DEFAULT_IMAGE_PATH
+        print(f"[DEBUG] Vision path resolved: {current_vision_path}")
 
         if audio_input is not None:
             print(f"Audio input received: {audio_input} (audio training not yet implemented)")
 
         if sensor_data_str:
+            print("[DEBUG] Parsing sensor_data_str")
             sensor_data = parse_json_list(sensor_data_str, None)
             if sensor_data is None:
                  print(f"Using random sensor data as input string '{sensor_data_str}' was empty or invalid.")
@@ -76,6 +79,7 @@ def run_ai_day_interface(
             sensor_data = np.random.randn(coordinator.parietal.input_size).tolist()
 
         # Feedback data construction
+        print("[DEBUG] Constructing feedback_data")
         feedback_data = {
             "action_reward": int(action_reward),
             "spatial_error": parse_json_list(spatial_error_str, np.random.rand(coordinator.parietal.output_size).tolist()),
@@ -86,6 +90,7 @@ def run_ai_day_interface(
         }
 
         # Prepare new language training data
+        print("[DEBUG] Preparing language_training_pair")
         language_training_pair = None
         if text_data and expected_response:
             language_training_pair = [(text_data, expected_response)]
@@ -98,6 +103,7 @@ def run_ai_day_interface(
         print(f"Sensor Data (first 5): {sensor_data[:5] if sensor_data else 'N/A'}...")
         print(f"Feedback Data: {feedback_data}")
 
+        print("[DEBUG] Calling coordinator.process_day")
         results = coordinator.process_day(
             vision_input_path=current_vision_path,
             sensor_data=sensor_data,
@@ -106,6 +112,7 @@ def run_ai_day_interface(
             language_training_pair=language_training_pair,
             correction_text=correction_text,
         )
+        print("[DEBUG] coordinator.process_day finished")
 
         # Get the AI's textual response from the result (after process_day)
         ai_textual_response_from_day = results.get("ai_textual_response") # Already included in results
@@ -128,8 +135,10 @@ def run_ai_day_interface(
                 coordinator.temporal.learn([(text_data, expected_response)])
 
         print("--- GUI: Day Processed. Results: {} ---".format(results))
+        print("[DEBUG] Calling coordinator.bedtime")
         print("--- GUI: Starting Bedtime Consolidation ---")
         coordinator.bedtime()
+        print("[DEBUG] coordinator.bedtime finished")
         print("--- GUI: Bedtime Consolidation Complete ---")
 
         # Prepare data for emotion bar plot
@@ -138,11 +147,8 @@ def run_ai_day_interface(
             probs = results["emotion_probabilities"]
             if len(probs) == len(EMOTION_NAMES):
                 emotion_plot_data = {name: prob for name, prob in zip(EMOTION_NAMES, probs)}
-                # gr.BarPlot can also take a list of lists or DataFrame.
-                # For simplicity with dynamic labels, a dictionary {label: value} works well.
             else:
                 print(f"Warning: Mismatch between emotion probabilities ({len(probs)}) and names ({len(EMOTION_NAMES)}). Skipping plot.")
-
 
         log_output = captured_output.getvalue()
         sys.stdout = old_stdout
@@ -307,7 +313,7 @@ inputs_list = [
 ]
 outputs_list = [results_component, log_component, emotion_plot_component] # Added emotion_plot_component
 
-with gr.Blocks(title="Baby AI Interactive Simulation", theme="soft") as demo: # Changed to string theme name
+with gr.Blocks(title="Baby AI Interactive Simulation") as demo:  # Revert to default theme by removing the theme argument
     gr.Markdown("# 🧠 Baby AI Interactive Simulation")
     gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.")
 
