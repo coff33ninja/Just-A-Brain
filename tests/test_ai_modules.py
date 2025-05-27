@@ -341,7 +341,13 @@ class TestLimbicSystemAI(unittest.TestCase):
         self.assertEqual(weights[-1].shape[-1], output_size)
 
     def test_load_model_shape_mismatch_limbic(self):
-        self.skipTest("Shape-mismatch test is not applicable for Keras models with .weights.h5; cannot load as JSON.")
+        # Overwrite the weights file with invalid data
+        with open(TEST_LIMBIC_MODEL_PATH, 'w') as f:
+            f.write('not a valid h5 file')
+        # Should not crash, should reinitialize
+        ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)
+        weights = ai.model.get_weights()
+        self.assertTrue(all(w is not None for w in weights), "Model weights should be initialized after loading corrupted file.")
 
 class TestOccipitalLobeAI(unittest.TestCase):
     @classmethod
@@ -425,7 +431,13 @@ class TestOccipitalLobeAI(unittest.TestCase):
             self.assertTrue(w.size > 0)
 
     def test_load_model_shape_mismatch_occipital(self):
-        self.skipTest("Shape-mismatch test is not applicable for Keras models with .weights.h5; cannot load as JSON.")
+        # Overwrite the weights file with invalid data
+        with open(TEST_OCCIPITAL_MODEL_PATH, 'w') as f:
+            f.write('not a valid h5 file')
+        # Should not crash, should reinitialize
+        ai = OccipitalLobeAI(model_path=TEST_OCCIPITAL_MODEL_PATH)
+        weights = ai.model.get_weights()
+        self.assertTrue(all(w is not None for w in weights), "Model weights should be initialized after loading corrupted file.")
 
 class TestFrontalLobeAI(unittest.TestCase):
     def setUp(self):
