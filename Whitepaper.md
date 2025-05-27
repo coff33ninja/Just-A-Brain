@@ -118,3 +118,9 @@ For installation, setup, and usage instructions, please refer to the [README](./
 ## 10. Acknowledgements
 
 (Include any relevant acknowledgements here.)
+
+---
+
+## 11. Author's Note
+
+This project is inspired by the idea of how an AI might work if it were built in a way similar to the human brain. I am still in deep thought about the architecture—there may be something missing, and I have not formally studied neuroscience or AI. Instead, I have followed the spirit of scientific curiosity, much like observing how fast the apple fell from the tree led to a famous equation. With a bit of help from different types of AI assistants, this project has evolved, but it is far from complete. I am still a novice when it comes to AI, Python, and biology, but I am learning as I go. This work is an ongoing experiment and an invitation for others to explore, critique, and build upon these ideas.
