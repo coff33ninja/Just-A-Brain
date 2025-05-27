@@ -222,6 +222,30 @@
         "documentation": {}
     },
     {
+        "label": "NDArray",
+        "importPath": "numpy.typing",
+        "description": "numpy.typing",
+        "isExtraImport": true,
+        "detail": "numpy.typing",
+        "documentation": {}
+    },
+    {
+        "label": "NDArray",
+        "importPath": "numpy.typing",
+        "description": "numpy.typing",
+        "isExtraImport": true,
+        "detail": "numpy.typing",
+        "documentation": {}
+    },
+    {
+        "label": "NDArray",
+        "importPath": "numpy.typing",
+        "description": "numpy.typing",
+        "isExtraImport": true,
+        "detail": "numpy.typing",
+        "documentation": {}
+    },
+    {
         "label": "Sequential",
         "importPath": "tensorflow.keras.models",
         "description": "tensorflow.keras.models",
@@ -578,7 +602,7 @@
         "kind": 6,
         "importPath": "cerebellum",
         "description": "cerebellum",
-        "peekOfCode": "class CerebellumAI:\n    def __init__(self, model_path=\"data/cerebellum_model.json\"):\n        self.input_size = 10  # Sensor feedback\n        self.hidden_size = 20  # Size of the new hidden layer\n        self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)\n        self.learning_rate_learn = 0.01\n        self.learning_rate_consolidate = 0.005\n        # Weights will be initialized by load_model or _initialize_default_weights_biases\n        self.weights_input_hidden = None\n        self.bias_hidden = None",
+        "peekOfCode": "class CerebellumAI:\n    def __init__(self, model_path=\"data/cerebellum_model.json\"):\n        self.input_size = 10  # Sensor feedback\n        self.hidden_size = 20  # Size of the new hidden layer\n        self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)\n        self.learning_rate_learn = 0.01\n        self.learning_rate_consolidate = 0.005\n        # Weights will be initialized by load_model or _initialize_default_weights_biases\n        self.weights_input_hidden: NDArray[np.float64]\n        self.bias_hidden: NDArray[np.float64]",
         "detail": "cerebellum",
         "documentation": {}
     },

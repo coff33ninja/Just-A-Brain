@@ -1,5 +1,6 @@
 # parietal.py (Sensory Integration, Spatial Awareness)
 import numpy as np
+from numpy.typing import NDArray
 import json
 import os
 
@@ -17,15 +18,17 @@ class ParietalLobeAI:
         self.learning_rate_consolidate = 0.005
 
         # Weights will be initialized by load_model or _initialize_default_weights_biases
-        self.weights_input_hidden = None
-        self.bias_hidden = None
-        self.weights_hidden_output = None
-        self.bias_output = None
+        self.weights_input_hidden: NDArray[np.float64]
+        self.bias_hidden: NDArray[np.float64]
+        self.weights_hidden_output: NDArray[np.float64]
+        self.bias_output: NDArray[np.float64]
 
         # Memory will store (sensory_data_list, true_coords_list) tuples.
         self.memory = []
         self.max_memory_size = 100  # Max memory size
         self.model_path = model_path
+        # Initialize weights to defaults first, then attempt to load from file
+        self._initialize_default_weights_biases()
         self.load_model()
 
     def _prepare_input_vector(self, sensor_data):
@@ -62,15 +65,19 @@ class ParietalLobeAI:
 
     def _forward_propagate(self, sensor_data):
         input_vec_1d = self._prepare_input_vector(sensor_data)
-        if input_vec_1d.shape[0] != self.input_size:
-            input_vec_1d = np.zeros(self.input_size)
+        if input_vec_1d.shape[0] != self.input_size: # Should not happen if _prepare_input_vector is correct
+             # This case should ideally be handled by _prepare_input_vector,
+            # but as a safeguard:
+            print(f"Warning: input_vec_1d shape mismatch in _forward_propagate. Expected {self.input_size}, got {input_vec_1d.shape[0]}. Re-initializing.")
+            input_vec_1d = np.zeros(self.input_size, dtype=np.float64)
+
         input_vec_2d = input_vec_1d.reshape(1, -1)
-        hidden_layer_input = input_vec_2d @ self.weights_input_hidden + self.bias_hidden
-        hidden_layer_output = np.tanh(hidden_layer_input)
-        output_coords = (
+        hidden_layer_input_calc = input_vec_2d @ self.weights_input_hidden + self.bias_hidden
+        hidden_layer_output = np.tanh(hidden_layer_input_calc)
+        output_coords_calc = (
             hidden_layer_output @ self.weights_hidden_output + self.bias_output
         )
-        return input_vec_1d, hidden_layer_output.flatten(), output_coords.flatten()
+        return input_vec_1d, hidden_layer_output.flatten(), output_coords_calc.flatten()
 
     def process_task(self, sensory_data):
         try:
@@ -79,6 +86,7 @@ class ParietalLobeAI:
             )
             return output_coords.tolist()
         except Exception as e:
+            print(f"Error in ParietalLobeAI process_task: {e}") # Log the error
             return [0.0] * self.output_size
 
     def learn(self, sensory_data, true_coords):
@@ -110,7 +118,7 @@ class ParietalLobeAI:
         # 3. Error at hidden layer (delta_hidden)
         error_propagated_to_hidden = (
             delta_output @ self.weights_hidden_output.T
-        )  # Shape (hidden_size,)
+        ) # Shape (hidden_size,)
         derivative_tanh_hidden = (
             1 - hidden_output_1d**2
         )  # hidden_output_1d is tanh(z_hidden)
@@ -169,7 +177,7 @@ class ParietalLobeAI:
             delta_bias_output = delta_output
             error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
             derivative_tanh_hidden = 1 - hidden_output_1d**2
-            delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden
+            delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden # Shape (hidden_size,)
             delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
             delta_bias_hidden = delta_hidden
 
@@ -190,13 +198,13 @@ class ParietalLobeAI:
 
     def _initialize_default_weights_biases(self):
         self.weights_input_hidden = (
-            np.random.randn(self.input_size, self.hidden_size) * 0.01
+            np.random.randn(self.input_size, self.hidden_size).astype(np.float64) * 0.01
         )
-        self.bias_hidden = np.zeros((1, self.hidden_size))
+        self.bias_hidden = np.zeros((1, self.hidden_size), dtype=np.float64)
         self.weights_hidden_output = (
-            np.random.randn(self.hidden_size, self.output_size) * 0.01
+            np.random.randn(self.hidden_size, self.output_size).astype(np.float64) * 0.01
         )
-        self.bias_output = np.zeros((1, self.output_size))
+        self.bias_output = np.zeros((1, self.output_size), dtype=np.float64)
 
     def save_model(self):
         model_data = {
@@ -218,8 +226,10 @@ class ParietalLobeAI:
 
     def load_model(self):
         model_loaded_successfully = False # Flag to track if weights were loaded from file
+        print(f"ParietalLobeAI: Attempting to load model from {self.model_path}")
         if not os.path.exists(self.model_path):
             self._initialize_default_weights_biases()
+            print(f"ParietalLobeAI: No model file found at {self.model_path}. Initialized defaults.")
             # print(f"ParietalLobeAI: No model file at {self.model_path}. Initialized defaults.") # Optional
             return
 
@@ -238,7 +248,7 @@ class ParietalLobeAI:
                 and loaded_hidden_size == self.hidden_size
                 and loaded_output_size == self.output_size
             ):
-                # print("ParietalLobeAI: Architecture mismatch. Initializing defaults.") # Optional
+                print("ParietalLobeAI: Architecture mismatch. Initializing defaults.")
                 self._initialize_default_weights_biases()
                 return
 
@@ -250,7 +260,7 @@ class ParietalLobeAI:
                 "bias_output",
             ]
             if not all(key in data for key in required_keys):
-                # print("ParietalLobeAI: Missing keys. Initializing defaults.") # Optional
+                print("ParietalLobeAI: Missing keys. Initializing defaults.")
                 self._initialize_default_weights_biases()
                 return
 
@@ -282,14 +292,20 @@ class ParietalLobeAI:
             self.weights_hidden_output = w_ho
             self.bias_output = b_o
             model_loaded_successfully = True
-            # print(f"ParietalLobeAI: Model loaded from {self.model_path}") # Optional
+            print(f"ParietalLobeAI: Model loaded successfully from {self.model_path}")
 
         except json.JSONDecodeError as e_json:
-            # print(f"ParietalLobeAI: JSON decode error from {self.model_path}: {e_json}. Initializing defaults.") # Optional
+            print(f"ParietalLobeAI: JSON decode error from {self.model_path}: {e_json}. Initializing defaults.")
             self._initialize_default_weights_biases()
         except Exception as e: # Catch other ValueErrors, TypeErrors
-            # print(f"ParietalLobeAI: Error loading model from {self.model_path}: {e}. Initializing defaults.") # Optional
+            print(f"ParietalLobeAI: Error loading model from {self.model_path}: {e}. Initializing defaults.")
             self._initialize_default_weights_biases()
+
+        # Use the flag to print final status
+        if model_loaded_successfully:
+            pass # Message already printed above
+        else:
+            print("ParietalLobeAI: Model is using default or re-initialized weights due to missing file or loading issues.")
 
 
 # Example Usage

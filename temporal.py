@@ -1,5 +1,6 @@
 # temporal.py (Memory, Language, and Text-to-Visual Association)
 import numpy as np
+from numpy.typing import NDArray # Import NDArray for type hinting
 import json
 import os
 
@@ -31,14 +32,14 @@ class TemporalLobeAI:
         self.learning_rate_consolidate = 0.005
 
         # Initialize all weights and biases to None, will be set by load_model
-        self.weights_text_input_hidden = None
-        self.bias_text_hidden = None
-        self.weights_text_hidden_embedding = None
-        self.bias_text_embedding = None
-        self.weights_embed_to_visual_hidden = None
-        self.bias_visual_assoc_hidden = None
-        self.weights_visual_hidden_to_label = None
-        self.bias_visual_assoc_label = None
+        self.weights_text_input_hidden: NDArray[np.float64]
+        self.bias_text_hidden: NDArray[np.float64]
+        self.weights_text_hidden_embedding: NDArray[np.float64]
+        self.bias_text_embedding: NDArray[np.float64]
+        self.weights_embed_to_visual_hidden: NDArray[np.float64]
+        self.bias_visual_assoc_hidden: NDArray[np.float64]
+        self.weights_visual_hidden_to_label: NDArray[np.float64]
+        self.bias_visual_assoc_label: NDArray[np.float64]
 
         self.memory_db = []  # Initialize memory here
         self.cross_modal_memory = []  # Initialize memory here
@@ -48,27 +49,28 @@ class TemporalLobeAI:
         self.memory_path = memory_path
 
         # load_model will handle weight initialization and memory loading
+        self._initialize_default_weights_biases() # Ensure attributes are ndarrays first
         self.load_model()
 
     def _initialize_default_weights_biases(self):
         self.weights_text_input_hidden = (
-            np.random.randn(self.input_size, self.text_hidden_size) * 0.01
+            np.random.randn(self.input_size, self.text_hidden_size).astype(np.float64) * 0.01
         )
-        self.bias_text_hidden = np.zeros((1, self.text_hidden_size))
+        self.bias_text_hidden = np.zeros((1, self.text_hidden_size), dtype=np.float64)
         self.weights_text_hidden_embedding = (
-            np.random.randn(self.text_hidden_size, self.output_size) * 0.01
+            np.random.randn(self.text_hidden_size, self.output_size).astype(np.float64) * 0.01
         )
-        self.bias_text_embedding = np.zeros((1, self.output_size))
+        self.bias_text_embedding = np.zeros((1, self.output_size), dtype=np.float64)
 
         self.weights_embed_to_visual_hidden = (
-            np.random.randn(self.output_size, self.visual_assoc_hidden_size) * 0.01
+            np.random.randn(self.output_size, self.visual_assoc_hidden_size).astype(np.float64) * 0.01
         )
-        self.bias_visual_assoc_hidden = np.zeros((1, self.visual_assoc_hidden_size))
+        self.bias_visual_assoc_hidden = np.zeros((1, self.visual_assoc_hidden_size), dtype=np.float64)
         self.weights_visual_hidden_to_label = (
-            np.random.randn(self.visual_assoc_hidden_size, self.visual_output_size)
+            np.random.randn(self.visual_assoc_hidden_size, self.visual_output_size).astype(np.float64)
             * 0.01
         )
-        self.bias_visual_assoc_label = np.zeros((1, self.visual_output_size))
+        self.bias_visual_assoc_label = np.zeros((1, self.visual_output_size), dtype=np.float64)
 
     def _to_numerical_vector(self, data, size, context="input"):
         if isinstance(data, str):
@@ -76,22 +78,22 @@ class TemporalLobeAI:
             np.random.seed(hash_val % (2**32 - 1))
             vec = np.random.rand(size)
             np.random.seed(None)
-            return vec
+            return vec.astype(np.float64)
         try:
             vec = np.array(data, dtype=float).flatten()
         except ValueError:
-            return np.zeros(size)
+            return np.zeros(size, dtype=np.float64)
         if vec.shape[0] == size:
             return vec
         elif vec.shape[0] < size:
-            return np.concatenate((vec, np.zeros(size - vec.shape[0])))
+            return np.concatenate((vec, np.zeros(size - vec.shape[0], dtype=np.float64)))
         else:
             return vec[:size]
 
     def _forward_prop_text(self, input_text_1d):
         if input_text_1d.shape[0] != self.input_size:
             input_text_1d = self._to_numerical_vector(input_text_1d, self.input_size)
-        input_text_2d = input_text_1d.reshape(1, -1)
+        input_text_2d = input_text_1d.reshape(1, -1) # input_text_1d is already float64
         text_hidden_input = (
             input_text_2d @ self.weights_text_input_hidden + self.bias_text_hidden
         )
@@ -108,8 +110,8 @@ class TemporalLobeAI:
 
     def _forward_prop_visual_assoc(self, text_embedding_1d):
         if text_embedding_1d.shape[0] != self.output_size:
-            text_embedding_1d = np.zeros(self.output_size)
-        text_embedding_2d = text_embedding_1d.reshape(1, -1)
+            text_embedding_1d = np.zeros(self.output_size, dtype=np.float64)
+        text_embedding_2d = text_embedding_1d.reshape(1, -1) # text_embedding_1d is float64
         visual_hidden_input = (
             text_embedding_2d @ self.weights_embed_to_visual_hidden
             + self.bias_visual_assoc_hidden
