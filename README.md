@@ -201,3 +201,23 @@ python main.py --help
 - For best results, provide clear, well-structured, and consistent data, and use correction/feedback to reinforce learning.
 
 See the rest of this README and the Whitepaper for more details on architecture and training modalities.
+
+## Q&A Memory, Explainability, and Feedback (New Features)
+
+### CLI Features
+- At any prompt, type `list` to see all learned Q&A pairs (facts) the AI has stored in its memory.
+- When you enter a text input, the AI will show if it already knows an answer for it (from its memory).
+- After the AI answers, it will compare its answer to your expected response and tell you if it was correct or not.
+- The system will only reinforce (learn) if the answer was wrong, or if you explicitly choose to reinforce even when correct.
+- You can still provide corrections as before.
+
+### GUI Features
+- Click the **Show All Learned Q&A Pairs** button to see a table of all Q&A pairs the AI has learned so far.
+- When you submit a text input, the log will show if the AI already knows an answer for it.
+- If you provide an expected response, the system will compare the AI's answer to it and log whether it was correct. If not, it will automatically reinforce the correct answer.
+- You can use the **Correct AI Output** field to reinforce the correct answer if the AI was wrong, or to further strengthen correct associations.
+
+### Why This Matters
+- These features make the AI's learning process transparent and interactive.
+- You can see exactly what the AI has learned, correct mistakes, and avoid over-reinforcing correct answers.
+- This approach supports explainable AI and helps you guide the system's knowledge more effectively.
