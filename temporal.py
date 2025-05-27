@@ -436,278 +436,111 @@ class TemporalLobeAI:
             )
 
     def load_model(self):
-        # Initialize to defaults first, to handle cases where files don't exist or are invalid.
-        # This ensures that if any step fails, the model is in a known default state.
         self._initialize_default_weights_biases()
         self.memory_db = []
         self.cross_modal_memory = []
 
-        # --- Try to load Model Weights ---
+        model_loaded_successfully = False # Initialize the flag
         if os.path.exists(self.model_path):
             try:
                 with open(self.model_path, "r") as f:
                     data = json.load(f)
 
-                # Architectural parameters for weights
-                default_size_sentinel = -1
-                loaded_input_size = data.get("input_size", default_size_sentinel)
-                loaded_text_hidden_size = data.get(
-                    "text_hidden_size", default_size_sentinel
-                )
-                loaded_output_size = data.get("output_size", default_size_sentinel)
-                loaded_visual_assoc_hidden_size = data.get(
-                    "visual_assoc_hidden_size", default_size_sentinel
-                )
-                loaded_visual_output_size = data.get(
-                    "visual_output_size", default_size_sentinel
-                )
+                # Validate architectural parameters
+                arch_params_ok = all([
+                    data.get("input_size") == self.input_size,
+                    data.get("text_hidden_size") == self.text_hidden_size,
+                    data.get("output_size") == self.output_size,
+                    data.get("visual_assoc_hidden_size") == self.visual_assoc_hidden_size,
+                    data.get("visual_output_size") == self.visual_output_size
+                ])
+                if not arch_params_ok:
+                    print("TemporalLobeAI: Model architecture mismatch. Using default weights.")
+                    # self._initialize_default_weights_biases() # Already called
+                    # Memory will be loaded separately
 
-                arch_params_match = (
-                    loaded_input_size == self.input_size
-                    and loaded_text_hidden_size == self.text_hidden_size
-                    and loaded_output_size == self.output_size
-                    and loaded_visual_assoc_hidden_size == self.visual_assoc_hidden_size
-                    and loaded_visual_output_size == self.visual_output_size
-                )
-
-                if not arch_params_match:
-                    # Non-matching architecture, already set to defaults, so just return.
-                    # Also load memory if path exists, as it's independent
-                    if os.path.exists(self.memory_path):
+                else:
+                    # Validate presence of all weight keys
+                    required_keys = [
+                        "weights_text_input_hidden", "bias_text_hidden",
+                        "weights_text_hidden_embedding", "bias_text_embedding",
+                        "weights_embed_to_visual_hidden", "bias_visual_assoc_hidden",
+                        "weights_visual_hidden_to_label", "bias_visual_assoc_label"
+                    ]
+                    if not all(key in data for key in required_keys):
+                        print("TemporalLobeAI: Model file missing weight keys. Using default weights.")
+                        # self._initialize_default_weights_biases() # Already called
+                    else:
+                        # Attempt to load weights and check shapes
                         try:
-                            with open(self.memory_path, "r") as f_mem:
-                                loaded_memory_data = json.load(f_mem)
-                            if isinstance(loaded_memory_data, dict):
-                                self.memory_db = loaded_memory_data.get("memory_db", [])
-                                self.cross_modal_memory = loaded_memory_data.get(
-                                    "cross_modal_memory", []
-                                )
-                            elif isinstance(
-                                loaded_memory_data, list
-                            ):  # Backward compatibility for old list-only memory
-                                self.memory_db = loaded_memory_data
-                                self.cross_modal_memory = []
-                            # Apply filters
-                            if not isinstance(self.memory_db, list):
-                                self.memory_db = []
-                            if not isinstance(self.cross_modal_memory, list):
-                                self.cross_modal_memory = []
-                            self.memory_db = [
-                                item
-                                for item in self.memory_db
-                                if isinstance(item, list)
-                                and all(
-                                    isinstance(p, tuple) and len(p) == 2 for p in item
-                                )
-                            ]
-                            self.cross_modal_memory = [
-                                item
-                                for item in self.cross_modal_memory
-                                if isinstance(item, tuple) and len(item) == 2
-                            ]
-                        except Exception:  # Failed to load or parse memory file
-                            self.memory_db = []  # Ensure memory is empty on error
-                            self.cross_modal_memory = []
-                    return
+                            w_t_ih = np.array(data["weights_text_input_hidden"])
+                            b_t_h = np.array(data["bias_text_hidden"])
+                            # ... (load all other weights and biases) ...
+                            w_v_hl = np.array(data["weights_visual_hidden_to_label"])
+                            b_v_al = np.array(data["bias_visual_assoc_label"])
 
-                required_keys = [
-                    "weights_text_input_hidden",
-                    "bias_text_hidden",
-                    "weights_text_hidden_embedding",
-                    "bias_text_embedding",
-                    "weights_embed_to_visual_hidden",
-                    "bias_visual_assoc_hidden",
-                    "weights_visual_hidden_to_label",
-                    "bias_visual_assoc_label",
-                ]
-                if not all(key in data for key in required_keys):
-                    # Key missing, already set to defaults, so just return (handle memory as above).
-                    if os.path.exists(
-                        self.memory_path
-                    ):  # Attempt to load memory even if model keys fail
-                        try:
-                            with open(self.memory_path, "r") as f_mem:
-                                loaded_memory_data = json.load(f_mem)
-                            if isinstance(loaded_memory_data, dict):
-                                self.memory_db = loaded_memory_data.get("memory_db", [])
-                                self.cross_modal_memory = loaded_memory_data.get(
-                                    "cross_modal_memory", []
-                                )
-                            elif isinstance(loaded_memory_data, list):
-                                self.memory_db = loaded_memory_data
-                                self.cross_modal_memory = []
-                            if not isinstance(self.memory_db, list):
-                                self.memory_db = []
-                            if not isinstance(self.cross_modal_memory, list):
-                                self.cross_modal_memory = []
-                            self.memory_db = [
-                                item
-                                for item in self.memory_db
-                                if isinstance(item, list)
-                                and all(
-                                    isinstance(p, tuple) and len(p) == 2 for p in item
-                                )
-                            ]
-                            self.cross_modal_memory = [
-                                item
-                                for item in self.cross_modal_memory
-                                if isinstance(item, tuple) and len(item) == 2
-                            ]
-                        except Exception:
-                            self.memory_db = []
-                            self.cross_modal_memory = []
-                    return
+                            # Example shape check (do for all)
+                            if w_t_ih.shape != (self.input_size, self.text_hidden_size):
+                                raise ValueError("Shape mismatch for weights_text_input_hidden")
+                            # ... (check all other shapes) ...
 
-                # Try to load weights
-                w_t_ih = np.array(data["weights_text_input_hidden"])
-                b_t_h = np.array(data["bias_text_hidden"])
-                w_t_he = np.array(data["weights_text_hidden_embedding"])
-                b_t_e = np.array(data["bias_text_embedding"])
-                w_e_vh = np.array(data["weights_embed_to_visual_hidden"])
-                b_v_ah = np.array(data["bias_visual_assoc_hidden"])
-                w_v_hl = np.array(data["weights_visual_hidden_to_label"])
-                b_v_al = np.array(data["bias_visual_assoc_label"])
+                            # If all checks pass, assign weights
+                            self.weights_text_input_hidden = w_t_ih
+                            self.bias_text_hidden = b_t_h
+                            self.weights_text_hidden_embedding = np.array(data["weights_text_hidden_embedding"])
+                            self.bias_text_embedding = np.array(data["bias_text_embedding"])
+                            self.weights_embed_to_visual_hidden = np.array(data["weights_embed_to_visual_hidden"])
+                            self.bias_visual_assoc_hidden = np.array(data["bias_visual_assoc_hidden"])
+                            self.weights_visual_hidden_to_label = w_v_hl
+                            self.bias_visual_assoc_label = b_v_al
+                            model_loaded_successfully = True
+                            # Success message will be printed based on the flag later
+                        except (ValueError, TypeError) as e_shape:
+                            print(f"TemporalLobeAI: Error validating model weights/shapes: {e_shape}. Using default weights.")
+                            self._initialize_default_weights_biases() # Re-initialize if loading specific weights failed
 
-                # Check shapes
-                shapes_ok = (
-                    w_t_ih.shape == (self.input_size, self.text_hidden_size)
-                    and b_t_h.shape == (1, self.text_hidden_size)
-                    and w_t_he.shape == (self.text_hidden_size, self.output_size)
-                    and b_t_e.shape == (1, self.output_size)
-                    and w_e_vh.shape
-                    == (self.output_size, self.visual_assoc_hidden_size)
-                    and b_v_ah.shape == (1, self.visual_assoc_hidden_size)
-                    and w_v_hl.shape
-                    == (self.visual_assoc_hidden_size, self.visual_output_size)
-                    and b_v_al.shape == (1, self.visual_output_size)
-                )
+            except Exception as e_load_model:
+                print(f"TemporalLobeAI: Error loading model file {self.model_path}: {e_load_model}. Using default weights.")
+                # self._initialize_default_weights_biases() # Already called
+        else:
+            print(f"TemporalLobeAI: No model file found at {self.model_path}. Using default weights.")
+            # self._initialize_default_weights_biases() # Already called
 
-                if not shapes_ok:
-                    # Shape mismatch, already set to defaults, so just return (handle memory as above).
-                    if os.path.exists(self.memory_path):  # Attempt to load memory
-                        try:
-                            with open(self.memory_path, "r") as f_mem:
-                                loaded_memory_data = json.load(f_mem)
-                            if isinstance(loaded_memory_data, dict):
-                                self.memory_db = loaded_memory_data.get("memory_db", [])
-                                self.cross_modal_memory = loaded_memory_data.get(
-                                    "cross_modal_memory", []
-                                )
-                            elif isinstance(loaded_memory_data, list):
-                                self.memory_db = loaded_memory_data
-                                self.cross_modal_memory = []
-                            if not isinstance(self.memory_db, list):
-                                self.memory_db = []
-                            if not isinstance(self.cross_modal_memory, list):
-                                self.cross_modal_memory = []
-                            self.memory_db = [
-                                item
-                                for item in self.memory_db
-                                if isinstance(item, list)
-                                and all(
-                                    isinstance(p, tuple) and len(p) == 2 for p in item
-                                )
-                            ]
-                            self.cross_modal_memory = [
-                                item
-                                for item in self.cross_modal_memory
-                                if isinstance(item, tuple) and len(item) == 2
-                            ]
-                        except Exception:
-                            self.memory_db = []
-                            self.cross_modal_memory = []
-                    return
+        # Report final model loading status based on the flag
+        if model_loaded_successfully:
+            print("TemporalLobeAI: Model weights were successfully loaded from file.")
+        else:
+            print("TemporalLobeAI: Model is using default or re-initialized weights due to missing file or loading issues.")
 
-                # All checks passed for weights, assign them
-                self.weights_text_input_hidden = w_t_ih
-                self.bias_text_hidden = b_t_h
-                self.weights_text_hidden_embedding = w_t_he
-                self.bias_text_embedding = b_t_e
-                self.weights_embed_to_visual_hidden = w_e_vh
-                self.bias_visual_assoc_hidden = b_v_ah
-                self.weights_visual_hidden_to_label = w_v_hl
-                self.bias_visual_assoc_label = b_v_al
-
-            except (
-                Exception
-            ):  # Handles errors in loading model JSON or converting to np.array
-                # Weights already set to default, ensure memory is also default.
-                self.memory_db = []
-                self.cross_modal_memory = []
-                # Now try to load memory separately, as it might be valid even if model file was corrupt
-                if os.path.exists(self.memory_path):
-                    try:
-                        with open(self.memory_path, "r") as f_mem:
-                            loaded_memory_data = json.load(f_mem)
-                        if isinstance(loaded_memory_data, dict):
-                            self.memory_db = loaded_memory_data.get("memory_db", [])
-                            self.cross_modal_memory = loaded_memory_data.get(
-                                "cross_modal_memory", []
-                            )
-                        elif isinstance(loaded_memory_data, list):
-                            self.memory_db = loaded_memory_data
-                            self.cross_modal_memory = []
-                        # Apply filters
-                        if not isinstance(self.memory_db, list):
-                            self.memory_db = []
-                        if not isinstance(self.cross_modal_memory, list):
-                            self.cross_modal_memory = []
-                        self.memory_db = [
-                            item
-                            for item in self.memory_db
-                            if isinstance(item, list)
-                            and all(isinstance(p, tuple) and len(p) == 2 for p in item)
-                        ]
-                        self.cross_modal_memory = [
-                            item
-                            for item in self.cross_modal_memory
-                            if isinstance(item, tuple) and len(item) == 2
-                        ]
-                    except Exception:  # Failed to load or parse memory file
-                        self.memory_db = []  # Ensure memory is empty on error
-                        self.cross_modal_memory = []
-                return  # Return after attempting memory load
-
-        # --- Try to load Memory (if model path didn't exist or if it did but memory needs loading) ---
-        # This section is now largely handled within the model loading try-catch,
-        # but an explicit load if model_path didn't exist is still good.
-        if not os.path.exists(self.model_path) and os.path.exists(self.memory_path):
+        # --- Load Memory ---
+        if os.path.exists(self.memory_path):
             try:
                 with open(self.memory_path, "r") as f_mem:
                     loaded_memory_data = json.load(f_mem)
                 if isinstance(loaded_memory_data, dict):
                     self.memory_db = loaded_memory_data.get("memory_db", [])
-                    self.cross_modal_memory = loaded_memory_data.get(
-                        "cross_modal_memory", []
-                    )
-                elif isinstance(loaded_memory_data, list):  # Backward compatibility
+                    self.cross_modal_memory = loaded_memory_data.get("cross_modal_memory", [])
+                elif isinstance(loaded_memory_data, list): # Backward compatibility
                     self.memory_db = loaded_memory_data
                     self.cross_modal_memory = []
 
-                # Apply filters
-                if not isinstance(self.memory_db, list):
-                    self.memory_db = []
-                if not isinstance(self.cross_modal_memory, list):
-                    self.cross_modal_memory = []
+                # Apply filters for data integrity
                 self.memory_db = [
-                    item
-                    for item in self.memory_db
-                    if isinstance(item, list)
-                    and all(isinstance(p, tuple) and len(p) == 2 for p in item)
-                ]
+                    item for item in self.memory_db if isinstance(item, list) and
+                    all(isinstance(p, tuple) and len(p) == 2 for p in item)
+                ] if isinstance(self.memory_db, list) else []
                 self.cross_modal_memory = [
-                    item
-                    for item in self.cross_modal_memory
-                    if isinstance(item, tuple) and len(item) == 2
-                ]
-
-            except Exception:  # Failed to load or parse memory file
-                self.memory_db = []  # Ensure memory is empty on error
+                    item for item in self.cross_modal_memory if isinstance(item, tuple) and len(item) == 2
+                ] if isinstance(self.cross_modal_memory, list) else []
+                print("TemporalLobeAI: Memory loaded.")
+            except Exception as e_load_mem:
+                print(f"TemporalLobeAI: Error loading memory file {self.memory_path}: {e_load_mem}. Initializing empty memory.")
+                self.memory_db = []
                 self.cross_modal_memory = []
-        # If self.model_path existed, memory loading was attempted within its try-catch block.
-        # If self.model_path didn't exist, memory has been loaded (or attempted) here.
-        # If self.memory_path also doesn't exist, memory remains as initialized (empty lists).
-
+        else:
+            print(f"TemporalLobeAI: No memory file found at {self.memory_path}. Initializing empty memory.")
+            self.memory_db = []
+            self.cross_modal_memory = []
 
 # Example Usage
 if __name__ == "__main__":

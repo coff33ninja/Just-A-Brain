@@ -214,8 +214,12 @@ class ParietalLobeAI:
             "output_size": self.output_size,
         }
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
-        with open(self.model_path, "w") as f:
-            json.dump(model_data, f)
+        try:
+            with open(self.model_path, "w") as f:
+                json.dump(model_data, f)
+            # print(f"ParietalLobeAI: Model saved to {self.model_path}") # Optional success message
+        except Exception as e:
+            print(f"ParietalLobeAI: Error saving model to {self.model_path}: {e}")
 
     def load_model(self):
         if not os.path.exists(self.model_path):

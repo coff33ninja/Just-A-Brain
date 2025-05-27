@@ -1,6 +1,6 @@
 # occipital.py (Visual Processing)
-from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense # type: ignore
+from tensorflow.keras.models import Sequential  # type: ignore
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Input  # type: ignore
 import numpy as np
 import os # type: ignore
 from PIL import Image  # Still needed for image loading and preprocessing
@@ -26,12 +26,13 @@ class OccipitalLobeAI:
     def _build_model(self):
         model = Sequential(
             [
+            Input(shape=self.input_shape, name="input_layer"), # Add Input layer
                 Conv2D(
                     32,
                     (3, 3),
                     activation="relu",
-                    input_shape=self.input_shape,
-                    name="conv2d_1",
+                # input_shape removed from here
+                name="conv2d_1"
                 ),
                 MaxPooling2D((2, 2), name="maxpool_1"),
                 Conv2D(64, (3, 3), activation="relu", name="conv2d_2"),

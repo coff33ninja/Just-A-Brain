@@ -198,7 +198,10 @@ class FrontalLobeAI:
         )
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
         try:
-            self.model.save_weights(self.model_path)
+            if not self.model_path.endswith(".weights.h5"):
+                print(f"Warning: FrontalLobeAI model_path '{self.model_path}' does not end with '.weights.h5'. Keras save_weights might prefer this.")
+            # Ensure the directory for model_path exists
+            self.model.save_weights(self.model_path) # Keras saves in HDF5 format
             epsilon_data = {"exploration_rate_epsilon": self.exploration_rate_epsilon}
             with open(self.epsilon_path, "w") as f:
                 json.dump(epsilon_data, f)
@@ -210,7 +213,10 @@ class FrontalLobeAI:
         if os.path.exists(self.model_path):
             print(f"Loading Frontal Lobe model weights from {self.model_path}")
             try:
-                self.model.load_weights(self.model_path)
+                # Ensure the model is built before loading weights
+                if self.model is None: # Should not happen if __init__ is correct
+                    self.model = self._build_model()
+                self.model.load_weights(self.model_path) # Keras loads from HDF5 format
                 # Important: After loading weights into main model, also update target model
                 self.update_target_model()
                 print("Frontal Lobe model weights loaded and target model updated.")
@@ -219,8 +225,11 @@ class FrontalLobeAI:
                     f"Error loading Frontal Lobe model weights: {e}. Model remains initialized."
                 )
         else:
+            # This case means the .weights.h5 file was not found.
+            # If model_path was originally .json and we are trying to load it as .weights.h5,
+            # this path will be hit. The model remains newly initialized.
             print(
-                f"No pre-trained weights found for Frontal Lobe at {self.model_path}. Model is newly initialized."
+                f"No pre-trained weights found for Frontal Lobe at {self.model_path} (expected .weights.h5). Model is newly initialized."
             )
 
         if os.path.exists(self.epsilon_path):
