@@ -241,12 +241,14 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
 
     gr.Markdown(
         """
-        **How to Use:**
-        1.  **Sensory Inputs:** Provide an image, text, and optionally sensor data (as a JSON formatted list). If sensor data is blank, random values will be used.
-        2.  **Feedback Signals:** Adjust these values to guide the AI's learning for the current set of inputs. If text/JSON list fields are blank, random appropriate values will be used.
-        3.  Click "Process One Day & Consolidate Brain State".
-        4.  Observe the "Processing Results" (JSON output from the AI) and "Log Output" (detailed print statements from the AI's operations).
-        5.  The AI's internal models are updated and saved after each 'day'. You can run multiple 'days' to see how it learns and adapts.
+        **How to Use & Teach the AI (From Scratch):**
+        - Use the **Text Data** and **Expected Response** fields to teach the AI associations (Q&A, next-sentence, or dialogue pairs). For advanced training, upload structured Q&A or dialogue logs as books.
+        - Use the **Book Training** section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs. Books with dialogue, stories, or structured conversations work best for richer context.
+        - If the AI's output is wrong, use the **Correct AI Output** field to reinforce the correct answer and help the AI learn interactively.
+        - Upload images and provide labels for visual learning. You can also pair images with descriptive text for cross-modal association.
+        - Use the reward and label fields to guide learning in all modalities. The system supports reinforcement-like feedback for actions and emotions.
+        - For best results, start with simple examples and gradually increase complexity (curriculum learning). Mix narrative, dialogue, and factual text for more nuanced associations.
+        - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
         """
     )
 
