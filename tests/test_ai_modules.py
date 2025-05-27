@@ -839,6 +839,5 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertIsNotNone(ai.bias_output, "bias_output should be initialized after loading corrupted file.")
         self.assertEqual(ai.bias_output.shape, (1, self.ai.output_size))
 
-    # ...existing code...
 if __name__ == '__main__':
     unittest.main()
