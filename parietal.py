@@ -16,20 +16,15 @@ class ParietalLobeAI:
         self.learning_rate_learn = 0.01
         self.learning_rate_consolidate = 0.005
 
-        # New two-layer architecture weights and biases
-        self.weights_input_hidden = (
-            np.random.randn(self.input_size, self.hidden_size) * 0.01
-        )
-        self.bias_hidden = np.zeros((1, self.hidden_size))
-        self.weights_hidden_output = (
-            np.random.randn(self.hidden_size, self.output_size) * 0.01
-        )
-        self.bias_output = np.zeros((1, self.output_size))
+        # Weights will be initialized by load_model or _initialize_default_weights_biases
+        self.weights_input_hidden = None
+        self.bias_hidden = None
+        self.weights_hidden_output = None
+        self.bias_output = None
 
         # Memory will store (sensory_data_list, true_coords_list) tuples.
         self.memory = []
         self.max_memory_size = 100  # Max memory size
-
         self.model_path = model_path
         self.load_model()
 
@@ -222,8 +217,10 @@ class ParietalLobeAI:
             print(f"ParietalLobeAI: Error saving model to {self.model_path}: {e}")
 
     def load_model(self):
+        model_loaded_successfully = False # Flag to track if weights were loaded from file
         if not os.path.exists(self.model_path):
             self._initialize_default_weights_biases()
+            # print(f"ParietalLobeAI: No model file at {self.model_path}. Initialized defaults.") # Optional
             return
 
         try:
@@ -241,6 +238,7 @@ class ParietalLobeAI:
                 and loaded_hidden_size == self.hidden_size
                 and loaded_output_size == self.output_size
             ):
+                # print("ParietalLobeAI: Architecture mismatch. Initializing defaults.") # Optional
                 self._initialize_default_weights_biases()
                 return
 
@@ -252,6 +250,7 @@ class ParietalLobeAI:
                 "bias_output",
             ]
             if not all(key in data for key in required_keys):
+                # print("ParietalLobeAI: Missing keys. Initializing defaults.") # Optional
                 self._initialize_default_weights_biases()
                 return
 
@@ -273,6 +272,7 @@ class ParietalLobeAI:
                 and w_ho.shape == expected_w_ho_shape
                 and b_o.shape == expected_b_o_shape
             ):
+                # print("ParietalLobeAI: Shape mismatch. Initializing defaults.") # Optional
                 self._initialize_default_weights_biases()
                 return
 
@@ -281,10 +281,15 @@ class ParietalLobeAI:
             self.bias_hidden = b_h
             self.weights_hidden_output = w_ho
             self.bias_output = b_o
+            model_loaded_successfully = True
+            # print(f"ParietalLobeAI: Model loaded from {self.model_path}") # Optional
 
-        except Exception:
+        except json.JSONDecodeError as e_json:
+            # print(f"ParietalLobeAI: JSON decode error from {self.model_path}: {e_json}. Initializing defaults.") # Optional
             self._initialize_default_weights_biases()
-            return  # Explicit return for clarity
+        except Exception as e: # Catch other ValueErrors, TypeErrors
+            # print(f"ParietalLobeAI: Error loading model from {self.model_path}: {e}. Initializing defaults.") # Optional
+            self._initialize_default_weights_biases()
 
 
 # Example Usage

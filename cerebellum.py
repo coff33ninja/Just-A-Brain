@@ -13,11 +13,15 @@ class CerebellumAI:
         self.learning_rate_learn = 0.01
         self.learning_rate_consolidate = 0.005
 
-        # Initialize weights and biases here, load_model will overwrite if successful
-        self._initialize_default_weights_biases()  # Ensure defaults are set before load_model
+        # Weights will be initialized by load_model or _initialize_default_weights_biases
+        self.weights_input_hidden = None
+        self.bias_hidden = None
+        self.weights_hidden_output = None
+        self.bias_output = None
 
         self.memory = []  # Stores (sensor_data_list, true_command_list)
         self.model_path = model_path
+        # load_model will handle weight initialization
         self.load_model()
 
     def _prepare_input_vector(self, sensor_data):
@@ -186,12 +190,10 @@ class CerebellumAI:
             json.dump(model_data, f)
 
     def load_model(self):
-        # Initialize to defaults FIRST. This ensures that if any subsequent step fails,
-        # the instance remains in a valid default state.
-        self._initialize_default_weights_biases()
-
+        model_loaded_successfully = False # Flag
         if not os.path.exists(self.model_path):
-            return  # Already default, file not found
+            self._initialize_default_weights_biases()
+            return
 
         try:
             with open(self.model_path, "r") as f:
@@ -208,7 +210,8 @@ class CerebellumAI:
                 and loaded_hidden_size == self.hidden_size
                 and loaded_output_size == self.output_size
             ):
-                return  # Arch params don't match, already set to defaults
+                self._initialize_default_weights_biases()
+                return
 
             # Check 2: Presence of all required new format keys
             required_keys = [
@@ -218,7 +221,8 @@ class CerebellumAI:
                 "bias_output",
             ]
             if not all(key in data for key in required_keys):
-                return  # Keys missing (or old format), already set to defaults
+                self._initialize_default_weights_biases()
+                return
 
             # If all keys are present, attempt to load and validate them
             w_ih = np.array(data["weights_input_hidden"])
@@ -238,19 +242,20 @@ class CerebellumAI:
                 and w_ho.shape == expected_w_ho_shape
                 and b_o.shape == expected_b_o_shape
             ):
-                return  # Shapes don't match, already set to defaults
+                self._initialize_default_weights_biases()
+                return
 
             # If all checks passed, assign the loaded weights
             self.weights_input_hidden = w_ih
             self.bias_hidden = b_h
             self.weights_hidden_output = w_ho
             self.bias_output = b_o
+            model_loaded_successfully = True
 
-        except Exception:
-            # Any error during load (JSON parse, file read, np.array conversion etc.)
-            # results in the instance retaining its initial default state because
-            # _initialize_default_weights_biases() was called at the start.
-            # No specific action needed here other than to allow the function to end.
+        except json.JSONDecodeError:
+            self._initialize_default_weights_biases()
+        except Exception: # Catch other ValueErrors, TypeErrors
+            self._initialize_default_weights_biases()
             return
 
 

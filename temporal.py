@@ -30,7 +30,7 @@ class TemporalLobeAI:
         self.learning_rate_learn = 0.01
         self.learning_rate_consolidate = 0.005
 
-        # Initialize all weights and biases to None, will be set by _initialize_default_weights_biases or load_model
+        # Initialize all weights and biases to None, will be set by load_model
         self.weights_text_input_hidden = None
         self.bias_text_hidden = None
         self.weights_text_hidden_embedding = None
@@ -40,13 +40,14 @@ class TemporalLobeAI:
         self.weights_visual_hidden_to_label = None
         self.bias_visual_assoc_label = None
 
-        self.memory_db = []
-        self.cross_modal_memory = []
+        self.memory_db = []  # Initialize memory here
+        self.cross_modal_memory = []  # Initialize memory here
         self.max_cross_modal_memory_size = 100
 
         self.model_path = model_path
         self.memory_path = memory_path
 
+        # load_model will handle weight initialization and memory loading
         self.load_model()
 
     def _initialize_default_weights_biases(self):
@@ -436,9 +437,11 @@ class TemporalLobeAI:
             )
 
     def load_model(self):
-        self._initialize_default_weights_biases()
-        self.memory_db = []
-        self.cross_modal_memory = []
+        # Weights are not initialized here by default. They will be initialized
+        # if the model file is not found, or if loading fails.
+        # Memory lists are initialized in __init__ or can be reset here if preferred.
+        self.memory_db = []  # Reset memory when loading model state
+        self.cross_modal_memory = []  # Reset memory when loading model state
 
         model_loaded_successfully = False # Initialize the flag
         if os.path.exists(self.model_path):
@@ -455,9 +458,10 @@ class TemporalLobeAI:
                     data.get("visual_output_size") == self.visual_output_size
                 ])
                 if not arch_params_ok:
-                    print("TemporalLobeAI: Model architecture mismatch. Using default weights.")
-                    # self._initialize_default_weights_biases() # Already called
-                    # Memory will be loaded separately
+                    print(
+                        "TemporalLobeAI: Model architecture mismatch. Initializing with default weights."
+                    )
+                    self._initialize_default_weights_biases()
 
                 else:
                     # Validate presence of all weight keys
@@ -468,8 +472,10 @@ class TemporalLobeAI:
                         "weights_visual_hidden_to_label", "bias_visual_assoc_label"
                     ]
                     if not all(key in data for key in required_keys):
-                        print("TemporalLobeAI: Model file missing weight keys. Using default weights.")
-                        # self._initialize_default_weights_biases() # Already called
+                        print(
+                            "TemporalLobeAI: Model file missing weight keys. Initializing with default weights."
+                        )
+                        self._initialize_default_weights_biases()
                     else:
                         # Attempt to load weights and check shapes
                         try:
@@ -497,14 +503,19 @@ class TemporalLobeAI:
                             # Success message will be printed based on the flag later
                         except (ValueError, TypeError) as e_shape:
                             print(f"TemporalLobeAI: Error validating model weights/shapes: {e_shape}. Using default weights.")
-                            self._initialize_default_weights_biases() # Re-initialize if loading specific weights failed
+                            self._initialize_default_weights_biases()  # Re-initialize
+            except json.JSONDecodeError as e_json:
+                print(
+                    f"TemporalLobeAI: Error decoding JSON from model file {self.model_path}: {e_json}. Initializing with default weights."
+                )
+                self._initialize_default_weights_biases()
 
             except Exception as e_load_model:
                 print(f"TemporalLobeAI: Error loading model file {self.model_path}: {e_load_model}. Using default weights.")
-                # self._initialize_default_weights_biases() # Already called
+                self._initialize_default_weights_biases()
         else:
             print(f"TemporalLobeAI: No model file found at {self.model_path}. Using default weights.")
-            # self._initialize_default_weights_biases() # Already called
+            self._initialize_default_weights_biases()
 
         # Report final model loading status based on the flag
         if model_loaded_successfully:
@@ -552,9 +563,9 @@ class TemporalLobeAI:
                                 )
                 self.cross_modal_memory = temp_cross_modal_memory
                 print("TemporalLobeAI: Memory loaded.")
-            except Exception as e_load_mem:
+            except json.JSONDecodeError as e_json_mem:  # More specific for memory JSON
                 print(
-                    f"TemporalLobeAI: Error decoding JSON from memory file {self.memory_path}: {e_json}. Initializing empty memory."
+                    f"TemporalLobeAI: Error decoding JSON from memory file {self.memory_path}: {e_json_mem}. Initializing empty memory."
                 )
                 self.memory_db = []
                 self.cross_modal_memory = []
