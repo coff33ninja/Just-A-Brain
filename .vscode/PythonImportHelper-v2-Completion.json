@@ -632,7 +632,7 @@
         "kind": 2,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "def run_ai_day_interface(\n    vision_input_path,\n    text_data,\n    expected_response,\n    sensor_data_str,\n    action_reward,\n    spatial_error_str,\n    memory_target,\n    vision_label,\n    motor_command_str,",
+        "peekOfCode": "def run_ai_day_interface(\n    vision_input_path,\n    text_data,\n    expected_response,\n    sensor_data_str,\n    action_reward,\n    spatial_error_str,\n    memory_target,\n    vision_label,\n    motor_command_str, # This is feedback emotion_label, not the predicted one",
         "detail": "gui",
         "documentation": {}
     },
@@ -659,7 +659,34 @@
         "kind": 2,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "def qa_list_gui():\n    return list_learned_qa_gui()\n# Define Gradio Inputs\nvision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH)\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\", value=\"A small red block is on the table.\", lines=4)\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\", value=\"The block is red.\", lines=4)\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2",
+        "peekOfCode": "def qa_list_gui():\n    return list_learned_qa_gui()\n# --- Functions for \"Generate Example\" buttons ---\ndef get_example_sensor_data():\n    example_data = np.random.rand(coordinator.parietal.input_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\ndef get_example_spatial_error():\n    example_data = np.random.rand(coordinator.parietal.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\ndef get_example_motor_command():",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "get_example_sensor_data",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def get_example_sensor_data():\n    example_data = np.random.rand(coordinator.parietal.input_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\ndef get_example_spatial_error():\n    example_data = np.random.rand(coordinator.parietal.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\ndef get_example_motor_command():\n    example_data = np.random.rand(coordinator.cerebellum.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\n# Define Gradio Inputs",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "get_example_spatial_error",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def get_example_spatial_error():\n    example_data = np.random.rand(coordinator.parietal.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\ndef get_example_motor_command():\n    example_data = np.random.rand(coordinator.cerebellum.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\n# Define Gradio Inputs\nvision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH,\n                                       ) # info=\"Upload an image for the AI to 'see'.\"\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\",",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "get_example_motor_command",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def get_example_motor_command():\n    example_data = np.random.rand(coordinator.cerebellum.output_size).tolist()\n    return json.dumps([round(x, 3) for x in example_data])\n# Define Gradio Inputs\nvision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH,\n                                       ) # info=\"Upload an image for the AI to 'see'.\"\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\",\n                                 value=\"A small red block is on the table.\", lines=4,\n                                 info=\"Main textual input for the AI. Can be a statement, question, or part of a narrative.\")\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\",",
         "detail": "gui",
         "documentation": {}
     },
@@ -668,7 +695,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "project_root = os.path.abspath(os.path.dirname(__file__))\nif project_root not in sys.path:\n    sys.path.insert(0, project_root)\n# Global instance of BrainCoordinator\n# This ensures the AI models retain their state across Gradio interactions\nprint(\"Initializing BrainCoordinator for Gradio GUI...\")\ncoordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Helper to parse JSON string input for lists\ndef parse_json_list(json_string, default_value, expected_type=list):",
+        "peekOfCode": "project_root = os.path.abspath(os.path.dirname(__file__))\nif project_root not in sys.path:\n    sys.path.insert(0, project_root)\n# Global instance of BrainCoordinator\n# This ensures the AI models retain their state across Gradio interactions\nprint(\"Initializing BrainCoordinator for Gradio GUI...\")\ncoordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Dynamically create emotion names\nEMOTION_NAMES = [f\"Emotion {i}\" for i in range(coordinator.limbic.output_size)]",
         "detail": "gui",
         "documentation": {}
     },
@@ -677,7 +704,16 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "coordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Helper to parse JSON string input for lists\ndef parse_json_list(json_string, default_value, expected_type=list):\n    if not json_string: # If string is empty or None\n        return default_value\n    try:\n        parsed = json.loads(json_string)\n        if isinstance(parsed, expected_type):\n            return parsed",
+        "peekOfCode": "coordinator = BrainCoordinator()\nprint(\"BrainCoordinator initialized.\")\n# Dynamically create emotion names\nEMOTION_NAMES = [f\"Emotion {i}\" for i in range(coordinator.limbic.output_size)]\nif coordinator.limbic.output_size == 3: # Example specific names if size is 3\n    EMOTION_NAMES = [\"Positive\", \"Neutral\", \"Negative\"] # Or Happy, Neutral, Sad etc.\nelif coordinator.limbic.output_size == 0: # Handle edge case\n    EMOTION_NAMES = []\n# Helper to parse JSON string input for lists\ndef parse_json_list(json_string, default_value, expected_type=list):",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "EMOTION_NAMES",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "EMOTION_NAMES = [f\"Emotion {i}\" for i in range(coordinator.limbic.output_size)]\nif coordinator.limbic.output_size == 3: # Example specific names if size is 3\n    EMOTION_NAMES = [\"Positive\", \"Neutral\", \"Negative\"] # Or Happy, Neutral, Sad etc.\nelif coordinator.limbic.output_size == 0: # Handle edge case\n    EMOTION_NAMES = []\n# Helper to parse JSON string input for lists\ndef parse_json_list(json_string, default_value, expected_type=list):\n    if not json_string: # If string is empty or None\n        return default_value\n    try:",
         "detail": "gui",
         "documentation": {}
     },
@@ -686,7 +722,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "vision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH)\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\", value=\"A small red block is on the table.\", lines=4)\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\", value=\"The block is red.\", lines=4)\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(",
+        "peekOfCode": "vision_input_path_component = gr.Image(type=\"filepath\", label=\"Vision Input Image\", value=DEFAULT_IMAGE_PATH,\n                                       ) # info=\"Upload an image for the AI to 'see'.\"\ntext_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\",\n                                 value=\"A small red block is on the table.\", lines=4,\n                                 info=\"Main textual input for the AI. Can be a statement, question, or part of a narrative.\")\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\",\n                                         value=\"The block is red.\", lines=4,\n                                         info=\"If Text Data is a question, this is the answer. If a statement, this could be the next logical sentence.\")\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data\",",
         "detail": "gui",
         "documentation": {}
     },
@@ -695,7 +731,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "text_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\", value=\"A small red block is on the table.\", lines=4)\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\", value=\"The block is red.\", lines=4)\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error (JSON list)\",",
+        "peekOfCode": "text_data_component = gr.Textbox(label=\"Text Data (Sentence, Question, or Paragraph)\",\n                                 value=\"A small red block is on the table.\", lines=4,\n                                 info=\"Main textual input for the AI. Can be a statement, question, or part of a narrative.\")\nexpected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\",\n                                         value=\"The block is red.\", lines=4,\n                                         info=\"If Text Data is a question, this is the answer. If a statement, this could be the next logical sentence.\")\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...].\",\n    lines=2,",
         "detail": "gui",
         "documentation": {}
     },
@@ -704,7 +740,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "expected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\", value=\"The block is red.\", lines=4)\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",",
+        "peekOfCode": "expected_response_component = gr.Textbox(label=\"Expected Response (Answer, Next Sentence, or Target Text)\",\n                                         value=\"The block is red.\", lines=4,\n                                         info=\"If Text Data is a question, this is the answer. If a statement, this could be the next logical sentence.\")\nsensor_data_component = gr.Textbox(\n    label=\"Sensor Data\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...].\",\n    lines=2,\n    info=\"Simulated sensory readings. Click 'Generate Example' or leave blank for random.\"\n)\n# Button for sensor data example",
         "detail": "gui",
         "documentation": {}
     },
@@ -713,7 +749,16 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "sensor_data_component = gr.Textbox(\n    label=\"Sensor Data (JSON list)\",\n    placeholder=f\"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.\",\n    lines=2\n)\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1",
+        "peekOfCode": "sensor_data_component = gr.Textbox(\n    label=\"Sensor Data\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...].\",\n    lines=2,\n    info=\"Simulated sensory readings. Click 'Generate Example' or leave blank for random.\"\n)\n# Button for sensor data example\ngenerate_sensor_example_button = gr.Button(\"Generate Example Sensor Data\", size=\"sm\", variant=\"secondary\")\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\",\n                                            info=\"Reward signal for the AI's last general action (-1: penalty, 0: neutral, 1: reward).\")",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "generate_sensor_example_button",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "generate_sensor_example_button = gr.Button(\"Generate Example Sensor Data\", size=\"sm\", variant=\"secondary\")\nfeedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\",\n                                            info=\"Reward signal for the AI's last general action (-1: penalty, 0: neutral, 1: reward).\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05].\",\n    lines=1,\n    info=\"Error signal for spatial awareness/prediction. Click 'Generate Example' or leave blank for random.\"\n)\ngenerate_spatial_example_button = gr.Button(\"Generate Example Spatial Error\", size=\"sm\", variant=\"secondary\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -722,7 +767,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1\n)\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",",
+        "peekOfCode": "feedback_action_reward_component = gr.Radio([-1, 0, 1], label=\"Feedback: Action Reward\", value=0, type=\"value\",\n                                            info=\"Reward signal for the AI's last general action (-1: penalty, 0: neutral, 1: reward).\")\nfeedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05].\",\n    lines=1,\n    info=\"Error signal for spatial awareness/prediction. Click 'Generate Example' or leave blank for random.\"\n)\ngenerate_spatial_example_button = gr.Button(\"Generate Example Spatial Error\", size=\"sm\", variant=\"secondary\")\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2,",
         "detail": "gui",
         "documentation": {}
     },
@@ -731,7 +776,16 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.\",\n    lines=1\n)\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",",
+        "peekOfCode": "feedback_spatial_error_component = gr.Textbox(\n    label=\"Feedback: Spatial Error\",\n    placeholder=f\"e.g., JSON list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05].\",\n    lines=1,\n    info=\"Error signal for spatial awareness/prediction. Click 'Generate Example' or leave blank for random.\"\n)\ngenerate_spatial_example_button = gr.Button(\"Generate Example Spatial Error\", size=\"sm\", variant=\"secondary\")\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2,\n                                              placeholder=\"Text AI should associate with the input Text Data. If blank, uses input Text Data itself.\",\n                                              info=\"Specific text the AI should learn/memorize in relation to the main Text Data.\")",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "generate_spatial_example_button",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "generate_spatial_example_button = gr.Button(\"Generate Example Spatial Error\", size=\"sm\", variant=\"secondary\")\nfeedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2,\n                                              placeholder=\"Text AI should associate with the input Text Data. If blank, uses input Text Data itself.\",\n                                              info=\"Specific text the AI should learn/memorize in relation to the main Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0,\n                                            info=f\"Correct classification label for the vision input (0 to {coordinator.occipital.output_size - 1}).\")\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command\",\n    placeholder=f\"e.g., JSON list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0].\",\n    lines=1,",
         "detail": "gui",
         "documentation": {}
     },
@@ -740,7 +794,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Correction/Feedback)\", value=\"\", lines=3, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")",
+        "peekOfCode": "feedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2,\n                                              placeholder=\"Text AI should associate with the input Text Data. If blank, uses input Text Data itself.\",\n                                              info=\"Specific text the AI should learn/memorize in relation to the main Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0,\n                                            info=f\"Correct classification label for the vision input (0 to {coordinator.occipital.output_size - 1}).\")\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command\",\n    placeholder=f\"e.g., JSON list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0].\",\n    lines=1,\n    info=\"Correct motor command sequence. Click 'Generate Example' or leave blank for random.\"",
         "detail": "gui",
         "documentation": {}
     },
@@ -749,7 +803,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Correction/Feedback)\", value=\"\", lines=3, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training",
+        "peekOfCode": "feedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0,\n                                            info=f\"Correct classification label for the vision input (0 to {coordinator.occipital.output_size - 1}).\")\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command\",\n    placeholder=f\"e.g., JSON list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0].\",\n    lines=1,\n    info=\"Correct motor command sequence. Click 'Generate Example' or leave blank for random.\"\n)\ngenerate_motor_example_button = gr.Button(\"Generate Example Motor Command\", size=\"sm\", variant=\"secondary\")\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0,",
         "detail": "gui",
         "documentation": {}
     },
@@ -758,7 +812,16 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Correction/Feedback)\", value=\"\", lines=3, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")",
+        "peekOfCode": "feedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command\",\n    placeholder=f\"e.g., JSON list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0].\",\n    lines=1,\n    info=\"Correct motor command sequence. Click 'Generate Example' or leave blank for random.\"\n)\ngenerate_motor_example_button = gr.Button(\"Generate Example Motor Command\", size=\"sm\", variant=\"secondary\")\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0,\n                                             info=f\"Correct emotion label for the current context (0 to {coordinator.limbic.output_size - 1}).\")\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Reinforcement)\", value=\"\", lines=3,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "generate_motor_example_button",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "generate_motor_example_button = gr.Button(\"Generate Example Motor Command\", size=\"sm\", variant=\"secondary\")\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0,\n                                             info=f\"Correct emotion label for the current context (0 to {coordinator.limbic.output_size - 1}).\")\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Reinforcement)\", value=\"\", lines=3,\n                                  placeholder=\"If the AI's textual response was incorrect, enter the correct response here to reinforce it.\",\n                                  info=\"Provide the correct text if the AI's generated response (from memory) was wrong.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Experimental)\",\n                                 # info=\"Upload an audio file. Currently logged but not used for training.\" # Pylance: No parameter named \"info\"\n                                 )\n# Add Gradio file upload and button for book training",
         "detail": "gui",
         "documentation": {}
     },
@@ -767,7 +830,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Correction/Feedback)\", value=\"\", lines=3, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")",
+        "peekOfCode": "feedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0,\n                                             info=f\"Correct emotion label for the current context (0 to {coordinator.limbic.output_size - 1}).\")\ncorrection_component = gr.Textbox(label=\"Correct AI Output (Reinforcement)\", value=\"\", lines=3,\n                                  placeholder=\"If the AI's textual response was incorrect, enter the correct response here to reinforce it.\",\n                                  info=\"Provide the correct text if the AI's generated response (from memory) was wrong.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Experimental)\",\n                                 # info=\"Upload an audio file. Currently logged but not used for training.\" # Pylance: No parameter named \"info\"\n                                 )\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -776,7 +839,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "correction_component = gr.Textbox(label=\"Correct AI Output (Correction/Feedback)\", value=\"\", lines=3, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)",
+        "peekOfCode": "correction_component = gr.Textbox(label=\"Correct AI Output (Reinforcement)\", value=\"\", lines=3,\n                                  placeholder=\"If the AI's textual response was incorrect, enter the correct response here to reinforce it.\",\n                                  info=\"Provide the correct text if the AI's generated response (from memory) was wrong.\")\naudio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Experimental)\",\n                                 # info=\"Upload an audio file. Currently logged but not used for training.\" # Pylance: No parameter named \"info\"\n                                 )\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -785,7 +848,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "audio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Coming Soon)\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components",
+        "peekOfCode": "audio_input_component = gr.Audio(type=\"filepath\", label=\"Audio Input (Experimental)\",\n                                 # info=\"Upload an audio file. Currently logged but not used for training.\" # Pylance: No parameter named \"info\"\n                                 )\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results (Raw)\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -794,7 +857,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")",
+        "peekOfCode": "book_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results (Raw)\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )",
         "detail": "gui",
         "documentation": {}
     },
@@ -803,7 +866,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "train_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [",
+        "peekOfCode": "train_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results (Raw)\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components",
         "detail": "gui",
         "documentation": {}
     },
@@ -812,7 +875,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,",
+        "peekOfCode": "book_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results (Raw)\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)",
         "detail": "gui",
         "documentation": {}
     },
@@ -821,7 +884,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "book_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,",
+        "peekOfCode": "book_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results (Raw)\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -830,7 +893,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "results_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,",
+        "peekOfCode": "results_component = gr.JSON(label=\"Processing Results (Raw)\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,",
         "detail": "gui",
         "documentation": {}
     },
@@ -839,7 +902,16 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "log_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,\n    sensor_data_component,\n    feedback_action_reward_component,",
+        "peekOfCode": "log_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\nemotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "emotion_plot_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "emotion_plot_component = gr.BarPlot(label=\"Predicted Emotion Probabilities\",\n                                    # info=\"Visualization of the AI's predicted emotional state probabilities.\" # Pylance: No parameter named \"info\"\n                                    )\n# Add Q&A memory display components\nqa_list_component = gr.Dataframe(headers=[\"Q\", \"A\"], label=\"Learned Q&A Pairs\", interactive=False)\nshow_qa_button = gr.Button(\"Show All Learned Q&A Pairs\", variant=\"secondary\")\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,",
         "detail": "gui",
         "documentation": {}
     },
@@ -875,7 +947,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "outputs_list = [results_component, log_component]\nwith gr.Blocks(title=\"Baby AI Interactive Simulation\") as demo:\n    gr.Markdown(\"# 🧠 Baby AI Interactive Simulation\")\n    gr.Markdown(\"Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.\")\n    with gr.Tabs():\n        with gr.TabItem(\"☀️ Daily Interaction & Learning\"):\n            gr.Markdown(\"## Provide Daily Inputs and Feedback\")\n            gr.Markdown(\"Configure the AI's experience for one 'day', provide feedback, and observe the results.\")\n            with gr.Row():\n                with gr.Column(scale=2):",
+        "peekOfCode": "outputs_list = [results_component, log_component, emotion_plot_component] # Added emotion_plot_component\nwith gr.Blocks(title=\"Baby AI Interactive Simulation\", theme=\"soft\") as demo: # Changed to string theme name\n    gr.Markdown(\"# 🧠 Baby AI Interactive Simulation\")\n    gr.Markdown(\"Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.\")\n    with gr.Tabs():\n        with gr.TabItem(\"☀️ Daily Interaction & Learning\"):\n            gr.Markdown(\"## Provide Daily Inputs and Feedback\")\n            gr.Markdown(\"Configure the AI's experience for one 'day', provide feedback, and observe the results.\")\n            with gr.Row():\n                with gr.Column(scale=2):",
         "detail": "gui",
         "documentation": {}
     },

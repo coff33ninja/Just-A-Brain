@@ -187,7 +187,10 @@ class BrainCoordinator:
         frontal_state = concatenated_input_for_frontal
         action = self.frontal.process_task(frontal_state)
         motor_command = self.cerebellum.process_task(current_sensor_data)
-        emotion = self.limbic.process_task(memory_result_embedding_1d)
+        # Limbic system processing
+        emotion_processing_result = self.limbic.process_task(memory_result_embedding_1d)
+        emotion_label = emotion_processing_result["label"]
+        emotion_probabilities = emotion_processing_result["probabilities"]
 
         state_for_learn = frontal_state
         action_for_learn = action
@@ -216,14 +219,14 @@ class BrainCoordinator:
         self.cerebellum.learn(current_sensor_data, feedback["motor_command"])
         self.limbic.learn(
             memory_result_embedding_1d,
-            feedback["emotion_label"],
+            feedback.get("emotion_label", emotion_label), # Use predicted label if feedback not provided
             feedback["action_reward"],
         )
 
         # Determine AI's textual response based on current memory (after learning for this cycle)
         ai_textual_response = None
         # Ensure current_text_data is a string for comparison
-        current_text_data_str = str(current_text_data).strip().lower()
+        current_text_data_str = str(text_data).strip().lower() # Use the input text_data for lookup
         for seq in self.temporal.memory_db:
             for q, a in seq:
                 if str(q).strip().lower() == current_text_data_str:
@@ -231,12 +234,15 @@ class BrainCoordinator:
                     break
             if ai_textual_response is not None: # Check for not None, as empty string is a valid answer
                 break
+        # If no match, ai_textual_response remains None
 
         return {
             "action": action,
             "motor": motor_command,
-            "emotion": emotion,
+            "emotion_label": emotion_label, # Keep the label
+            "emotion_probabilities": emotion_probabilities, # Add probabilities
             "vision_label": vision_result_label,
+            "ai_textual_response": ai_textual_response # Added here
         }
 
 

@@ -74,31 +74,33 @@ class LimbicSystemAI:
             return np.array(data_list[: self.input_size], dtype=float)
 
     def process_task(self, processed_temporal_data):
-        print("Limbic System: Processing task with temporal data...")
+        # print("Limbic System: Processing task with temporal data...") # Optional: reduce print verbosity
         input_vec_1d = self._ensure_input_vector_shape(processed_temporal_data)
+
+        default_probabilities = [1.0 / self.output_size] * self.output_size
+        default_label = np.random.randint(0, self.output_size)
 
         if not np.any(input_vec_1d) and not np.all(
             np.array(processed_temporal_data, dtype=float) == 0
         ):
-            print( # Converted F541
-                "Limbic System: Input vector became all zeros after preparation. Returning default emotion."
-            )
-            return np.random.randint(0, self.output_size)  # Default random emotion
+            # print( # Converted F541
+            #     "Limbic System: Input vector became all zeros after preparation. Returning default emotion."
+            # )
+            return {"label": default_label, "probabilities": default_probabilities}
 
         input_batch = np.reshape(input_vec_1d, [1, self.input_size])
 
         try:
             predictions_batch = self.model.predict(input_batch, verbose=0)
             predicted_emotion_label = np.argmax(predictions_batch[0])
-            print(
-                f"Limbic System: Predicted emotion label: {int(predicted_emotion_label)}"
-            )
-            return int(predicted_emotion_label)
+            probabilities = predictions_batch[0].tolist()
+            # print(
+            #     f"Limbic System: Predicted emotion label: {int(predicted_emotion_label)}, Probs: {probabilities}"
+            # )
+            return {"label": int(predicted_emotion_label), "probabilities": probabilities}
         except Exception as e:
             print(f"Limbic System: Error during model prediction: {e}")
-            return np.random.randint(
-                0, self.output_size
-            )  # Default random emotion on error
+            return {"label": default_label, "probabilities": default_probabilities}
 
     def learn(self, processed_temporal_data, true_emotion_label, reward):
         print(
@@ -329,10 +331,11 @@ if __name__ == "__main__":
 
     print("\n--- Testing process_task ---")
     temporal_input = np.random.rand(limbic_ai.input_size).tolist()
-    predicted_emotion = limbic_ai.process_task(temporal_input)
-    print(f"Predicted emotion for random input: {predicted_emotion}")
-    if not (0 <= predicted_emotion < limbic_ai.output_size):
-        raise AssertionError(f"Predicted emotion label {predicted_emotion} out of expected range [0, {limbic_ai.output_size-1}]")
+    predicted_emotion_dict = limbic_ai.process_task(temporal_input)
+    predicted_emotion_label_from_dict = predicted_emotion_dict["label"]
+    print(f"Predicted emotion for random input: {predicted_emotion_dict}")
+    if not (0 <= predicted_emotion_label_from_dict < limbic_ai.output_size):
+        raise AssertionError(f"Predicted emotion label {predicted_emotion_label_from_dict} out of expected range [0, {limbic_ai.output_size-1}]")
 
     print("\n--- Testing learn ---")
     true_emotion_label = 1

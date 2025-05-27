@@ -18,6 +18,13 @@ print("Initializing BrainCoordinator for Gradio GUI...")
 coordinator = BrainCoordinator()
 print("BrainCoordinator initialized.")
 
+# Dynamically create emotion names
+EMOTION_NAMES = [f"Emotion {i}" for i in range(coordinator.limbic.output_size)]
+if coordinator.limbic.output_size == 3: # Example specific names if size is 3
+    EMOTION_NAMES = ["Positive", "Neutral", "Negative"] # Or Happy, Neutral, Sad etc.
+elif coordinator.limbic.output_size == 0: # Handle edge case
+    EMOTION_NAMES = []
+
 # Helper to parse JSON string input for lists
 def parse_json_list(json_string, default_value, expected_type=list):
     if not json_string: # If string is empty or None
@@ -43,8 +50,8 @@ def run_ai_day_interface(
     spatial_error_str,
     memory_target,
     vision_label,
-    motor_command_str,
-    emotion_label,
+    motor_command_str, # This is feedback emotion_label, not the predicted one
+    emotion_label, # This is the *feedback* emotion label
     correction_text,
     audio_input,  # New audio input
 ):
@@ -75,7 +82,7 @@ def run_ai_day_interface(
             "memory_target": memory_target if memory_target else text_data,
             "vision_label": int(vision_label),
             "motor_command": parse_json_list(motor_command_str, np.random.rand(coordinator.cerebellum.output_size).tolist()),
-            "emotion_label": int(emotion_label),
+            "emotion_label": int(emotion_label), # This is the *feedback* emotion label
         }
 
         # Prepare new language training data
@@ -101,11 +108,11 @@ def run_ai_day_interface(
         )
 
         # Get the AI's textual response from the result (after process_day)
-        ai_textual_response_from_day = results.get("ai_textual_response")
-        if ai_textual_response_from_day is not None:
-            print(f"[Memory] The AI's current answer for '{text_data}': {ai_textual_response_from_day}")
-        else:
-            print(f"[Memory] The AI has no specific answer for '{text_data}' after this cycle.")
+        ai_textual_response_from_day = results.get("ai_textual_response") # Already included in results
+        # if ai_textual_response_from_day is not None:
+        #     print(f"[Memory] The AI's current answer for '{text_data}': {ai_textual_response_from_day}")
+        # else:
+        #     print(f"[Memory] The AI has no specific answer for '{text_data}' after this cycle.")
 
         # Check AI answer against expected response
         if expected_response:
@@ -125,16 +132,30 @@ def run_ai_day_interface(
         coordinator.bedtime()
         print("--- GUI: Bedtime Consolidation Complete ---")
 
+        # Prepare data for emotion bar plot
+        emotion_plot_data = None
+        if "emotion_probabilities" in results and EMOTION_NAMES:
+            probs = results["emotion_probabilities"]
+            if len(probs) == len(EMOTION_NAMES):
+                emotion_plot_data = {name: prob for name, prob in zip(EMOTION_NAMES, probs)}
+                # gr.BarPlot can also take a list of lists or DataFrame.
+                # For simplicity with dynamic labels, a dictionary {label: value} works well.
+            else:
+                print(f"Warning: Mismatch between emotion probabilities ({len(probs)}) and names ({len(EMOTION_NAMES)}). Skipping plot.")
+
+
         log_output = captured_output.getvalue()
         sys.stdout = old_stdout
-        return results, log_output
+        # Return results, log, and emotion plot data
+        return results, log_output, emotion_plot_data
 
     except Exception as e:
         sys.stdout = old_stdout
         error_log = captured_output.getvalue()
         error_message = f"An error occurred: {str(e)}\nTraceback:\n{traceback.format_exc()}\nLog:\n{error_log}"
         print(error_message)
-        return {"error": str(e), "details": traceback.format_exc()}, error_message
+        # Ensure the number of return values matches outputs_list even in error
+        return {"error": str(e), "details": traceback.format_exc()}, error_message, None
 
 # Add a function to train the AI on a book (text file)
 def train_on_book(book_file):
@@ -189,43 +210,82 @@ def list_learned_qa_gui():
 def qa_list_gui():
     return list_learned_qa_gui()
 
+# --- Functions for "Generate Example" buttons ---
+def get_example_sensor_data():
+    example_data = np.random.rand(coordinator.parietal.input_size).tolist()
+    return json.dumps([round(x, 3) for x in example_data])
+
+def get_example_spatial_error():
+    example_data = np.random.rand(coordinator.parietal.output_size).tolist()
+    return json.dumps([round(x, 3) for x in example_data])
+
+def get_example_motor_command():
+    example_data = np.random.rand(coordinator.cerebellum.output_size).tolist()
+    return json.dumps([round(x, 3) for x in example_data])
+
 # Define Gradio Inputs
-vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH)
-text_data_component = gr.Textbox(label="Text Data (Sentence, Question, or Paragraph)", value="A small red block is on the table.", lines=4)
-expected_response_component = gr.Textbox(label="Expected Response (Answer, Next Sentence, or Target Text)", value="The block is red.", lines=4)
+vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH,
+                                       ) # info="Upload an image for the AI to 'see'."
+text_data_component = gr.Textbox(label="Text Data (Sentence, Question, or Paragraph)",
+                                 value="A small red block is on the table.", lines=4,
+                                 info="Main textual input for the AI. Can be a statement, question, or part of a narrative.")
+expected_response_component = gr.Textbox(label="Expected Response (Answer, Next Sentence, or Target Text)",
+                                         value="The block is red.", lines=4,
+                                         info="If Text Data is a question, this is the answer. If a statement, this could be the next logical sentence.")
 sensor_data_component = gr.Textbox(
-    label="Sensor Data (JSON list)",
-    placeholder=f"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.",
-    lines=2
+    label="Sensor Data",
+    placeholder=f"e.g., JSON list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...].",
+    lines=2,
+    info="Simulated sensory readings. Click 'Generate Example' or leave blank for random."
 )
+# Button for sensor data example
+generate_sensor_example_button = gr.Button("Generate Example Sensor Data", size="sm", variant="secondary")
 
-feedback_action_reward_component = gr.Radio([-1, 0, 1], label="Feedback: Action Reward", value=0, type="value")
+
+feedback_action_reward_component = gr.Radio([-1, 0, 1], label="Feedback: Action Reward", value=0, type="value",
+                                            info="Reward signal for the AI's last general action (-1: penalty, 0: neutral, 1: reward).")
 feedback_spatial_error_component = gr.Textbox(
-    label="Feedback: Spatial Error (JSON list)",
-    placeholder=f"e.g., list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05]. If blank, random.",
-    lines=1
+    label="Feedback: Spatial Error",
+    placeholder=f"e.g., JSON list of {coordinator.parietal.output_size} floats like [0.0, 0.1, -0.05].",
+    lines=1,
+    info="Error signal for spatial awareness/prediction. Click 'Generate Example' or leave blank for random."
 )
-feedback_memory_target_component = gr.Textbox(label="Feedback: Memory Target Text", lines=2, placeholder="Text AI should learn for input. If blank, uses input Text Data.")
-feedback_vision_label_component = gr.Number(label="Feedback: True Vision Label (int)", value=0, precision=0)
-feedback_motor_command_component = gr.Textbox(
-    label="Feedback: True Motor Command (JSON list)",
-    placeholder=f"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.",
-    lines=1
-)
-feedback_emotion_label_component = gr.Number(label="Feedback: True Emotion Label (int)", value=0, precision=0)
-correction_component = gr.Textbox(label="Correct AI Output (Correction/Feedback)", value="", lines=3, placeholder="If the AI output was incorrect, enter the correct response here.")
+generate_spatial_example_button = gr.Button("Generate Example Spatial Error", size="sm", variant="secondary")
 
-audio_input_component = gr.Audio(type="filepath", label="Audio Input (Coming Soon)")
+feedback_memory_target_component = gr.Textbox(label="Feedback: Memory Target Text", lines=2,
+                                              placeholder="Text AI should associate with the input Text Data. If blank, uses input Text Data itself.",
+                                              info="Specific text the AI should learn/memorize in relation to the main Text Data.")
+feedback_vision_label_component = gr.Number(label="Feedback: True Vision Label (int)", value=0, precision=0,
+                                            info=f"Correct classification label for the vision input (0 to {coordinator.occipital.output_size - 1}).")
+feedback_motor_command_component = gr.Textbox(
+    label="Feedback: True Motor Command",
+    placeholder=f"e.g., JSON list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0].",
+    lines=1,
+    info="Correct motor command sequence. Click 'Generate Example' or leave blank for random."
+)
+generate_motor_example_button = gr.Button("Generate Example Motor Command", size="sm", variant="secondary")
+
+feedback_emotion_label_component = gr.Number(label="Feedback: True Emotion Label (int)", value=0, precision=0,
+                                             info=f"Correct emotion label for the current context (0 to {coordinator.limbic.output_size - 1}).")
+correction_component = gr.Textbox(label="Correct AI Output (Reinforcement)", value="", lines=3,
+                                  placeholder="If the AI's textual response was incorrect, enter the correct response here to reinforce it.",
+                                  info="Provide the correct text if the AI's generated response (from memory) was wrong.")
+
+audio_input_component = gr.Audio(type="filepath", label="Audio Input (Experimental)",
+                                 # info="Upload an audio file. Currently logged but not used for training." # Pylance: No parameter named "info"
+                                 )
 
 # Add Gradio file upload and button for book training
 book_file_component = gr.File(label="Upload Book (Text File)")
 train_book_button = gr.Button("Train AI on Book", variant="secondary")
 book_train_result_component = gr.JSON(label="Book Training Result")
 book_train_log_component = gr.Textbox(label="Book Training Log", lines=10, interactive=False, autoscroll=True)
-
 # Define Gradio Outputs
-results_component = gr.JSON(label="Processing Results")
+results_component = gr.JSON(label="Processing Results (Raw)")
 log_component = gr.Textbox(label="Log Output", lines=20, interactive=False, autoscroll=True)
+emotion_plot_component = gr.BarPlot(label="Predicted Emotion Probabilities",
+                                    # info="Visualization of the AI's predicted emotional state probabilities." # Pylance: No parameter named "info"
+                                    )
 
 # Add Q&A memory display components
 qa_list_component = gr.Dataframe(headers=["Q", "A"], label="Learned Q&A Pairs", interactive=False)
@@ -245,9 +305,9 @@ inputs_list = [
     correction_component,
     audio_input_component,  # New audio input
 ]
-outputs_list = [results_component, log_component]
+outputs_list = [results_component, log_component, emotion_plot_component] # Added emotion_plot_component
 
-with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
+with gr.Blocks(title="Baby AI Interactive Simulation", theme="soft") as demo: # Changed to string theme name
     gr.Markdown("# 🧠 Baby AI Interactive Simulation")
     gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.")
 
@@ -268,21 +328,36 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
 
             with gr.Accordion("🔬 Advanced Sensory & Feedback Controls", open=False):
                 with gr.Row():
-                    with gr.Column(scale=1):
+                    with gr.Column(scale=2): # Give more space to textbox
                         gr.Markdown("#### Sensor Data")
                         sensor_data_component.render()
-                    with gr.Column(scale=1):
+                    with gr.Column(scale=1, min_width=180): # Ensure button fits
+                        gr.Markdown(" ") # Spacer for alignment
+                        generate_sensor_example_button.render()
+
+                with gr.Row():
+                    with gr.Column(scale=1): # Keep audio input in its own row or group if it's distinct
                         gr.Markdown("#### Audio Input (Experimental)")
                         audio_input_component.render()
-                        gr.Markdown("*Audio input is accepted but not yet used for training.*")
+                        # gr.Markdown("*Audio input is accepted but not yet used for training.*") # Covered by info
+
                 gr.Markdown("#### Detailed Feedback Parameters")
                 with gr.Row():
                     feedback_action_reward_component.render()
                     feedback_vision_label_component.render()
                     feedback_emotion_label_component.render()
                 with gr.Row():
-                    feedback_spatial_error_component.render()
-                    feedback_motor_command_component.render()
+                    with gr.Column(scale=2):
+                        feedback_spatial_error_component.render()
+                    with gr.Column(scale=1, min_width=180):
+                        gr.Markdown(" ")
+                        generate_spatial_example_button.render()
+                with gr.Row():
+                    with gr.Column(scale=2):
+                        feedback_motor_command_component.render()
+                    with gr.Column(scale=1, min_width=180):
+                        gr.Markdown(" ")
+                        generate_motor_example_button.render()
                 feedback_memory_target_component.render()
 
             process_button = gr.Button("Process One Day & Consolidate Brain State", variant="primary", scale=2)
@@ -290,7 +365,10 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
             gr.Markdown("---")
             gr.Markdown("### 📊 AI Outputs & Logs for the Day")
             with gr.Row():
-                results_component.render()
+                with gr.Column(scale=1):
+                    results_component.render()
+                with gr.Column(scale=1):
+                    emotion_plot_component.render() # Added emotion plot here
             with gr.Row():
                 log_component.render()
 
@@ -300,6 +378,10 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
                 outputs=outputs_list,
                 api_name="process_day"
             )
+            # Wire button clicks to example generators
+            generate_sensor_example_button.click(fn=get_example_sensor_data, inputs=[], outputs=[sensor_data_component])
+            generate_spatial_example_button.click(fn=get_example_spatial_error, inputs=[], outputs=[feedback_spatial_error_component])
+            generate_motor_example_button.click(fn=get_example_motor_command, inputs=[], outputs=[feedback_motor_command_component])
 
         with gr.TabItem("📚 Book & Sequential Training"):
             gr.Markdown("## Train AI on Textual Sequences")
@@ -331,13 +413,26 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         gr.Markdown(
             """
         **How to Use & Teach the AI (From Scratch):**
-        - Use the **Text Data** and **Expected Response** fields to teach the AI associations (Q&A, next-sentence, or dialogue pairs). For advanced training, upload structured Q&A or dialogue logs as books.
-        - Use the **Book Training** section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs. Books with dialogue, stories, or structured conversations work best for richer context.
-        - If the AI's output is wrong, use the **Correct AI Output** field to reinforce the correct answer and help the AI learn interactively.
-        - Upload images and provide labels for visual learning. You can also pair images with descriptive text for cross-modal association.
-        - Use the reward and label fields to guide learning in all modalities. The system supports reinforcement-like feedback for actions and emotions.
-        - For best results, start with simple examples and gradually increase complexity (curriculum learning). Mix narrative, dialogue, and factual text for more nuanced associations.
-        - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
+        - **Daily Interaction Tab:**
+            - **Language & Text Input:** Provide a sentence/question in "Text Data". If it's a question or you want to teach a specific follow-up, put the desired answer/next sentence in "Expected Response". Use "Correct AI Output" to reinforce if the AI's memory lookup (shown in logs) is wrong.
+            - **Visual Input:** Upload an image.
+            - **Advanced Controls (Accordion):**
+                - **Sensor Data:** Input a JSON list of numbers (see placeholder for size) or click "Generate Example". Leave blank for random.
+                - **Audio Input:** (Experimental) Upload audio; it's logged but not yet used for training.
+                - **Detailed Feedback:**
+                    - *Action Reward:* Give +1 for good overall AI behavior, -1 for bad, 0 for neutral.
+                    - *Vision Label:* The correct category number for the image.
+                    - *Emotion Label:* The correct emotion category number for the context.
+                    - *Spatial Error:* JSON list (see placeholder) representing error in spatial tasks, or "Generate Example".
+                    - *Motor Command:* Correct JSON list for motor output, or "Generate Example".
+                    - *Memory Target:* Specific text to associate with "Text Data". Defaults to "Text Data" itself for self-association.
+        - **Book & Sequential Training Tab:** Upload a plain text file. The AI learns by reading sentences/paragraphs sequentially, associating each with the one that follows. Good for learning narrative flow or dialogue patterns.
+        - **Learned Q&A Tab:** See what direct question/answer pairs the AI has stored in its temporal lobe memory.
+        - **General Tips:**
+            - Start simple, then increase complexity (curriculum learning).
+            - Mix input types (narrative, Q&A, visual).
+            - The AI learns from patterns. Clear, consistent data and feedback are key. It doesn't "understand" like humans but learns associations.
+            - All model weights are saved after each "Process One Day" click.
         """
     )
     gr.Markdown("---")
