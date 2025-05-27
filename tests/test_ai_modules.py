@@ -9,9 +9,7 @@ import shutil # For cleaning up directories
 # If 'main.py' is in root and AI modules are in a subdirectory (e.g., 'ai_modules'), adjust accordingly.
 # Assuming all .py files (main, temporal, cerebellum, limbic, occipital) are in the root for this example.
 
-# From main.py
-# TODO: Investigate missing load_vision_data, load_text_data and update/reinstate TestDataLoading
-from main import load_sensor_data, load_image_text_pairs 
+from ..main import load_sensor_data, load_image_text_pairs, load_vision_data, load_text_data
 
 # AI Classes
 from temporal import TemporalLobeAI
@@ -43,51 +41,55 @@ TEST_FRONTAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, "test_frontal_model.json")
 TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, "test_parietal_model.json") # Added for ParietalLobeAI
 
 
-# class TestDataLoading(unittest.TestCase):
-#     @classmethod
-#     def setUpClass(cls):
-#         os.makedirs(TEST_DATA_DIR, exist_ok=True)
-#         cls.vision_content = {"image_paths": [os.path.join(TEST_IMAGES_SUBDIR, "img1.png")]}
-#         with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)
-#         cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]
-#         with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)
-#         cls.text_content = ["hello", "world"]
-#         with open(TEST_TEXT_FILE, 'w') as f: json.dump(cls.text_content, f)
-#         cls.pairs_content = [{"image_path": "img1.png", "text_description": "text1", "visual_label": 0},
-#                              {"image_path": "img2.png", "text_description": "text2", "visual_label": 1}]
-#         with open(TEST_PAIRS_FILE, 'w') as f: json.dump(cls.pairs_content, f)
-#     @classmethod
-#     def tearDownClass(cls):
-#         if os.path.exists(TEST_DATA_DIR): shutil.rmtree(TEST_DATA_DIR)
-#     def test_load_vision_data_valid(self):
-#         data = load_vision_data(filepath=TEST_VISION_FILE) # load_vision_data is not defined
-#         self.assertEqual(data, self.vision_content["image_paths"])
-#     def test_load_sensor_data_valid(self):
-#         data = load_sensor_data(filepath=TEST_SENSOR_FILE)
-#         self.assertEqual(data, self.sensor_content)
-#     def test_load_text_data_valid(self):
-#         data = load_text_data(filepath=TEST_TEXT_FILE) # load_text_data is not defined
-#         self.assertEqual(data, self.text_content)
-#     def test_load_image_text_pairs_valid(self):
-#         data = load_image_text_pairs(filepath=TEST_PAIRS_FILE)
-#         self.assertEqual(data, self.pairs_content)
-#     def test_load_vision_data_missing_file(self):
-#         self.assertEqual(load_vision_data(filepath="non_existent_vision.json"), []) # load_vision_data is not defined
-#     def test_load_sensor_data_missing_file(self):
-#         self.assertEqual(load_sensor_data(filepath="non_existent_sensor.json"), [])
-#     def test_load_text_data_missing_file(self):
-#         self.assertEqual(load_text_data(filepath="non_existent_text.json"), []) # load_text_data is not defined
-#     def test_load_image_text_pairs_missing_file(self):
-#         self.assertEqual(load_image_text_pairs(filepath="non_existent_pairs.json"), [])
+class TestDataLoading(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        os.makedirs(TEST_DATA_DIR, exist_ok=True)
+        cls.vision_content = {"image_paths": [os.path.join(TEST_IMAGES_SUBDIR, "img1.png")]}
+        with open(TEST_VISION_FILE, 'w') as f: json.dump(cls.vision_content, f)
+        cls.sensor_content = [[1.0, 2.0], [3.0, 4.0]]
+        with open(TEST_SENSOR_FILE, 'w') as f: json.dump(cls.sensor_content, f)
+        cls.text_content = ["hello", "world"]
+        with open(TEST_TEXT_FILE, 'w') as f: json.dump(cls.text_content, f)
+        cls.pairs_content = [{"image_path": "img1.png", "text_description": "text1", "visual_label": 0},
+                                {"image_path": "img2.png", "text_description": "text2", "visual_label": 1}]
+        with open(TEST_PAIRS_FILE, 'w') as f: json.dump(cls.pairs_content, f)
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.exists(TEST_DATA_DIR): shutil.rmtree(TEST_DATA_DIR)
+
+    def test_load_vision_data_valid(self):
+        data = load_vision_data(filepath=TEST_VISION_FILE)
+        self.assertEqual(data, self.vision_content["image_paths"])
+    def test_load_sensor_data_valid(self):
+        data = load_sensor_data(filepath=TEST_SENSOR_FILE)
+        self.assertEqual(data, self.sensor_content)
+    def test_load_text_data_valid(self):
+        data = load_text_data(filepath=TEST_TEXT_FILE)
+        self.assertEqual(data, self.text_content)
+    def test_load_image_text_pairs_valid(self):
+        data = load_image_text_pairs(filepath=TEST_PAIRS_FILE)
+        self.assertEqual(data, self.pairs_content)
+    def test_load_vision_data_missing_file(self):
+        self.assertEqual(load_vision_data(filepath="non_existent_vision.json"), [])
+    def test_load_sensor_data_missing_file(self):
+        self.assertEqual(load_sensor_data(filepath="non_existent_sensor.json"), [])
+    def test_load_text_data_missing_file(self):
+        self.assertEqual(load_text_data(filepath="non_existent_text.json"), [])
+    def test_load_image_text_pairs_missing_file(self):
+        self.assertEqual(load_image_text_pairs(filepath="non_existent_pairs.json"), [])
 
 
 class TestTemporalLobeAI(unittest.TestCase):
     def setUp(self):
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         # Ensure clean state before AI initialization
-        if os.path.exists(TEST_TEMPORAL_MODEL_PATH): os.remove(TEST_TEMPORAL_MODEL_PATH)
-        if os.path.exists(TEST_TEMPORAL_MEMORY_PATH): os.remove(TEST_TEMPORAL_MEMORY_PATH)
-        
+        if os.path.exists(TEST_TEMPORAL_MODEL_PATH):
+            os.remove(TEST_TEMPORAL_MODEL_PATH)
+        if os.path.exists(TEST_TEMPORAL_MEMORY_PATH):
+            os.remove(TEST_TEMPORAL_MEMORY_PATH)
+
         self.ai = TemporalLobeAI(model_path=TEST_TEMPORAL_MODEL_PATH, memory_path=TEST_TEMPORAL_MEMORY_PATH)
         self.ai._initialize_default_weights_biases()
         self.ai.save_model()
@@ -96,6 +98,7 @@ class TestTemporalLobeAI(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(TEST_TEMPORAL_MODEL_PATH): os.remove(TEST_TEMPORAL_MODEL_PATH)
         if os.path.exists(TEST_TEMPORAL_MEMORY_PATH): os.remove(TEST_TEMPORAL_MEMORY_PATH)
+
     def test_forward_prop_text_output_shapes(self):
         input_vec_1d = self.ai._to_numerical_vector("sample", self.ai.input_size)
         # Expected return: text_input_vec, text_hidden_output, text_embedding_scores
@@ -149,17 +152,17 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.ai.bias_text_embedding = np.full((1, self.ai.output_size), 0.22) # output_size is embedding_size
         self.ai.weights_visual_hidden_to_label = np.full((self.ai.visual_assoc_hidden_size, self.ai.visual_output_size), 0.33)
         self.ai.bias_visual_assoc_hidden = np.full((1, self.ai.visual_assoc_hidden_size), 0.44)
-        
+
         # Save and load the model
         self.ai.save_model()
         loaded_ai = TemporalLobeAI(model_path=TEST_TEMPORAL_MODEL_PATH, memory_path=TEST_TEMPORAL_MEMORY_PATH)
-        
+
         # Assert that the loaded AI instance has the correct values for the set weights/biases
         np.testing.assert_array_almost_equal(loaded_ai.weights_text_input_hidden, self.ai.weights_text_input_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.bias_text_embedding, self.ai.bias_text_embedding)
         np.testing.assert_array_almost_equal(loaded_ai.weights_visual_hidden_to_label, self.ai.weights_visual_hidden_to_label)
         np.testing.assert_array_almost_equal(loaded_ai.bias_visual_assoc_hidden, self.ai.bias_visual_assoc_hidden)
-        
+
         # Verify architectural parameters are loaded correctly
         self.assertEqual(loaded_ai.input_size, self.ai.input_size)
         self.assertEqual(loaded_ai.text_hidden_size, self.ai.text_hidden_size)
@@ -180,11 +183,11 @@ class TestLimbicSystemAI(unittest.TestCase):
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_LIMBIC_MODEL_PATH): os.remove(TEST_LIMBIC_MODEL_PATH)
-        
+
         self.ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)
         self.ai._initialize_default_weights_biases()
         self.ai.save_model()
-        
+
         self.sample_temporal_output = np.random.rand(self.ai.input_size).tolist()
         self.sample_true_emotion = 1; self.sample_reward = 1.0
 
@@ -210,12 +213,12 @@ class TestLimbicSystemAI(unittest.TestCase):
             "b_o": self.ai.bias_output.copy()
         }
         self.ai.learn(self.sample_temporal_output,self.sample_true_emotion,self.sample_reward)
-        
+
         self.assertFalse(np.array_equal(initial_params["w_ih"], self.ai.weights_input_hidden), "weights_input_hidden did not change after learn")
         self.assertFalse(np.array_equal(initial_params["b_h"], self.ai.bias_hidden), "bias_hidden did not change after learn")
         self.assertFalse(np.array_equal(initial_params["w_ho"], self.ai.weights_hidden_output), "weights_hidden_output did not change after learn")
         self.assertFalse(np.array_equal(initial_params["b_o"], self.ai.bias_output), "bias_output did not change after learn")
-        
+
         self.assertIn((self.sample_temporal_output,self.sample_true_emotion,self.sample_reward),self.ai.memory)
 
     def test_consolidate_updates_weights_limbic(self):
@@ -227,7 +230,7 @@ class TestLimbicSystemAI(unittest.TestCase):
             "b_o": self.ai.bias_output.copy()
         }
         self.ai.consolidate()
-        
+
         self.assertFalse(np.array_equal(initial_params["w_ih"], self.ai.weights_input_hidden), "weights_input_hidden did not change after consolidate")
         self.assertFalse(np.array_equal(initial_params["b_h"], self.ai.bias_hidden), "bias_hidden did not change after consolidate")
         self.assertFalse(np.array_equal(initial_params["w_ho"], self.ai.weights_hidden_output), "weights_hidden_output did not change after consolidate")
@@ -243,11 +246,11 @@ class TestLimbicSystemAI(unittest.TestCase):
 
         self.ai.save_model()
         loaded_ai = LimbicSystemAI(model_path=TEST_LIMBIC_MODEL_PATH)
-        
+
         # Assert that the loaded AI instance has the correct values for the set weights/biases
         np.testing.assert_array_almost_equal(loaded_ai.weights_input_hidden, self.ai.weights_input_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.bias_output, self.ai.bias_output)
-        
+
         # Assert that other parameters were also saved and loaded correctly
         np.testing.assert_array_almost_equal(loaded_ai.bias_hidden, expected_bias_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.weights_hidden_output, expected_weights_hidden_output)
@@ -278,15 +281,17 @@ class TestOccipitalLobeAI(unittest.TestCase):
     def setUp(self):
         os.makedirs(TEST_DATA_DIR, exist_ok=True) # Ensure data directory exists
         # Ensure clean state before AI initialization
-        if os.path.exists(TEST_OCCIPITAL_MODEL_PATH): os.remove(TEST_OCCIPITAL_MODEL_PATH)
-        
+        if os.path.exists(TEST_OCCIPITAL_MODEL_PATH):
+            os.remove(TEST_OCCIPITAL_MODEL_PATH)
+
         self.ai = OccipitalLobeAI(model_path=TEST_OCCIPITAL_MODEL_PATH)
         self.ai._initialize_default_weights_biases() # Added missing call
         self.ai.save_model()
 
     def tearDown(self):
         # Ensure model file created in setUp is removed
-        if os.path.exists(TEST_OCCIPITAL_MODEL_PATH): os.remove(TEST_OCCIPITAL_MODEL_PATH)
+        if os.path.exists(TEST_OCCIPITAL_MODEL_PATH):
+            os.remove(TEST_OCCIPITAL_MODEL_PATH)
 
     def test_forward_propagate_output_shapes(self):
         # Unpack with clearer variable names
@@ -303,12 +308,12 @@ class TestOccipitalLobeAI(unittest.TestCase):
             "b_o": self.ai.bias_output.copy()
         }
         self.ai.learn(self.test_img_path, 0) # Use the white test image
-        
+
         self.assertFalse(np.array_equal(initial_params["w_ih"], self.ai.weights_input_hidden), "weights_input_hidden did not change after learn")
         self.assertFalse(np.array_equal(initial_params["b_h"], self.ai.bias_hidden), "bias_hidden did not change after learn")
         self.assertFalse(np.array_equal(initial_params["w_ho"], self.ai.weights_hidden_output), "weights_hidden_output did not change after learn")
         self.assertFalse(np.array_equal(initial_params["b_o"], self.ai.bias_output), "bias_output did not change after learn")
-        
+
         self.assertIn((self.test_img_path,0),self.ai.memory) # Use the white test image path
 
     def test_consolidate_updates_weights(self):
@@ -320,7 +325,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
             "b_o": self.ai.bias_output.copy()
         }
         self.ai.consolidate()
-        
+
         self.assertFalse(np.array_equal(initial_params["w_ih"], self.ai.weights_input_hidden), "weights_input_hidden did not change after consolidate")
         self.assertFalse(np.array_equal(initial_params["b_h"], self.ai.bias_hidden), "bias_hidden did not change after consolidate")
         self.assertFalse(np.array_equal(initial_params["w_ho"], self.ai.weights_hidden_output), "weights_hidden_output did not change after consolidate")
@@ -336,11 +341,11 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
         self.ai.save_model()
         loaded_ai = OccipitalLobeAI(model_path=TEST_OCCIPITAL_MODEL_PATH)
-        
+
         # Assert that the loaded AI instance has the correct values for the set weights/biases
         np.testing.assert_array_almost_equal(loaded_ai.weights_input_hidden, self.ai.weights_input_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.bias_output, self.ai.bias_output)
-        
+
         # Assert that other parameters were also saved and loaded correctly
         np.testing.assert_array_almost_equal(loaded_ai.bias_hidden, expected_bias_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.weights_hidden_output, expected_weights_hidden_output)
@@ -367,28 +372,28 @@ class TestFrontalLobeAI(unittest.TestCase):
 
     def test_process_task_epsilon_greedy_selection(self):
         # Test with high exploration: actions should be somewhat random
-        self.ai.exploration_rate_epsilon = 1.0 
+        self.ai.exploration_rate_epsilon = 1.0
         action_counts_explore = {i:0 for i in range(self.ai.output_size)}
         for _ in range(1000): action_counts_explore[self.ai.process_task(self.sample_state)] += 1
         self.assertTrue(len(set(action_counts_explore.values())) > 1 or self.ai.output_size == 1)
         self.ai.exploration_rate_epsilon = 0.0
         # Ensure weights for action 1 are highest for a deterministic choice
-        self.ai.weights = np.zeros((self.ai.input_size, self.ai.output_size)) 
+        self.ai.weights = np.zeros((self.ai.input_size, self.ai.output_size))
         self.ai.weights[:, 1] = 1.0 # Action 1 has highest Q-value
         self.assertEqual(self.ai.process_task(self.sample_state), 1, "Should pick action with highest Q-value when epsilon is 0")
-        
+
         # Test epsilon decay
         initial_epsilon = 0.5
         self.ai.exploration_rate_epsilon = initial_epsilon
         self.ai.process_task(self.sample_state) # This call will decay epsilon
-        self.assertAlmostEqual(self.ai.exploration_rate_epsilon, 
+        self.assertAlmostEqual(self.ai.exploration_rate_epsilon,
                                max(self.ai.min_epsilon, initial_epsilon - self.ai.epsilon_decay_rate),
                                msg="Epsilon decay is not working as expected")
 
     def test_learn_q_update_and_memory(self):
         # Use a fresh AI instance for this specific test if needed, or ensure state is well-defined
         # self.setUp() # This would re-initialize self.ai, which might be desired for some tests
-        
+
         state = self.sample_state # Uses current self.ai.input_size
         action_taken = 1
         reward = 1.0
@@ -403,22 +408,22 @@ class TestFrontalLobeAI(unittest.TestCase):
 
         # Q-value before learning
         q_value_before = (state_vector_1d @ initial_weights_all_actions)[action_taken]
-        
+
         # Expected Q-value for next state (max Q for non-terminal, 0 for terminal)
         next_max_q = np.max(next_state_vector_1d @ self.ai.weights) if not done else 0.0
-        
+
         # TD target
         target_q_value = reward + self.ai.discount_factor_gamma * next_max_q
-        
+
         # TD error
         error = target_q_value - q_value_before
-        
+
         # Expected weights for the action taken
         # Note: Q-learning updates the Q-value directly, which is self.weights[state_index, action_taken]
         # For a linear function approximator Q(s,a) = w_a . phi(s), the update is w_a = w_a + lr * error * phi(s)
         # So, self.weights[:, action_taken] is the weight vector w_a for action 'a'. phi(s) is state_vector_1d.
         expected_weights_for_action_after_learn = initial_weights_for_action + self.ai.learning_rate_q * error * state_vector_1d
-        
+
         self.ai.learn(state, action_taken, reward, next_state, done)
 
         np.testing.assert_array_almost_equal(self.ai.weights[:, action_taken], expected_weights_for_action_after_learn, decimal=5,
@@ -429,44 +434,44 @@ class TestFrontalLobeAI(unittest.TestCase):
             if i != action_taken:
                 np.testing.assert_array_equal(self.ai.weights[:, i], initial_weights_all_actions[:, i],
                                              err_msg=f"Weights for action {i} (not taken) should not change.")
-        
+
         self.assertIn((list(state), action_taken, reward, list(next_state), done), self.ai.memory)
-        
+
         # Test memory limit
-        self.ai.memory = [] 
+        self.ai.memory = []
         for _ in range(self.ai.max_memory_size + 5):
             self.ai.learn(state, action_taken, reward, next_state, done)
         self.assertEqual(len(self.ai.memory), self.ai.max_memory_size, "Memory size limit not enforced.")
 
     def test_consolidate_experience_replay(self):
         # Populate memory with diverse experiences reflecting new input_size
-        for i in range(10): 
+        for i in range(10):
             state = np.random.rand(self.ai.input_size).tolist()
             action = np.random.randint(0, self.ai.output_size)
             reward_val = float(np.random.choice([-1,0,1]))
             next_s = np.random.rand(self.ai.input_size).tolist()
             done_val = bool(np.random.choice([True,False]))
             self.ai.learn(state, action, reward_val, next_s, done_val)
-            
+
         self.assertTrue(len(self.ai.memory) > 0, "Memory should be populated before consolidation.")
         initial_weights = self.ai.weights.copy()
         self.ai.consolidate() # This should perform experience replay and update weights
-        self.assertFalse(np.array_equal(initial_weights, self.ai.weights), 
+        self.assertFalse(np.array_equal(initial_weights, self.ai.weights),
                          "Weights should change after consolidation if learning rate is > 0 and memory is not empty.")
 
     def test_model_save_load_q_learning_params(self):
         # Set specific values to test save/load
         self.ai.exploration_rate_epsilon = 0.678
         # Ensure weights have the correct current dimensions
-        self.ai.weights = np.random.rand(self.ai.input_size, self.ai.output_size) * 0.5 
+        self.ai.weights = np.random.rand(self.ai.input_size, self.ai.output_size) * 0.5
         current_weights_shape = self.ai.weights.shape
 
         known_weights_current_format = self.ai.weights.copy()
         self.ai.save_model()
-        
+
         loaded_ai = FrontalLobeAI(model_path=TEST_FRONTAL_MODEL_PATH)
         self.assertAlmostEqual(loaded_ai.exploration_rate_epsilon, 0.678, msg="Exploration rate not loaded correctly.")
-        np.testing.assert_array_almost_equal(loaded_ai.weights, known_weights_current_format, 
+        np.testing.assert_array_almost_equal(loaded_ai.weights, known_weights_current_format,
                                              err_msg="Weights not loaded correctly from new format.")
         self.assertEqual(loaded_ai.weights.shape, current_weights_shape, "Loaded weights shape mismatch (new format).")
 
@@ -476,11 +481,11 @@ class TestFrontalLobeAI(unittest.TestCase):
         old_weights_data = (np.random.rand(old_input_size, self.ai.output_size) * 0.3).tolist()
         with open(TEST_FRONTAL_MODEL_PATH, 'w') as f:
             json.dump({'weights': old_weights_data}, f)
-        
+
         loaded_ai_old_format = FrontalLobeAI(model_path=TEST_FRONTAL_MODEL_PATH)
-        self.assertEqual(loaded_ai_old_format.exploration_rate_epsilon, 1.0, 
+        self.assertEqual(loaded_ai_old_format.exploration_rate_epsilon, 1.0,
                          "Epsilon should default to 1.0 when loading old format without it.")
-        
+
         # Check if weights were re-initialized due to shape mismatch
         # This assumes FrontalLobeAI's load_model re-initializes if shapes don't match.
         self.assertEqual(loaded_ai_old_format.weights.shape, (self.ai.input_size, self.ai.output_size),
@@ -495,7 +500,7 @@ class TestCerebellumAI(unittest.TestCase):
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_CEREBELLUM_MODEL_PATH):
             os.remove(TEST_CEREBELLUM_MODEL_PATH)
-            
+
         self.ai = CerebellumAI(model_path=TEST_CEREBELLUM_MODEL_PATH)
         self.ai._initialize_default_weights_biases()
         self.ai.save_model()
@@ -510,10 +515,12 @@ class TestCerebellumAI(unittest.TestCase):
     def test_prepare_input_vector(self):
         vec = self.ai._prepare_input_vector(self.sample_sensor_data)
         self.assertEqual(vec.shape, (self.ai.input_size,))
-        short_data = self.sample_sensor_data[:-2]; vec_short = self.ai._prepare_input_vector(short_data)
+        short_data = self.sample_sensor_data[:-2]
+        vec_short = self.ai._prepare_input_vector(short_data)
         self.assertEqual(vec_short.shape, (self.ai.input_size,))
         self.assertTrue(np.all(vec_short[len(short_data):] == 0))
-        long_data = self.sample_sensor_data + [0.1, 0.2]; vec_long = self.ai._prepare_input_vector(long_data)
+        long_data = self.sample_sensor_data + [0.1, 0.2]
+        vec_long = self.ai._prepare_input_vector(long_data)
         self.assertEqual(vec_long.shape, (self.ai.input_size,))
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.input_size]), decimal=5)
 
@@ -542,9 +549,12 @@ class TestCerebellumAI(unittest.TestCase):
         for val in commands: self.assertTrue(-1.0 <= val <= 1.0)
 
     def test_learn_updates_and_memory(self):
-        initial_w_ih = self.ai.weights_input_hidden.copy(); initial_b_h = self.ai.bias_hidden.copy()
-        initial_w_ih = self.ai.weights_input_hidden.copy(); initial_b_h = self.ai.bias_hidden.copy()
-        initial_w_ho = self.ai.weights_hidden_output.copy(); initial_b_o = self.ai.bias_output.copy()
+        initial_w_ih = self.ai.weights_input_hidden.copy()
+        initial_b_h = self.ai.bias_hidden.copy()
+        initial_w_ih = self.ai.weights_input_hidden.copy()
+        initial_b_h = self.ai.bias_hidden.copy()
+        initial_w_ho = self.ai.weights_hidden_output.copy()
+        initial_b_o = self.ai.bias_output.copy()
 
         self.ai.learn(self.sample_sensor_data, self.sample_true_command)
 
@@ -580,7 +590,7 @@ class TestCerebellumAI(unittest.TestCase):
         self.ai.bias_hidden = np.full((1, self.ai.hidden_size), 0.52)
         self.ai.weights_hidden_output = np.full((self.ai.hidden_size, self.ai.output_size), 0.53)
         self.ai.bias_output = np.full((1, self.ai.output_size), 0.54)
-        
+
         self.ai.save_model()
         loaded_ai = CerebellumAI(model_path=TEST_CEREBELLUM_MODEL_PATH)
 
@@ -589,7 +599,7 @@ class TestCerebellumAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(loaded_ai.bias_hidden, self.ai.bias_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.weights_hidden_output, self.ai.weights_hidden_output)
         np.testing.assert_array_almost_equal(loaded_ai.bias_output, self.ai.bias_output)
-        
+
         # Verify architectural parameters
         self.assertEqual(loaded_ai.input_size, self.ai.input_size)
         self.assertEqual(loaded_ai.hidden_size, self.ai.hidden_size)
@@ -614,7 +624,7 @@ class TestCerebellumAI(unittest.TestCase):
     def test_load_model_shape_mismatch_cerebellum(self):
         self.ai.save_model() # Save a valid new model first
         with open(TEST_CEREBELLUM_MODEL_PATH, 'r') as f: model_data = json.load(f)
-        
+
         # Corrupt the shape of weights_input_hidden
         model_data['weights_input_hidden'] = [[0.01, 0.02], [0.03, 0.04]] # Example of a clearly wrong shape
         with open(TEST_CEREBELLUM_MODEL_PATH, 'w') as f: json.dump(model_data, f)
@@ -627,7 +637,7 @@ class TestCerebellumAI(unittest.TestCase):
         default_b_o = temp_ai_defaults.bias_output.copy()
 
         loaded_ai = CerebellumAI(model_path=TEST_CEREBELLUM_MODEL_PATH) # Load the corrupted model
-        
+
         # Assert that all weights and biases are reset to defaults
         np.testing.assert_array_almost_equal(loaded_ai.weights_input_hidden, default_w_ih, decimal=5, err_msg="Corrupted weights_input_hidden not reset to default.")
         np.testing.assert_array_almost_equal(loaded_ai.bias_hidden, default_b_h, decimal=5, err_msg="Corrupted bias_hidden not reset to default.")
@@ -642,7 +652,7 @@ class TestParietalLobeAI(unittest.TestCase):
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_PARIETAL_MODEL_PATH):
             os.remove(TEST_PARIETAL_MODEL_PATH)
-            
+
         self.ai = ParietalLobeAI(model_path=TEST_PARIETAL_MODEL_PATH)
         self.ai._initialize_default_weights_biases()
         self.ai.save_model()
@@ -692,9 +702,12 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertEqual(len(coords), self.ai.output_size)
 
     def test_learn_updates_and_memory_parietal(self):
-        initial_w_ih = self.ai.weights_input_hidden.copy(); initial_b_h = self.ai.bias_hidden.copy()
-        initial_w_ih = self.ai.weights_input_hidden.copy(); initial_b_h = self.ai.bias_hidden.copy()
-        initial_w_ho = self.ai.weights_hidden_output.copy(); initial_b_o = self.ai.bias_output.copy()
+        initial_w_ih = self.ai.weights_input_hidden.copy()
+        initial_b_h = self.ai.bias_hidden.copy()
+        initial_w_ih = self.ai.weights_input_hidden.copy()
+        initial_b_h = self.ai.bias_hidden.copy()
+        initial_w_ho = self.ai.weights_hidden_output.copy()
+        initial_b_o = self.ai.bias_output.copy()
 
         self.ai.learn(self.sample_sensory_data, self.sample_true_coords)
 
@@ -733,7 +746,7 @@ class TestParietalLobeAI(unittest.TestCase):
         self.ai.bias_hidden = np.full((1, self.ai.hidden_size), 0.82)
         self.ai.weights_hidden_output = np.full((self.ai.hidden_size, self.ai.output_size), 0.83)
         self.ai.bias_output = np.full((1, self.ai.output_size), 0.84)
-        
+
         self.ai.save_model()
         loaded_ai = ParietalLobeAI(model_path=TEST_PARIETAL_MODEL_PATH)
 
@@ -741,7 +754,7 @@ class TestParietalLobeAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(loaded_ai.bias_hidden, self.ai.bias_hidden)
         np.testing.assert_array_almost_equal(loaded_ai.weights_hidden_output, self.ai.weights_hidden_output)
         np.testing.assert_array_almost_equal(loaded_ai.bias_output, self.ai.bias_output)
-        
+
         self.assertEqual(loaded_ai.input_size, self.ai.input_size)
         self.assertEqual(loaded_ai.hidden_size, self.ai.hidden_size)
         self.assertEqual(loaded_ai.output_size, self.ai.output_size)
@@ -763,7 +776,7 @@ class TestParietalLobeAI(unittest.TestCase):
     def test_load_model_shape_mismatch_parietal(self):
         self.ai.save_model() # Save a valid new model first
         with open(TEST_PARIETAL_MODEL_PATH, 'r') as f: model_data = json.load(f)
-        
+
         model_data['weights_input_hidden'] = [[0.01, 0.02]] # Corrupt shape
         with open(TEST_PARIETAL_MODEL_PATH, 'w') as f: json.dump(model_data, f)
 

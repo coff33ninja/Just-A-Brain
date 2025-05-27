@@ -256,7 +256,7 @@ class FrontalLobeAI:
             print(
                 f"Frontal Lobe: Performing {consolidation_replay_count} replay batches for consolidation."
             )
-            for i in range(consolidation_replay_count):
+            for _ in range(consolidation_replay_count):
                 # print(f"Consolidation replay batch {i+1}/{consolidation_replay_count}")
                 self.replay()
 

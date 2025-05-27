@@ -164,7 +164,10 @@ class LimbicSystemAI:
                 if isinstance(processed_temporal_data, np.ndarray)
                 else list(processed_temporal_data)
             )
-            self.memory.append((data_to_store, valid_emotion_label, reward))
+            # Ensure standard Python types are stored for JSON serialization
+            self.memory.append(
+                (data_to_store, int(valid_emotion_label), float(reward))
+            )
             if len(self.memory) > self.max_memory_size:
                 self.memory.pop(0)
         except Exception as e:
@@ -211,14 +214,31 @@ class LimbicSystemAI:
             print("Limbic System: Loading memory...")
             try:
                 with open(self.memory_path, "r") as f:
-                    loaded_data = json.load(f)
-                    self.memory = loaded_data.get("memory", [])
-                self.memory = [
-                    (list(item[0]), int(item[1]), float(item[2]))
-                    for item in self.memory
-                    if isinstance(item, (list, tuple)) and len(item) == 3
-                ]
-                print("Limbic System: Memory loaded.")
+                    loaded_json_content = json.load(f) # This can fail if JSON is malformed
+            except json.JSONDecodeError as e_json:
+                print(f"Limbic System: Error decoding JSON from memory file {self.memory_path}: {e_json}. Initializing empty memory.")
+                self.memory = []
+                return # Exit after handling bad JSON
+
+                raw_memory_list = loaded_json_content.get("memory", [])
+                processed_memory = []
+                for item in raw_memory_list:
+                    if isinstance(item, (list, tuple)) and len(item) == 3:
+                        try:
+                            # Ensure data_list, label, and reward are correct types
+                            data_list = list(item[0])
+                            label = int(item[1])
+                            reward_val = float(item[2])
+                            processed_memory.append((data_list, label, reward_val))
+                        except (TypeError, ValueError) as e_conv:
+                            print(f"Limbic System: Skipping invalid memory item during load: {item}, error: {e_conv}")
+                    else:
+                        print(f"Limbic System: Skipping malformed memory item during load: {item}")
+                self.memory = processed_memory
+                if self.memory:
+                    print("Limbic System: Memory loaded.")
+                else:
+                    print("Limbic System: Memory file was empty or contained no valid items.")
             except Exception as e:
                 print(
                     f"Limbic System: Error loading memory: {e}. Initializing empty memory."
@@ -302,13 +322,15 @@ if __name__ == "__main__":
     sample_temporal_data_short = [0.1] * (limbic_ai.input_size - 3)
     prepared_input = limbic_ai._ensure_input_vector_shape(sample_temporal_data_short)
     print(f"Prepared input for short data: shape {prepared_input.shape}")
-    assert prepared_input.shape == (limbic_ai.input_size,)
+    if prepared_input.shape != (limbic_ai.input_size,):
+        raise AssertionError(f"Prepared input shape mismatch: Expected {(limbic_ai.input_size,)}, got {prepared_input.shape}")
 
     print("\n--- Testing process_task ---")
     temporal_input = np.random.rand(limbic_ai.input_size).tolist()
     predicted_emotion = limbic_ai.process_task(temporal_input)
     print(f"Predicted emotion for random input: {predicted_emotion}")
-    assert 0 <= predicted_emotion < limbic_ai.output_size
+    if not (0 <= predicted_emotion < limbic_ai.output_size):
+        raise AssertionError(f"Predicted emotion label {predicted_emotion} out of expected range [0, {limbic_ai.output_size-1}]")
 
     print("\n--- Testing learn ---")
     true_emotion_label = 1
@@ -326,7 +348,7 @@ if __name__ == "__main__":
     print("Learning with invalid label:")
     limbic_ai.learn(temporal_input, limbic_ai.output_size + 1, reward_value_positive)
 
-    for i in range(5):
+    for _ in range(5):
         t_data = np.random.rand(limbic_ai.input_size).tolist()
         e_label = np.random.randint(0, limbic_ai.output_size)
         r_val = np.random.choice([-1, 0, 1])

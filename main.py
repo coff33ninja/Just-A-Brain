@@ -12,8 +12,27 @@ import json
 
 DATA_DIR = "data"
 SENSOR_FILE = os.path.join(DATA_DIR, "sensors.json")
+VISION_FILE = os.path.join(DATA_DIR, "vision.json") # Added for vision data
+TEXT_FILE = os.path.join(DATA_DIR, "text.json")     # Added for text data
 IMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, "image_text_pairs.json")
 DEFAULT_IMAGE_PATH = "data/images/default_image.png"
+
+def load_vision_data(filepath=VISION_FILE):
+    if not os.path.exists(filepath):
+        print(f"Warning: Vision data file not found at {filepath}. Returning empty list.")
+        return []
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        # Expecting data to be a dict with "image_paths": [...]
+        if isinstance(data, dict) and "image_paths" in data and isinstance(data["image_paths"], list):
+            return data["image_paths"]
+        else:
+            print(f"Error: Vision data file {filepath} is not in the expected format (dict with 'image_paths' list). Returning empty list.")
+            return []
+    except Exception as e:
+        print(f"Error loading vision data from {filepath}: {e}. Returning empty list.")
+        return []
 
 
 def load_sensor_data(filepath=SENSOR_FILE):
@@ -28,6 +47,21 @@ def load_sensor_data(filepath=SENSOR_FILE):
         return data
     except Exception as e:
         print(f"Error loading sensor data from {filepath}: {e}. Returning empty list.")
+        return []
+
+def load_text_data(filepath=TEXT_FILE):
+    if not os.path.exists(filepath):
+        print(f"Warning: Text data file not found at {filepath}. Returning empty list.")
+        return []
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        if not isinstance(data, list): # Expecting a list of strings
+            print(f"Error: Text data file {filepath} is not a list. Returning empty list.")
+            return []
+        return data
+    except Exception as e:
+        print(f"Error loading text data from {filepath}: {e}. Returning empty list.")
         return []
 
 
