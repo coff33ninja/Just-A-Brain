@@ -18,14 +18,56 @@ The development of artificial intelligence systems capable of complex, multi-mod
 
 The system is structured around a `BrainCoordinator` class that integrates inputs from a simulated environment, directs processing to specialized AI modules, gathers their outputs, and manages the flow of learning signals and feedback. The core functionality resides within six distinct AI modules, each representing a simplified abstraction of a brain region:
 
-| Module              | Function                        | Model Type         | Framework         |
-|---------------------|---------------------------------|--------------------|-------------------|
-| OccipitalLobeAI     | Visual Processing               | CNN                | TensorFlow/Keras  |
-| ParietalLobeAI      | Sensory Integration/Spatial     | Dense NN           | TensorFlow/Keras  |
-| TemporalLobeAI      | Memory, Language, Association   | RNN (LSTM/GRU)     | TensorFlow/Keras  |
-| FrontalLobeAI       | Decision-Making, Planning       | DQN (RL)           | TensorFlow/Keras  |
-| CerebellumAI        | Motor Control, Coordination     | Dense NN           | TensorFlow/Keras  |
-| LimbicSystemAI      | Emotion, Motivation             | Dense NN           | TensorFlow/Keras  |
+### High-Level Architecture Diagram
+
+```
++-------------------+
+|   Environment     |
++-------------------+
+         |
+         v
++-------------------+
+| BrainCoordinator  |
++-------------------+
+   |   |   |   |   |   |
+   v   v   v   v   v   v
++-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+|Occip| |Parie| |Tempo| |Front| |Cereb| |Limbc|
+|ital | |tal  | |ral  | |al   | |ellum| |ic   |
+|Lobe | |Lobe | |Lobe | |Lobe | |     | |Sys  |
++-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+```
+
+### Data Flow Diagram
+
+```
+[Image] ---> [OccipitalLobeAI] --\
+                                 |
+[Sensor Data] -> [ParietalLobeAI] |--> [BrainCoordinator] --> [FrontalLobeAI] --> [Action]
+                                 |
+[Text] -------> [TemporalLobeAI] --/
+
+[Sensor Data] --> [CerebellumAI] --> [Motor Command]
+[Temporal Output] --> [LimbicSystemAI] --> [Emotion]
+```
+
+### Module Summary Table
+
+| Module              | Input Shape                | Output Shape                | Description                        |
+|---------------------|---------------------------|-----------------------------|-------------------------------------|
+| OccipitalLobeAI     | (64, 64, 3) image         | int (class label)           | Image classification (CNN)          |
+| ParietalLobeAI      | (N,) sensor vector (e.g. 3)| (M,) spatial coords (e.g. 3)| Sensor integration (Dense NN)       |
+| TemporalLobeAI      | (L,) tokenized text        | (E,) embedding or int label | Text embedding/association (RNN)    |
+| FrontalLobeAI       | (S,) state vector          | int (action index)          | Decision making (DQN)               |
+| CerebellumAI        | (N,) sensor vector         | (K,) motor command          | Motor control (Dense NN)            |
+| LimbicSystemAI      | (E,) embedding             | int (emotion label)         | Emotion classification (Dense NN)   |
+
+- N: Number of sensor values (e.g., 3)
+- M: Number of spatial coordinates (e.g., 3)
+- L: Length of tokenized text sequence
+- E: Embedding size (e.g., 10)
+- S: State vector size (concatenated outputs)
+- K: Number of motor command outputs
 
 Each module is a Python class with standard methods:
 - `__init__()`: Initializes the module, builds its internal model, and attempts to load saved weights/parameters.
