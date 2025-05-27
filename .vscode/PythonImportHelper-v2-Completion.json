@@ -637,6 +637,15 @@
         "documentation": {}
     },
     {
+        "label": "train_on_book",
+        "kind": 2,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "def train_on_book(book_file):\n    old_stdout = sys.stdout\n    sys.stdout = captured_output = StringIO()\n    try:\n        if book_file is None or not os.path.exists(book_file):\n            print(\"No book file provided or file does not exist.\")\n            sys.stdout = old_stdout\n            return {\"result\": \"No file provided.\"}, captured_output.getvalue()\n        with open(book_file, 'r', encoding='utf-8') as f:\n            text = f.read()",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
         "label": "project_root",
         "kind": 5,
         "importPath": "gui",
@@ -713,7 +722,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Define Gradio Outputs",
+        "peekOfCode": "feedback_memory_target_component = gr.Textbox(label=\"Feedback: Memory Target Text\", lines=2, placeholder=\"Text AI should learn for input. If blank, uses input Text Data.\")\nfeedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Add Gradio file upload and button for book training",
         "detail": "gui",
         "documentation": {}
     },
@@ -722,7 +731,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")",
+        "peekOfCode": "feedback_vision_label_component = gr.Number(label=\"Feedback: True Vision Label (int)\", value=0, precision=0)\nfeedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -731,7 +740,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)",
+        "peekOfCode": "feedback_motor_command_component = gr.Textbox(\n    label=\"Feedback: True Motor Command (JSON list)\",\n    placeholder=f\"e.g., list of {coordinator.cerebellum.output_size} floats like [0.5, -0.2, 0.0]. If blank, random.\",\n    lines=1\n)\nfeedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")",
         "detail": "gui",
         "documentation": {}
     },
@@ -740,7 +749,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "feedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,  # New field\n    sensor_data_component,",
+        "peekOfCode": "feedback_emotion_label_component = gr.Number(label=\"Feedback: True Emotion Label (int)\", value=0, precision=0)\ncorrection_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)",
         "detail": "gui",
         "documentation": {}
     },
@@ -749,7 +758,43 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "correction_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,  # New field\n    sensor_data_component,\n    feedback_action_reward_component,",
+        "peekOfCode": "correction_component = gr.Textbox(label=\"Correct AI Output (if AI was wrong)\", value=\"\", lines=2, placeholder=\"If the AI output was incorrect, enter the correct response here.\")\n# Add Gradio file upload and button for book training\nbook_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "book_file_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "book_file_component = gr.File(label=\"Upload Book (Text File)\")\ntrain_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "train_book_button",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "train_book_button = gr.Button(\"Train AI on Book\", variant=\"secondary\")\nbook_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,  # New field",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "book_train_result_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "book_train_result_component = gr.JSON(label=\"Book Training Result\")\nbook_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,  # New field\n    sensor_data_component,",
+        "detail": "gui",
+        "documentation": {}
+    },
+    {
+        "label": "book_train_log_component",
+        "kind": 5,
+        "importPath": "gui",
+        "description": "gui",
+        "peekOfCode": "book_train_log_component = gr.Textbox(label=\"Book Training Log\", lines=10, interactive=False, autoscroll=True)\n# Define Gradio Outputs\nresults_component = gr.JSON(label=\"Processing Results\")\nlog_component = gr.Textbox(label=\"Log Output\", lines=20, interactive=False, autoscroll=True)\ninputs_list = [\n    vision_input_path_component,\n    text_data_component,\n    expected_response_component,  # New field\n    sensor_data_component,\n    feedback_action_reward_component,",
         "detail": "gui",
         "documentation": {}
     },

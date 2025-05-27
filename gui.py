@@ -112,6 +112,46 @@ def run_ai_day_interface(
         print(error_message)
         return {"error": str(e), "details": traceback.format_exc()}, error_message
 
+# Add a function to train the AI on a book (text file)
+def train_on_book(book_file):
+    old_stdout = sys.stdout
+    sys.stdout = captured_output = StringIO()
+    try:
+        if book_file is None or not os.path.exists(book_file):
+            print("No book file provided or file does not exist.")
+            sys.stdout = old_stdout
+            return {"result": "No file provided."}, captured_output.getvalue()
+        with open(book_file, 'r', encoding='utf-8') as f:
+            text = f.read()
+        # Split into sentences or paragraphs (simple split by lines or periods)
+        # Here, we use paragraphs (double newlines) if possible, else fallback to sentences
+        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+        if len(paragraphs) < 2:
+            # fallback to sentences
+            import re
+            paragraphs = re.split(r'(?<=[.!?]) +', text)
+        # Train on each pair of (current, next) as (input, target)
+        pairs = []
+        for i in range(len(paragraphs) - 1):
+            pairs.append((paragraphs[i], paragraphs[i+1]))
+        if not pairs:
+            print("Book is too short for training.")
+            sys.stdout = old_stdout
+            return {"result": "Book is too short for training."}, captured_output.getvalue()
+        print(f"Training on {len(pairs)} text pairs from book...")
+        for pair in pairs:
+            coordinator.temporal.learn([pair])
+        print("Book training complete.")
+        sys.stdout = old_stdout
+        return {"result": f"Trained on {len(pairs)} text pairs from book."}, captured_output.getvalue()
+    except Exception as e:
+        sys.stdout = old_stdout
+        import traceback
+        error_log = captured_output.getvalue()
+        error_message = f"An error occurred: {str(e)}\nTraceback:\n{traceback.format_exc()}\nLog:\n{error_log}"
+        print(error_message)
+        return {"error": str(e), "details": traceback.format_exc()}, error_message
+
 # Define Gradio Inputs
 vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH)
 text_data_component = gr.Textbox(label="Text Data (Sentence/Question)", value="A small red block is on the table.", lines=2)
@@ -137,6 +177,12 @@ feedback_motor_command_component = gr.Textbox(
 )
 feedback_emotion_label_component = gr.Number(label="Feedback: True Emotion Label (int)", value=0, precision=0)
 correction_component = gr.Textbox(label="Correct AI Output (if AI was wrong)", value="", lines=2, placeholder="If the AI output was incorrect, enter the correct response here.")
+
+# Add Gradio file upload and button for book training
+book_file_component = gr.File(label="Upload Book (Text File)")
+train_book_button = gr.Button("Train AI on Book", variant="secondary")
+book_train_result_component = gr.JSON(label="Book Training Result")
+book_train_log_component = gr.Textbox(label="Book Training Log", lines=10, interactive=False, autoscroll=True)
 
 # Define Gradio Outputs
 results_component = gr.JSON(label="Processing Results")
@@ -202,6 +248,24 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         4.  Observe the "Processing Results" (JSON output from the AI) and "Log Output" (detailed print statements from the AI's operations).
         5.  The AI's internal models are updated and saved after each 'day'. You can run multiple 'days' to see how it learns and adapts.
         """
+    )
+
+    with gr.Row():
+        with gr.Column(scale=1):
+            gr.Markdown("### Book Training")
+            book_file_component.render()
+            train_book_button.render()
+
+    with gr.Row():
+        book_train_result_component.render()
+    with gr.Row():
+        book_train_log_component.render()
+
+    train_book_button.click(
+        fn=train_on_book,
+        inputs=[book_file_component],
+        outputs=[book_train_result_component, book_train_log_component],
+        api_name="train_on_book"
     )
 
 if __name__ == "__main__":
