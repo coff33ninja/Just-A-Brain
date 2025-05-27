@@ -155,3 +155,49 @@ This AI does **not** use any pre-trained models or transformer architectures. Al
 ---
 
 For a comprehensive description of the architecture, learning mechanisms, and module details, please refer to the [Whitepaper](./Whitepaper.md).
+
+## Using main.py: Interactive CLI & Book Training
+
+The command-line interface (`main.py`) now supports richer training modalities, similar to the GUI:
+
+### Starting the Simulation
+
+```pwsh
+python main.py
+```
+
+You will be prompted for each 'day' to:
+- Enter a new image path (or press Enter to use the last/default)
+- Enter new text data (sentence, question, or paragraph)
+- Optionally enter an **expected response** (answer, next sentence, or target text) for Q&A or dialogue training
+- Enter a visual label (integer)
+- Optionally generate new random sensor data
+- Optionally provide a path to an audio file (not yet used for training, but accepted for future support)
+
+After the AI processes the day's data, you can:
+- Enter a **correction** if the AI's output was wrong (this reinforces the correct answer for the given input)
+
+You can also run for a fixed number of days or indefinitely, and choose to use scheduled data or provide new input each day.
+
+### Book/Story/Sequential Training
+
+You can train the AI on a text file (book, Q&A log, or story) using:
+
+```pwsh
+python main.py --book path/to/book.txt
+```
+
+The AI will learn associations between consecutive sentences or paragraphs in the file. This is useful for teaching dialogue, stories, or structured Q&A.
+
+### Help
+
+```pwsh
+python main.py --help
+```
+
+### Notes
+- Audio input is accepted as a file path but is not yet used for training (future feature).
+- Correction and Q&A/expected response training are available in both CLI and GUI.
+- For best results, provide clear, well-structured, and consistent data, and use correction/feedback to reinforce learning.
+
+See the rest of this README and the Whitepaper for more details on architecture and training modalities.

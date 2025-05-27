@@ -317,7 +317,6 @@ def main():
         print(f"\n{day_display_str}")
 
         expected_response = None
-        correction_text = None
         audio_input_path = None
 
         if user_choice_for_current_day_data_source == "i":
