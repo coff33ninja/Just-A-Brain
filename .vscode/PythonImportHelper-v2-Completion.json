@@ -875,7 +875,7 @@
         "kind": 5,
         "importPath": "gui",
         "description": "gui",
-        "peekOfCode": "outputs_list = [results_component, log_component]\nwith gr.Blocks(title=\"Baby AI Interactive Simulation\") as demo:\n    gr.Markdown(\"# Baby AI Interactive Simulation\")\n    gr.Markdown(\"Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation.\")\n    gr.Markdown(\"---\")\n    gr.Markdown(\"## Language Training (Q&A, Dialogue, or Narrative)\")\n    gr.Markdown(\"Use the fields below to teach the AI using sentences, questions, answers, or paragraphs. For Q&A, fill both fields. For next-sentence or dialogue, use both fields. For self-association, just use Text Data.\")\n    with gr.Row():\n        with gr.Column(scale=1):\n            text_data_component.render()",
+        "peekOfCode": "outputs_list = [results_component, log_component]\nwith gr.Blocks(title=\"Baby AI Interactive Simulation\") as demo:\n    gr.Markdown(\"# 🧠 Baby AI Interactive Simulation\")\n    gr.Markdown(\"Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.\")\n    with gr.Tabs():\n        with gr.TabItem(\"☀️ Daily Interaction & Learning\"):\n            gr.Markdown(\"## Provide Daily Inputs and Feedback\")\n            gr.Markdown(\"Configure the AI's experience for one 'day', provide feedback, and observe the results.\")\n            with gr.Row():\n                with gr.Column(scale=2):",
         "detail": "gui",
         "documentation": {}
     },

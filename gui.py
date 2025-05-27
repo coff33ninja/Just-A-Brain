@@ -248,89 +248,88 @@ inputs_list = [
 outputs_list = [results_component, log_component]
 
 with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
-    gr.Markdown("# Baby AI Interactive Simulation")
-    gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation.")
+    gr.Markdown("# 🧠 Baby AI Interactive Simulation")
+    gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation. Use the tabs below to navigate different interaction modes.")
+
+    with gr.Tabs():
+        with gr.TabItem("☀️ Daily Interaction & Learning"):
+            gr.Markdown("## Provide Daily Inputs and Feedback")
+            gr.Markdown("Configure the AI's experience for one 'day', provide feedback, and observe the results.")
+
+            with gr.Row():
+                with gr.Column(scale=2):
+                    gr.Markdown("### 🗣️ Language & Text Input")
+                    text_data_component.render()
+                    expected_response_component.render()
+                    correction_component.render()
+                with gr.Column(scale=1):
+                    gr.Markdown("### 👁️ Visual Input")
+                    vision_input_path_component.render()
+
+            with gr.Accordion("🔬 Advanced Sensory & Feedback Controls", open=False):
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        gr.Markdown("#### Sensor Data")
+                        sensor_data_component.render()
+                    with gr.Column(scale=1):
+                        gr.Markdown("#### Audio Input (Experimental)")
+                        audio_input_component.render()
+                        gr.Markdown("*Audio input is accepted but not yet used for training.*")
+                gr.Markdown("#### Detailed Feedback Parameters")
+                with gr.Row():
+                    feedback_action_reward_component.render()
+                    feedback_vision_label_component.render()
+                    feedback_emotion_label_component.render()
+                with gr.Row():
+                    feedback_spatial_error_component.render()
+                    feedback_motor_command_component.render()
+                feedback_memory_target_component.render()
+
+            process_button = gr.Button("Process One Day & Consolidate Brain State", variant="primary", scale=2)
+
+            gr.Markdown("---")
+            gr.Markdown("### 📊 AI Outputs & Logs for the Day")
+            with gr.Row():
+                results_component.render()
+            with gr.Row():
+                log_component.render()
+
+            process_button.click(
+                fn=run_ai_day_interface,
+                inputs=inputs_list,
+                outputs=outputs_list,
+                api_name="process_day"
+            )
+
+        with gr.TabItem("📚 Book & Sequential Training"):
+            gr.Markdown("## Train AI on Textual Sequences")
+            gr.Markdown("Upload a text file (book, dialogue log, or Q&A log) to train the AI on sequences of sentences or paragraphs. The AI learns associations between consecutive text segments.")
+            with gr.Row():
+                with gr.Column(scale=1):
+                    book_file_component.render()
+                    train_book_button.render()
+                with gr.Column(scale=2):
+                    book_train_result_component.render()
+                    book_train_log_component.render()
+
+            train_book_button.click(
+                fn=train_on_book,
+                inputs=[book_file_component],
+                outputs=[book_train_result_component, book_train_log_component],
+                api_name="train_on_book"
+            )
+
+        with gr.TabItem("💡 Learned Q&A"):
+            gr.Markdown("## Review Learned Question & Answer Pairs")
+            gr.Markdown("Review the Q&A pairs the AI has learned. You can use this information to guide further training or corrections.")
+            show_qa_button.render()
+            qa_list_component.render()
+            show_qa_button.click(fn=qa_list_gui, inputs=[], outputs=[qa_list_component])
 
     gr.Markdown("---")
-    gr.Markdown("## Language Training (Q&A, Dialogue, or Narrative)")
-    gr.Markdown("Use the fields below to teach the AI using sentences, questions, answers, or paragraphs. For Q&A, fill both fields. For next-sentence or dialogue, use both fields. For self-association, just use Text Data.")
-    with gr.Row():
-        with gr.Column(scale=1):
-            text_data_component.render()
-        with gr.Column(scale=1):
-            expected_response_component.render()
-    gr.Markdown("- **Text Data**: Enter a sentence, question, or paragraph for language training.")
-    gr.Markdown("- **Expected Response**: Provide the correct answer, next sentence, or target text for Q&A or dialogue training.")
-
-    gr.Markdown("---")
-    gr.Markdown("## Sensory Inputs")
-    with gr.Row():
-        with gr.Column(scale=1):
-            vision_input_path_component.render()
-            sensor_data_component.render()
-    gr.Markdown("- **Vision Input Image**: Upload or select an image for visual learning.")
-    gr.Markdown("- **Sensor Data**: Provide sensor data as a JSON list. Leave blank for random.")
-
-    gr.Markdown("---")
-    gr.Markdown("## Feedback & Correction")
-    with gr.Row():
-        with gr.Column(scale=1):
-            feedback_action_reward_component.render()
-            feedback_spatial_error_component.render()
-            feedback_memory_target_component.render()
-            feedback_vision_label_component.render()
-            feedback_motor_command_component.render()
-            feedback_emotion_label_component.render()
-        with gr.Column(scale=1):
-            correction_component.render()
-    gr.Markdown("- **Correct AI Output**: Use this field to correct the AI's output and reinforce learning.")
-
-    gr.Markdown("---")
-    gr.Markdown("## Audio Input (Coming Soon)")
-    with gr.Row():
-        audio_input_component.render()
-    gr.Markdown(
-        "*Audio input is accepted but not yet used for training. This feature is under development.*"
-    )
-
-    process_button = gr.Button("Process One Day & Consolidate Brain State", variant="primary", scale=2)
-
-    gr.Markdown("---")
-    gr.Markdown("### AI Outputs & Logs")
-    with gr.Row():
-        results_component.render()
-    with gr.Row():
-        log_component.render()
-
-    process_button.click(
-        fn=run_ai_day_interface,
-        inputs=inputs_list,
-        outputs=outputs_list,
-        api_name="process_day"
-    )
-
-    gr.Markdown("---")
-    gr.Markdown("## Book/Story/Sequential Training")
-    gr.Markdown("Upload a text file (book, dialogue log, or Q&A log) to train the AI on sequences of sentences or paragraphs.")
-    with gr.Row():
-        with gr.Column(scale=1):
-            book_file_component.render()
-            train_book_button.render()
-
-    with gr.Row():
-        book_train_result_component.render()
-    with gr.Row():
-        book_train_log_component.render()
-
-    train_book_button.click(
-        fn=train_on_book,
-        inputs=[book_file_component],
-        outputs=[book_train_result_component, book_train_log_component],
-        api_name="train_on_book"
-    )
-
-    gr.Markdown(
-        """
+    with gr.Accordion("📖 How to Use & Teach the AI (From Scratch)", open=False):
+        gr.Markdown(
+            """
         **How to Use & Teach the AI (From Scratch):**
         - Use the **Text Data** and **Expected Response** fields to teach the AI associations (Q&A, next-sentence, or dialogue pairs). For advanced training, upload structured Q&A or dialogue logs as books.
         - Use the **Book Training** section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs. Books with dialogue, stories, or structured conversations work best for richer context.
@@ -341,14 +340,7 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
         """
     )
-
     gr.Markdown("---")
-    gr.Markdown("## Learned Q&A Pairs")
-    gr.Markdown("Review the Q&A pairs the AI has learned. You can use this information to guide further training or corrections.")
-    with gr.Row():
-        show_qa_button.render()
-        qa_list_component.render()
-    show_qa_button.click(fn=qa_list_gui, inputs=[], outputs=[qa_list_component])
 
 if __name__ == "__main__":
     demo.launch()
