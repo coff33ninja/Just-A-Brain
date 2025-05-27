@@ -46,6 +46,7 @@ def run_ai_day_interface(
     motor_command_str,
     emotion_label,
     correction_text,
+    audio_input,  # New audio input
 ):
     # Capture stdout for logging
     old_stdout = sys.stdout
@@ -54,6 +55,9 @@ def run_ai_day_interface(
     try:
         # Prepare inputs
         current_vision_path = vision_input_path if vision_input_path and os.path.exists(vision_input_path) else DEFAULT_IMAGE_PATH
+
+        if audio_input is not None:
+            print(f"Audio input received: {audio_input} (audio training not yet implemented)")
 
         if sensor_data_str:
             sensor_data = parse_json_list(sensor_data_str, None)
@@ -154,8 +158,8 @@ def train_on_book(book_file):
 
 # Define Gradio Inputs
 vision_input_path_component = gr.Image(type="filepath", label="Vision Input Image", value=DEFAULT_IMAGE_PATH)
-text_data_component = gr.Textbox(label="Text Data (Sentence/Question)", value="A small red block is on the table.", lines=2)
-expected_response_component = gr.Textbox(label="Expected Response (Answer/Target Text)", value="The block is red.", lines=2)
+text_data_component = gr.Textbox(label="Text Data (Sentence, Question, or Paragraph)", value="A small red block is on the table.", lines=4)
+expected_response_component = gr.Textbox(label="Expected Response (Answer, Next Sentence, or Target Text)", value="The block is red.", lines=4)
 sensor_data_component = gr.Textbox(
     label="Sensor Data (JSON list)",
     placeholder=f"e.g., a list of {coordinator.parietal.input_size} floats like [0.1, 0.2, ...]. If blank, random data is used.",
@@ -176,7 +180,9 @@ feedback_motor_command_component = gr.Textbox(
     lines=1
 )
 feedback_emotion_label_component = gr.Number(label="Feedback: True Emotion Label (int)", value=0, precision=0)
-correction_component = gr.Textbox(label="Correct AI Output (if AI was wrong)", value="", lines=2, placeholder="If the AI output was incorrect, enter the correct response here.")
+correction_component = gr.Textbox(label="Correct AI Output (Correction/Feedback)", value="", lines=3, placeholder="If the AI output was incorrect, enter the correct response here.")
+
+audio_input_component = gr.Audio(type="filepath", label="Audio Input (Coming Soon)")
 
 # Add Gradio file upload and button for book training
 book_file_component = gr.File(label="Upload Book (Text File)")
@@ -191,7 +197,7 @@ log_component = gr.Textbox(label="Log Output", lines=20, interactive=False, auto
 inputs_list = [
     vision_input_path_component,
     text_data_component,
-    expected_response_component,  # New field
+    expected_response_component,
     sensor_data_component,
     feedback_action_reward_component,
     feedback_spatial_error_component,
@@ -199,7 +205,8 @@ inputs_list = [
     feedback_vision_label_component,
     feedback_motor_command_component,
     feedback_emotion_label_component,
-    correction_component,  # New field
+    correction_component,
+    audio_input_component,  # New audio input
 ]
 outputs_list = [results_component, log_component]
 
@@ -207,21 +214,47 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
     gr.Markdown("# Baby AI Interactive Simulation")
     gr.Markdown("Interact with the AI by providing inputs for a 'day' of experience and observe its learning. All AI model weights are saved after each day's consolidation.")
 
+    gr.Markdown("---")
+    gr.Markdown("## Language Training (Q&A, Dialogue, or Narrative)")
+    gr.Markdown("Use the fields below to teach the AI using sentences, questions, answers, or paragraphs. For Q&A, fill both fields. For next-sentence or dialogue, use both fields. For self-association, just use Text Data.")
     with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown("### Sensory Inputs")
-            vision_input_path_component.render()
             text_data_component.render()
-            sensor_data_component.render()
-
         with gr.Column(scale=1):
-            gr.Markdown("### Feedback Signals (Guidance for Learning)")
+            expected_response_component.render()
+    gr.Markdown("- **Text Data**: Enter a sentence, question, or paragraph for language training.")
+    gr.Markdown("- **Expected Response**: Provide the correct answer, next sentence, or target text for Q&A or dialogue training.")
+
+    gr.Markdown("---")
+    gr.Markdown("## Sensory Inputs")
+    with gr.Row():
+        with gr.Column(scale=1):
+            vision_input_path_component.render()
+            sensor_data_component.render()
+    gr.Markdown("- **Vision Input Image**: Upload or select an image for visual learning.")
+    gr.Markdown("- **Sensor Data**: Provide sensor data as a JSON list. Leave blank for random.")
+
+    gr.Markdown("---")
+    gr.Markdown("## Feedback & Correction")
+    with gr.Row():
+        with gr.Column(scale=1):
             feedback_action_reward_component.render()
             feedback_spatial_error_component.render()
             feedback_memory_target_component.render()
             feedback_vision_label_component.render()
             feedback_motor_command_component.render()
             feedback_emotion_label_component.render()
+        with gr.Column(scale=1):
+            correction_component.render()
+    gr.Markdown("- **Correct AI Output**: Use this field to correct the AI's output and reinforce learning.")
+
+    gr.Markdown("---")
+    gr.Markdown("## Audio Input (Coming Soon)")
+    with gr.Row():
+        audio_input_component.render()
+    gr.Markdown(
+        "*Audio input is accepted but not yet used for training. This feature is under development.*"
+    )
 
     process_button = gr.Button("Process One Day & Consolidate Brain State", variant="primary", scale=2)
 
@@ -239,22 +272,11 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         api_name="process_day"
     )
 
-    gr.Markdown(
-        """
-        **How to Use & Teach the AI (From Scratch):**
-        - Use the **Text Data** and **Expected Response** fields to teach the AI associations (Q&A, next-sentence, or dialogue pairs). For advanced training, upload structured Q&A or dialogue logs as books.
-        - Use the **Book Training** section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs. Books with dialogue, stories, or structured conversations work best for richer context.
-        - If the AI's output is wrong, use the **Correct AI Output** field to reinforce the correct answer and help the AI learn interactively.
-        - Upload images and provide labels for visual learning. You can also pair images with descriptive text for cross-modal association.
-        - Use the reward and label fields to guide learning in all modalities. The system supports reinforcement-like feedback for actions and emotions.
-        - For best results, start with simple examples and gradually increase complexity (curriculum learning). Mix narrative, dialogue, and factual text for more nuanced associations.
-        - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
-        """
-    )
-
+    gr.Markdown("---")
+    gr.Markdown("## Book/Story/Sequential Training")
+    gr.Markdown("Upload a text file (book, dialogue log, or Q&A log) to train the AI on sequences of sentences or paragraphs.")
     with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown("### Book Training")
             book_file_component.render()
             train_book_button.render()
 
@@ -268,6 +290,19 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:
         inputs=[book_file_component],
         outputs=[book_train_result_component, book_train_log_component],
         api_name="train_on_book"
+    )
+
+    gr.Markdown(
+        """
+        **How to Use & Teach the AI (From Scratch):**
+        - Use the **Text Data** and **Expected Response** fields to teach the AI associations (Q&A, next-sentence, or dialogue pairs). For advanced training, upload structured Q&A or dialogue logs as books.
+        - Use the **Book Training** section to upload a text file (book). The AI will learn associations between consecutive sentences or paragraphs. Books with dialogue, stories, or structured conversations work best for richer context.
+        - If the AI's output is wrong, use the **Correct AI Output** field to reinforce the correct answer and help the AI learn interactively.
+        - Upload images and provide labels for visual learning. You can also pair images with descriptive text for cross-modal association.
+        - Use the reward and label fields to guide learning in all modalities. The system supports reinforcement-like feedback for actions and emotions.
+        - For best results, start with simple examples and gradually increase complexity (curriculum learning). Mix narrative, dialogue, and factual text for more nuanced associations.
+        - The AI's understanding is limited to the associations and patterns it has seen; it does not generalize beyond its training data. Provide clear, well-structured, and consistent data, and give feedback or corrections when possible.
+        """
     )
 
 if __name__ == "__main__":
