@@ -36,14 +36,27 @@ project/
 ## Quick Start
 
 ### Command-Line Simulation
+1. **Clone the repository (if you haven't already):**
+   ```pwsh
+   git clone <your-repository-url>  # Replace <your-repository-url> with the actual URL
+   cd Just-A-Brain
+   ```
+   *(If you've downloaded the code as a ZIP, extract it and navigate to the project directory.)*
 
-1. Create the project folder structure as listed above.
-2. Ensure Python 3.8+ is installed.
-3. Install necessary Python libraries:
+2. **Create and activate a virtual environment (recommended):**
+   ```pwsh
+   python -m venv .venv
+   # On Windows PowerShell:
+   .\.venv\Scripts\Activate.ps1
+   # On Linux/macOS:
+   # source .venv/bin/activate
+   ```
+3. **Ensure Python 3.8+ is installed.**
+4. **Install necessary Python libraries:**
    ```pwsh
    pip install -r requirements.txt
    ```
-4. Run the main script:
+5. Run the main script:
    ```pwsh
    python main.py
    ```
@@ -77,6 +90,10 @@ The interface allows you to simulate the AI's 'days' interactively:
 **Controls:**
 - **Process Day Button:** Submits the current inputs to the AI. The AI processes these inputs, runs its learning algorithms, and undergoes 'bedtime' consolidation. Output fields are updated with the AI's responses.
 - **Reset AI State Button:** Re-initializes the entire AI system (all modules, weights, and memories) and resets the simulation day counter to zero.
+
+**AI Data Management Tab (if present):** This tab provides more granular control over resetting AI data.
+- **Warning:** Actions in this tab will delete saved model weights and clear learned memories.
+- You can typically reset data for individual AI lobes (Frontal, Temporal, etc.) or reset all AI data at once.
 
 **Outputs:**
 - **AI Action:** The action chosen/output by the Frontal Lobe.

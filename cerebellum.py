@@ -161,6 +161,27 @@ class CerebellumAI:
         else:
             print(f"CerebellumAI: No weights file found at {self.model_path}. Model is using new Keras initializations.")
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print(f"CerebellumAI: Resetting all training data and model state...")
+        # Clear memory
+        self.memory = []
+        print("CerebellumAI: Memory cleared.")
+
+        # Delete saved files
+        if os.path.exists(self.model_path):
+            try:
+                os.remove(self.model_path)
+                print(f"CerebellumAI: Deleted file {self.model_path}")
+            except Exception as e:
+                print(f"CerebellumAI: Error deleting file {self.model_path}: {e}")
+        else:
+            print(f"CerebellumAI: File {self.model_path} not found, skipping deletion.")
+
+        # Re-initialize model
+        self.model = self._build_model()
+        self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss='mse')
+        print("CerebellumAI: Reset complete. Model re-initialized.")
 
 # Example Usage
 if __name__ == "__main__":

@@ -306,6 +306,30 @@ class LimbicSystemAI:
         self._save_memory()
         print("Limbic System: Consolidation complete.")
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print("Limbic System: Resetting all training data and model state...")
+        # Clear memory
+        self.memory = []
+        print("Limbic System: Memory cleared.")
+
+        # Delete saved files
+        for path in [self.model_path, self.memory_path]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                    print(f"Limbic System: Deleted file {path}")
+                except Exception as e:
+                    print(f"Limbic System: Error deleting file {path}: {e}")
+            else:
+                print(f"Limbic System: File {path} not found, skipping deletion.")
+
+        # Re-initialize model
+        self.model = self._build_model() # _build_model already compiles
+        # self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        print("Limbic System: Reset complete. Model re-initialized.")
+
+
 
 # Example Usage
 if __name__ == "__main__":

@@ -270,6 +270,50 @@ class BrainCoordinator:
         self.limbic.consolidate()
         print("Consolidation complete.")
 
+    def reset_frontal_lobe_data(self):
+        print("BrainCoordinator: Resetting Frontal Lobe data...")
+        self.frontal.reset_training_data()
+        # Reset any coordinator-specific state related to frontal lobe
+        self.last_frontal_sequence_for_learning = None
+        self.last_action_for_learning = None
+        self.last_reward_for_learning = None
+        self.steps_since_last_episode_end = 0
+        print("BrainCoordinator: Frontal Lobe data reset.")
+
+    def reset_temporal_lobe_data(self):
+        print("BrainCoordinator: Resetting Temporal Lobe data...")
+        self.temporal.reset_training_data()
+        print("BrainCoordinator: Temporal Lobe data reset.")
+
+    def reset_occipital_lobe_data(self):
+        print("BrainCoordinator: Resetting Occipital Lobe data...")
+        self.occipital.reset_training_data()
+        print("BrainCoordinator: Occipital Lobe data reset.")
+
+    def reset_parietal_lobe_data(self):
+        print("BrainCoordinator: Resetting Parietal Lobe data...")
+        self.parietal.reset_training_data()
+        print("BrainCoordinator: Parietal Lobe data reset.")
+
+    def reset_cerebellum_data(self):
+        print("BrainCoordinator: Resetting Cerebellum data...")
+        self.cerebellum.reset_training_data()
+        print("BrainCoordinator: Cerebellum data reset.")
+
+    def reset_limbic_system_data(self):
+        print("BrainCoordinator: Resetting Limbic System data...")
+        self.limbic.reset_training_data()
+        print("BrainCoordinator: Limbic System data reset.")
+
+    def reset_all_ai_data(self):
+        print("BrainCoordinator: Resetting ALL AI training data...")
+        self.reset_frontal_lobe_data()
+        self.reset_temporal_lobe_data()
+        self.reset_occipital_lobe_data()
+        self.reset_parietal_lobe_data()
+        self.reset_cerebellum_data()
+        self.reset_limbic_system_data()
+        print("BrainCoordinator: ALL AI training data has been reset.")
 
 def list_learned_qa(coordinator):
     print("\n--- Learned Q&A Pairs (Temporal Lobe) ---")

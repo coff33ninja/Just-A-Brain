@@ -5,6 +5,7 @@ import json
 import shutil # For cleaning up directories
 from unittest.mock import patch, MagicMock # For mocking
 
+from collections import deque
 import numpy as np
 from PIL import Image # For creating test images
 
@@ -1074,19 +1075,23 @@ class TestBrainCoordinator(unittest.TestCase):
         self.coordinator.frontal = MagicMock(spec=FrontalLobeAI)
         self.coordinator.parietal = MagicMock(spec=ParietalLobeAI)
         self.coordinator.temporal = MagicMock(spec=TemporalLobeAI)
-        self.coordinator.occipital = MagicMock(spec=OccipitalLobeAI)
         self.coordinator.cerebellum = MagicMock(spec=CerebellumAI)
         self.coordinator.limbic = MagicMock(spec=LimbicSystemAI)
         self.coordinator.episode_length = 5 # Default from main.BrainCoordinator
 
         # Configure mock return values for process_task
         # Frontal
-        self.mock_action_value = 0 # Predictable action
-        self.coordinator.frontal.process_task.return_value = self.mock_action_value
+        self.mock_action_value = 2 # Example action
+        # process_task now returns (action, sequence)
+        # We'll have the mock return a dynamically generated sequence later
+        self.coordinator.frontal.process_task.return_value = (self.mock_action_value, []) # Placeholder sequence
+        self.coordinator.frontal.learn = MagicMock()
+
         # Set input_size for frontal lobe as it's used by _get_expected_frontal_state indirectly
         # The actual frontal_input_size is determined by concatenation in main.py
         # vision_features (occipital.output_size) + spatial_result_1d (3) + memory_result_embedding_1d (10)
         # Occipital
+        self.coordinator.occipital = MagicMock(spec=OccipitalLobeAI)
         self.mock_vision_label = 0
         self.coordinator.occipital.output_size = 5 # Default from OccipitalLobeAI
         self.coordinator.occipital.process_task.return_value = self.mock_vision_label
@@ -1096,54 +1101,90 @@ class TestBrainCoordinator(unittest.TestCase):
         self.coordinator.parietal.input_size = 20 # Default from ParietalLobeAI
         self.coordinator.parietal.output_size = 3 # Default from ParietalLobeAI
         # Temporal
-        self.mock_memory_embedding = [0.01] * 10 # Default embedding size for TemporalLobeAI
+        self.mock_memory_embedding = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10]
         self.coordinator.temporal.process_task.return_value = self.mock_memory_embedding
         self.coordinator.temporal.output_size = 10 # Default from TemporalLobeAI
 
+        # Define feature_size_per_step and sequence_length based on FrontalLobeAI defaults
+        # These should match the actual FrontalLobeAI configuration if not default
+        self.frontal_feature_size_per_step = self.coordinator.occipital.output_size + \
+                                             self.coordinator.parietal.output_size + \
+                                             self.coordinator.temporal.output_size
+        self.frontal_sequence_length = 5 # Default from FrontalLobeAI
 
         # Cerebellum and Limbic are called but their output isn't directly in frontal_state
         self.coordinator.cerebellum.process_task.return_value = [0.0, 0.0, 0.0]
-        self.coordinator.limbic.process_task.return_value = {"label": 0, "probabilities": [1.0, 0.0, 0.0]}
+        self.coordinator.limbic.process_task.return_value = {"label": 0, "probabilities": [0.8, 0.1, 0.1]}
+        self.coordinator.limbic.learn = MagicMock()
 
 
-    def _get_expected_frontal_state(self, vision_label, parietal_output, temporal_output, occipital_output_size=5):
-        vision_features = np.zeros(occipital_output_size)
-        if 0 <= vision_label < occipital_output_size:
+    def _get_expected_frontal_features_for_step(self, vision_label, spatial_output, memory_embedding):
+        """Helper to construct the flat feature vector for a single step for the frontal lobe."""
+        vision_features = np.zeros(self.coordinator.occipital.output_size)
+        if 0 <= vision_label < self.coordinator.occipital.output_size:
             vision_features[vision_label] = 1.0
 
-        parietal_1d = np.array(parietal_output).flatten()
-        if parietal_1d.shape[0] != 3: # Ensure consistent shape as in main.py
-            temp_p = np.zeros(3)
-            min_len = min(parietal_1d.shape[0], 3)
-            temp_p[:min_len] = parietal_1d[:min_len]
-            parietal_1d = temp_p
+        spatial_features = np.array(spatial_output).flatten()
+        if spatial_features.shape[0] != self.coordinator.parietal.output_size: # Should be 3
+            temp_spatial = np.zeros(self.coordinator.parietal.output_size)
+            min_len_spatial = min(spatial_features.shape[0], self.coordinator.parietal.output_size)
+            temp_spatial[:min_len_spatial] = spatial_features[:min_len_spatial]
+            spatial_features = temp_spatial
 
-        temporal_1d = np.array(temporal_output).flatten()
-        if temporal_1d.shape[0] != 10: # Ensure consistent shape as in main.py
-            temp_t = np.zeros(10)
-            min_len = min(temporal_1d.shape[0], 10)
-            temp_t[:min_len] = temporal_1d[:min_len]
-            temporal_1d = temp_t
+        memory_features = np.array(memory_embedding).flatten()
+        if memory_features.shape[0] != self.coordinator.temporal.output_size: # Should be 10
+            temp_memory = np.zeros(self.coordinator.temporal.output_size)
+            min_len_memory = min(memory_features.shape[0], self.coordinator.temporal.output_size)
+            temp_memory[:min_len_memory] = memory_features[:min_len_memory]
+            memory_features = temp_memory
 
-        return np.concatenate([vision_features, parietal_1d, temporal_1d])
+        return np.concatenate([vision_features, spatial_features, memory_features])
+
+    def _get_expected_frontal_sequence(self, feature_history_for_sequence):
+        """
+        Constructs the expected state sequence for FrontalLobeAI, including padding.
+        `feature_history_for_sequence` is a list of the most recent feature vectors.
+        """
+        current_sequence_list = list(feature_history_for_sequence) # Should be a deque in real AI
+        if len(current_sequence_list) < self.frontal_sequence_length:
+            padding_needed = self.frontal_sequence_length - len(current_sequence_list)
+            # Zero vector of shape (feature_size_per_step,)
+            padding_vector = np.zeros(self.frontal_feature_size_per_step)
+            padding = [padding_vector for _ in range(padding_needed)]
+            padded_sequence_list = padding + current_sequence_list
+        else:
+            # Take the last `sequence_length` items if history is longer
+            padded_sequence_list = current_sequence_list[-self.frontal_sequence_length:]
+        return [arr.tolist() for arr in padded_sequence_list] # Return as list of lists for easier comparison
 
     def test_frontal_learn_episodic_calls(self):
         num_days = 7
         episode_length = self.coordinator.episode_length # Should be 5
         vision_input_path = "dummy_path.png" # Mocked, path doesn't need to exist
-        sensor_data = [0.5, 0.5, 0.5]
+        sensor_data = [0.5] * self.coordinator.parietal.input_size # Match expected input size
         text_data = "test text"
         feedback_reward = 0.75
 
         # Store expected states for verification
-        expected_states_history = []
+        # expected_states_history = [] # No longer needed for flat states
+        # Store history of feature vectors to construct sequences
+        feature_vector_history = deque(maxlen=self.frontal_sequence_length)
+        # Store expected sequences passed to learn
+        expected_state_sequences_for_learn_history = []
 
         # --- Day 1 ---
+        # Simulate what BrainCoordinator does to get features for frontal.process_task
+        current_features_day1 = self._get_expected_frontal_features_for_step(
+            self.mock_vision_label, self.mock_spatial_output, self.mock_memory_embedding
+        )
+        feature_vector_history.append(current_features_day1)
+        expected_sequence_day1 = self._get_expected_frontal_sequence(feature_vector_history)
+        self.coordinator.frontal.process_task.return_value = (self.mock_action_value, expected_sequence_day1)
+
         self.coordinator.process_day(vision_input_path, sensor_data, text_data, {"action_reward": feedback_reward})
         self.coordinator.frontal.learn.assert_not_called() # Learn not called on first day
-        expected_states_history.append(
-            self._get_expected_frontal_state(self.mock_vision_label, self.mock_spatial_output, self.mock_memory_embedding)
-        )
+        # The sequence used for action on day 1 becomes s_t for the learn call on day 2
+        expected_state_sequences_for_learn_history.append(expected_sequence_day1)
 
         # --- Days 2 to num_days ---
         for day in range(2, num_days + 1):
@@ -1152,30 +1193,43 @@ class TestBrainCoordinator(unittest.TestCase):
             # This is fine as we are testing the *sequence* of (s, a, r, s', done)
             current_day_reward = feedback_reward + (day * 0.01) # Slightly varying reward
 
+            # Simulate feature generation for current day's process_task
+            current_expected_state = self._get_expected_frontal_features_for_step( # Renamed current_features_this_day to current_expected_state
+                self.mock_vision_label, self.mock_spatial_output, self.mock_memory_embedding
+            )
+            # current_expected_state is the flat feature vector for the current day (s_d)
+            feature_vector_history.append(current_expected_state) # Add current day's features to history
+            # This sequence is what frontal.process_task would return for the current day (s_{t+1})
+            expected_sequence_this_day = self._get_expected_frontal_sequence(feature_vector_history)
+            self.coordinator.frontal.process_task.return_value = (self.mock_action_value, expected_sequence_this_day)
+
             self.coordinator.process_day(vision_input_path, sensor_data, text_data, {"action_reward": current_day_reward})
 
             # current_frontal_state for this day becomes next_state for the previous learn call
-            current_expected_state = self._get_expected_frontal_state(
-                self.mock_vision_label, self.mock_spatial_output, self.mock_memory_embedding
-            )
-            expected_states_history.append(current_expected_state)
+            # current_expected_state is now defined above and used to build expected_sequence_this_day
 
             # Assertions for the learn call that happened due to *previous* day's state
             self.coordinator.frontal.learn.assert_called_once()
 
             args, _ = self.coordinator.frontal.learn.call_args
-            state, action, reward, next_state, done = args
+            # learn signature: state_sequence_t, action_t, reward_t, next_state_sequence_t_plus_1, done
+            state_sequence_arg, action_arg, reward_arg, next_state_sequence_arg, done_arg = args
 
-            # State should be from previous day's calculation
-            np.testing.assert_array_almost_equal(state, expected_states_history[day-2],
-                                                 err_msg=f"Day {day}: Incorrect 'state' passed to learn.")
-            self.assertEqual(action, self.mock_action_value, f"Day {day}: Incorrect 'action'.") # Corrected variable name
-            # Reward is from previous day's feedback
-            self.assertAlmostEqual(reward, feedback_reward + ((day-1) * 0.01) if day > 1 else feedback_reward, # last_reward_for_learning
-                                   msg=f"Day {day}: Incorrect 'reward'.")
-            # Next state is the current day's calculated state
-            np.testing.assert_array_almost_equal(next_state, current_expected_state,
-                                                 err_msg=f"Day {day}: Incorrect 'next_state'.")
+            # state_sequence_arg (s_t) is the sequence from the *previous* day's process_task
+            expected_s_t = expected_state_sequences_for_learn_history[day-2]
+            np.testing.assert_array_almost_equal(state_sequence_arg, expected_s_t,
+                                                 err_msg=f"Day {day}: Incorrect 'state_sequence_t' passed to learn.")
+            self.assertEqual(action_arg, self.mock_action_value, f"Day {day}: Incorrect 'action'.")
+            self.assertAlmostEqual(reward_arg, feedback_reward + ((day-1) * 0.01),
+                                   msg=f"Day {day}: Incorrect 'reward'.") # Simplified as day always > 1 here
+            # next_state_sequence_arg (s_{t+1}) is the sequence from the *current* day's process_task
+            np.testing.assert_array_almost_equal(next_state_sequence_arg, expected_sequence_this_day,
+                                                 err_msg=f"Day {day}: Incorrect 'next_state_sequence_t_plus_1'.")
+            # Verify that the last element of the next_state_sequence_arg is indeed the current_expected_state (current day's flat features)
+            np.testing.assert_array_almost_equal(next_state_sequence_arg[-1], current_expected_state,
+                                                 err_msg=f"Day {day}: Last element of 'next_state_sequence_t_plus_1' should match current day's features.")
+            # Store the sequence that will be s_t for the next learn call
+            expected_state_sequences_for_learn_history.append(expected_sequence_this_day)
 
             # Check 'done' flag
             # steps_since_last_episode_end was incremented *before* this learn call
@@ -1208,8 +1262,8 @@ class TestBrainCoordinator(unittest.TestCase):
             # The `expected_done_flag` calculation below correctly captures this based on the trace.
             expected_done = ((day - 1) % episode_length == 0) and ((day - 1) >= episode_length)
 
-            self.assertEqual(done, expected_done,
-                             f"Day {day}: 'done' flag mismatch. Expected {expected_done}, got {done}. Coordinator steps: {self.coordinator.steps_since_last_episode_end}")
+            self.assertEqual(done_arg, expected_done,
+                             f"Day {day}: 'done' flag mismatch. Expected {expected_done}, got {done_arg}. Coordinator steps: {self.coordinator.steps_since_last_episode_end}")
 
 
             self.coordinator.frontal.learn.reset_mock()

@@ -167,6 +167,27 @@ class ParietalLobeAI:
         else:
             print(f"ParietalLobeAI: No weights file found at {self.model_path}. Model is using new Keras initializations.")
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print("ParietalLobeAI: Resetting all training data and model state...")
+        # Clear memory
+        self.memory = []
+        print("ParietalLobeAI: Memory cleared.")
+
+        # Delete saved files
+        if os.path.exists(self.model_path):
+            try:
+                os.remove(self.model_path)
+                print(f"ParietalLobeAI: Deleted file {self.model_path}")
+            except Exception as e:
+                print(f"ParietalLobeAI: Error deleting file {self.model_path}: {e}")
+        else:
+            print(f"ParietalLobeAI: File {self.model_path} not found, skipping deletion.")
+
+        # Re-initialize model
+        self.model = self._build_model()
+        self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss='mse')
+        print("ParietalLobeAI: Reset complete. Model re-initialized.")
 
 # Example Usage
 if __name__ == "__main__":

@@ -376,6 +376,29 @@ class TemporalLobeAI:
             self.memory_db = []
             self.cross_modal_memory = []
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print("TemporalLobeAI: Resetting all training data and model state...")
+        # Clear memory
+        self.memory_db = []
+        self.cross_modal_memory = []
+        print("TemporalLobeAI: Memory cleared.")
+
+        # Delete saved files
+        for path in [self.model_path, self.arch_path, self.memory_path]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                    print(f"TemporalLobeAI: Deleted file {path}")
+                except Exception as e:
+                    print(f"TemporalLobeAI: Error deleting file {path}: {e}")
+            else:
+                print(f"TemporalLobeAI: File {path} not found, skipping deletion.")
+
+        # Re-initialize model
+        self.model = self._build_combined_model()
+        self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss={'text_embedding_output': 'mse', 'visual_label_output': 'sparse_categorical_crossentropy'}, loss_weights={'text_embedding_output': 0.5, 'visual_label_output': 0.5})
+        print("TemporalLobeAI: Reset complete. Model re-initialized.")
 
 # Example Usage
 if __name__ == "__main__":

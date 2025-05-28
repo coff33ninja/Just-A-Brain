@@ -174,13 +174,13 @@ class OccipitalLobeAI:
             # train_on_batch returns a list: [loss, metric1, metric2, ...]
             # Based on model.compile(metrics=["accuracy"]), results[1] is accuracy.
             loss = results[0]
-            accuracy = results[1] 
+            accuracy = results[1]
             print(
                 f"Occipital Lobe: Training complete (train_on_batch). Loss: {loss:.4f}, Accuracy: {accuracy:.4f}"
             )
             # Add to memory after successful training
             # Store the preprocessed image array and its label
-            self.memory.append((processed_image_batch, valid_label)) 
+            self.memory.append((processed_image_batch, valid_label))
             print(f"Occipital Lobe: Added preprocessed image and label {valid_label} to memory. Memory size: {len(self.memory)}")
         except Exception as e:
             print(f"Occipital Lobe: Error during model training (train_on_batch): {e}")
@@ -202,7 +202,7 @@ class OccipitalLobeAI:
         for processed_image_batch, lbl in list(self.memory): # Iterate over a snapshot
             if processed_image_batch is not None and processed_image_batch.ndim == 4 and processed_image_batch.shape[0] == 1:
                 # Extract the single image array from the batch stored in memory
-                images_to_train.append(processed_image_batch[0]) 
+                images_to_train.append(processed_image_batch[0])
                 labels_to_train.append(int(lbl))
             else:
                 # This case should ideally not happen if learn() stores correctly preprocessed images
@@ -235,6 +235,27 @@ class OccipitalLobeAI:
         self.save_model()
         print("Occipital Lobe: Consolidation complete (replayed experiences and saved model).")
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print("Occipital Lobe: Resetting all training data and model state...")
+        # Clear memory
+        self.memory.clear()
+        print("Occipital Lobe: Memory cleared.")
+
+        # Delete saved files
+        if os.path.exists(self.model_path):
+            try:
+                os.remove(self.model_path)
+                print(f"Occipital Lobe: Deleted file {self.model_path}")
+            except Exception as e:
+                print(f"Occipital Lobe: Error deleting file {self.model_path}: {e}")
+        else:
+            print(f"Occipital Lobe: File {self.model_path} not found, skipping deletion.")
+
+        # Re-initialize model
+        self.model = self._build_model()
+        self.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        print("Occipital Lobe: Reset complete. Model re-initialized.")
 
 # Example usage (optional, for testing within the file)
 if __name__ == "__main__":

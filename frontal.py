@@ -399,6 +399,37 @@ class FrontalLobeAI:
             "Frontal Lobe: Consolidation complete (replayed experiences and saved model)."
         )
 
+    def reset_training_data(self):
+        """Clears all learned data, resets model, and deletes saved files."""
+        print("Frontal Lobe: Resetting all training data and model state...")
+        # Clear memory
+        self.working_memory_buffer.clear()
+        self.memory_stm.clear()
+        self.long_term_episodic_memory.clear()
+        print("Frontal Lobe: Memory buffers cleared.")
+
+        # Reset exploration rate and counters
+        self.exploration_rate_epsilon = 1.0 # Initial value
+        self.learn_step_counter = 0
+        print(f"Frontal Lobe: Exploration epsilon reset to {self.exploration_rate_epsilon:.3f}.")
+
+        # Delete saved files
+        for path in [self.model_path, self.epsilon_path, self.ltm_path]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                    print(f"Frontal Lobe: Deleted file {path}")
+                except Exception as e:
+                    print(f"Frontal Lobe: Error deleting file {path}: {e}")
+            else:
+                print(f"Frontal Lobe: File {path} not found, skipping deletion.")
+
+        # Re-initialize models
+        self.model = self._build_model()
+        self.target_model = self._build_model()
+        self.update_target_model() # This already prints a message
+        print("Frontal Lobe: Reset complete. Models re-initialized.")
+
 # Example Usage
 if __name__ == "__main__":
     print("\n--- Testing FrontalLobeAI (DQN) ---")

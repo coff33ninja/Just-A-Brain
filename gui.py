@@ -216,6 +216,53 @@ def list_learned_qa_gui():
 def qa_list_gui():
     return list_learned_qa_gui()
 
+# --- Functions for AI Data Management Tab ---
+def create_reset_function(lobe_name, coordinator_reset_method_name):
+    """Helper to create reset functions for each lobe to avoid repetitive code."""
+    def reset_lobe_data_gui():
+        old_stdout = sys.stdout
+        sys.stdout = captured_output = StringIO()
+        log_message = ""
+        try:
+            print(f"GUI: Attempting to reset {lobe_name} data...")
+            reset_method = getattr(coordinator, coordinator_reset_method_name)
+            reset_method()
+            log_message = f"{lobe_name} data reset successfully."
+            print(log_message)
+        except Exception as e:
+            log_message = f"Error resetting {lobe_name}: {str(e)}\nTraceback:\n{traceback.format_exc()}"
+            print(log_message)
+        finally:
+            log_output = captured_output.getvalue()
+            sys.stdout = old_stdout
+        return log_message, log_output
+    return reset_lobe_data_gui
+
+reset_frontal_gui = create_reset_function("Frontal Lobe", "reset_frontal_lobe_data")
+reset_temporal_gui = create_reset_function("Temporal Lobe", "reset_temporal_lobe_data")
+reset_occipital_gui = create_reset_function("Occipital Lobe", "reset_occipital_lobe_data")
+reset_parietal_gui = create_reset_function("Parietal Lobe", "reset_parietal_lobe_data")
+reset_cerebellum_gui = create_reset_function("Cerebellum", "reset_cerebellum_data")
+reset_limbic_gui = create_reset_function("Limbic System", "reset_limbic_system_data")
+
+def reset_all_ai_data_gui():
+    old_stdout = sys.stdout
+    sys.stdout = captured_output = StringIO()
+    log_message = ""
+    try:
+        print("GUI: Attempting to reset ALL AI data...")
+        coordinator.reset_all_ai_data()
+        log_message = "ALL AI data reset successfully."
+        print(log_message)
+    except Exception as e:
+        log_message = f"Error resetting ALL AI data: {str(e)}\nTraceback:\n{traceback.format_exc()}"
+        print(log_message)
+    finally:
+        log_output = captured_output.getvalue()
+        sys.stdout = old_stdout
+    return log_message, log_output
+
+
 # --- Functions for "Generate Example" buttons ---
 def get_example_sensor_data():
     example_data = np.random.rand(coordinator.parietal.input_size).tolist()
@@ -413,6 +460,33 @@ with gr.Blocks(title="Baby AI Interactive Simulation") as demo:  # Revert to def
             show_qa_button.render()
             qa_list_component.render()
             show_qa_button.click(fn=qa_list_gui, inputs=[], outputs=[qa_list_component])
+
+        with gr.TabItem("⚙️ AI Data Management"):
+            gr.Markdown("## Reset AI Training Data")
+            gr.Markdown("⚠️ **Warning:** These actions will delete saved model weights and clear learned memories for the selected AI components, effectively resetting them to their initial state. This cannot be undone.")
+
+            data_reset_status_component = gr.Textbox(label="Reset Operation Status", interactive=False)
+            data_reset_log_component = gr.Textbox(label="Reset Log", lines=10, interactive=False, autoscroll=True)
+
+            with gr.Row():
+                reset_frontal_button = gr.Button("Reset Frontal Lobe Data", variant="stop", size="sm")
+                reset_temporal_button = gr.Button("Reset Temporal Lobe Data", variant="stop", size="sm")
+                reset_occipital_button = gr.Button("Reset Occipital Lobe Data", variant="stop", size="sm")
+            with gr.Row():
+                reset_parietal_button = gr.Button("Reset Parietal Lobe Data", variant="stop", size="sm")
+                reset_cerebellum_button = gr.Button("Reset Cerebellum Data", variant="stop", size="sm")
+                reset_limbic_button = gr.Button("Reset Limbic System Data", variant="stop", size="sm")
+
+            reset_all_button = gr.Button("Reset ALL AI Data", variant="stop")
+
+            reset_frontal_button.click(fn=reset_frontal_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_temporal_button.click(fn=reset_temporal_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_occipital_button.click(fn=reset_occipital_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_parietal_button.click(fn=reset_parietal_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_cerebellum_button.click(fn=reset_cerebellum_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_limbic_button.click(fn=reset_limbic_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+            reset_all_button.click(fn=reset_all_ai_data_gui, inputs=[], outputs=[data_reset_status_component, data_reset_log_component])
+
 
     gr.Markdown("---")
     with gr.Accordion("📖 How to Use & Teach the AI (From Scratch)", open=False):
