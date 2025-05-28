@@ -820,7 +820,7 @@ class TestCerebellumAI(unittest.TestCase):
         final_weights = self.ai.model.get_weights()
 
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
-        # self.assertTrue(weights_changed, "Model weights should change after learn if error > 0 and LR > 0.")
+        self.assertTrue(weights_changed, "Model weights should change after learn if error > 0 and LR > 0.")
 
         expected_mem_sensor = self.sample_sensor_data if isinstance(self.sample_sensor_data, list) else self.sample_sensor_data.tolist()
         expected_mem_command = self.sample_true_command if isinstance(self.sample_true_command, list) else self.sample_true_command.tolist()
@@ -957,7 +957,7 @@ class TestParietalLobeAI(unittest.TestCase):
         # Learning with a single batch might not always change weights if error is too small or LR is tiny
         # For a robust test, we'd need to check loss or ensure a significant update.
         # For now, we'll assert it *could* change or stay same, but primarily check memory.
-        # self.assertTrue(weights_changed, "Model weights should change after learn if error > 0 and LR > 0.")
+        self.assertTrue(weights_changed, "Model weights should change after learn if error > 0 and LR > 0.")
 
         expected_mem_sensor = self.sample_sensory_data if isinstance(self.sample_sensory_data, list) else self.sample_sensory_data.tolist()
         expected_mem_coords = self.sample_true_coords if isinstance(self.sample_true_coords, list) else self.sample_true_coords.tolist()
@@ -1019,31 +1019,24 @@ class TestParietalLobeAI(unittest.TestCase):
     def test_load_model_corrupted_file(self):
         # First, save a valid model
         self.ai.save_model() # Uses self.test_instance_model_path
+        original_valid_weights = self.ai.model.get_weights() # Weights of the validly saved model
 
         # Corrupt the saved .weights.h5 file
         with open(self.test_instance_model_path, 'w') as f:
             f.write('this is not a valid HDF5 file content for Keras weights')
 
-        # Store initial weights of a fresh model for comparison (Keras initializes randomly)
-        fresh_ai_for_comparison = ParietalLobeAI(model_path="some_other_temp_path.h5") # ensure it's a new model
-        initial_fresh_weights = fresh_ai_for_comparison.model.get_weights()
-        if os.path.exists("some_other_temp_path.h5"):
-            os.remove("some_other_temp_path.h5")
+        # Create a new AI instance that will attempt to load the corrupted file.
+        # Capture its weights *before* the load attempt.
+        corrupted_ai = ParietalLobeAI(model_path=self.test_instance_model_path)
+        weights_of_new_instance_before_load_attempt = corrupted_ai.model.get_weights()
 
 
         # Attempt to load the corrupted file, expecting an error message to be printed
         with patch('builtins.print') as mock_print:
-            corrupted_ai = ParietalLobeAI(model_path=self.test_instance_model_path)
+            corrupted_ai.load_model() # This is the call that attempts to load
             # Check if an error message related to loading was printed
             error_printed = any("Error loading weights" in call_args[0][0] for call_args in mock_print.call_args_list)
-            no_file_printed = any("No weights file found" in call_args[0][0] for call_args in mock_print.call_args_list) # Should not happen if file exists
-
-            # If file was found but corrupted, an error should be printed.
-            # If Keras load_weights fails, it might not re-initialize within the same instance in a way
-            # that's easily distinguishable from a *successful* load of different weights without deep inspection.
-            # The key is that ParietalLobeAI's load_model catches the error and the model remains usable (Keras default init).
-            self.assertTrue(error_printed or not no_file_printed,
-                            "Expected an error message or for the file to be processed (even if failing internally by Keras).")
+            self.assertTrue(error_printed, "Expected an error message for loading a corrupted file.")
 
 
         self.assertIsNotNone(corrupted_ai.model, "Model should still exist after attempting to load corrupted file.")
@@ -1051,17 +1044,27 @@ class TestParietalLobeAI(unittest.TestCase):
 
         # Check if weights are different from the successfully saved ones (they should be, as load failed)
         # This assumes Keras re-initializes or keeps initial weights if load fails.
-        weights_after_corrupt_load = corrupted_ai.model.get_weights()
-        original_saved_weights = self.ai.model.get_weights() # Weights that were successfully saved before corruption
+        # of the newly created instance *before* the load attempt.
+        # This means the failed load didn't change the Keras-initialized weights.
+        weights_after_failed_load_attempt = corrupted_ai.model.get_weights()
+        for i in range(len(weights_of_new_instance_before_load_attempt)):
+            np.testing.assert_array_equal(
+                weights_after_failed_load_attempt[i],
+                weights_of_new_instance_before_load_attempt[i],
+                err_msg=f"Layer {i}: Weights of corrupted_ai changed after failed load attempt."
+            )
 
-        # It's possible Keras maintains the original built model's weights if load_weights fails internally.
-        # A more robust check is that the weights are not THE corrupted data, but Keras doesn't load partial data.
-        # If the load truly failed, the weights should be either the initial Keras random weights,
-        # or if the model object was reused, the weights from before the load attempt.
-        # Let's ensure they are not identical to the original *valid* saved weights if the file was indeed corrupted.
-        # This part is tricky because Keras's behavior on load_weights failure can vary.
-        # The crucial part is that the `load_model` method in `parietal.py` handles the exception.
-        # We've asserted that an error print occurs, which is good.
+        # Also, ensure these weights are different from the original *valid* weights
+        # (unless by extreme coincidence Keras initialized them identically).
+        weights_are_different_from_valid_model = any(
+            not np.array_equal(w_failed_load, w_valid)
+            for w_failed_load, w_valid in zip(weights_after_failed_load_attempt, original_valid_weights)
+        )
+        # This assertion is more likely to pass if the number of weights is large.
+        # If input/output sizes are very small, random initializations could match.
+        if len(original_valid_weights) > 0 and len(weights_after_failed_load_attempt) > 0:
+             self.assertTrue(weights_are_different_from_valid_model,
+                            "Weights after failed load should not match the original validly saved weights (unless by rare chance).")
 
 class TestBrainCoordinator(unittest.TestCase):
     def setUp(self):
@@ -1166,8 +1169,7 @@ class TestBrainCoordinator(unittest.TestCase):
             # State should be from previous day's calculation
             np.testing.assert_array_almost_equal(state, expected_states_history[day-2],
                                                  err_msg=f"Day {day}: Incorrect 'state' passed to learn.")
-            # Action is what frontal.process_task returned for state_t-1
-            self.assertEqual(action, self.mock_action, f"Day {day}: Incorrect 'action'.")
+            self.assertEqual(action, self.mock_action_value, f"Day {day}: Incorrect 'action'.") # Corrected variable name
             # Reward is from previous day's feedback
             self.assertAlmostEqual(reward, feedback_reward + ((day-1) * 0.01) if day > 1 else feedback_reward, # last_reward_for_learning
                                    msg=f"Day {day}: Incorrect 'reward'.")
@@ -1189,28 +1191,25 @@ class TestBrainCoordinator(unittest.TestCase):
             # So, if day d makes steps_since_last_episode_end == episode_length, then done is True for that learn call.
 
             # Let's trace coordinator's internal state:
-            # Day 1: last_state=None. process_day(1). last_state=s1, last_action=a1, last_reward=r1. steps=0. learn not called.
-            # Day 2: last_state=s1. process_day(2). steps becomes 1. learn(s1,a1,r1, s2, done=1==5(F)). last_state=s2, last_action=a2, last_reward=r2.
-            # Day 3: last_state=s2. process_day(3). steps becomes 2. learn(s2,a2,r2, s3, done=2==5(F)). last_state=s3, last_action=a3, last_reward=r3.
-            # Day 4: last_state=s3. process_day(4). steps becomes 3. learn(s3,a3,r3, s4, done=3==5(F)). last_state=s4, last_action=a4, last_reward=r4.
-            # Day 5: last_state=s4. process_day(5). steps becomes 4. learn(s4,a4,r4, s5, done=4==5(F)). last_state=s5, last_action=a5, last_reward=r5.
-            # Day 6: last_state=s5. process_day(6). steps becomes 5. learn(s5,a5,r5, s6, done=5==5(T)). steps resets to 0. last_state=s6, last_action=a6, last_reward=r6.
-            # Day 7: last_state=s6. process_day(7). steps becomes 1. learn(s6,a6,r6, s7, done=1==5(F)). last_state=s7, last_action=a7, last_reward=r7.
+            # Day 1: (no learn call)
+            # Day 2: learn(s1,a1,r1,s2, done=F) (steps_for_done_check=1)
+            # Day 3: learn(s2,a2,r2,s3, done=F) (steps_for_done_check=2)
+            # ...
+            # Day 6: learn(s5,a5,r5,s6, done=T) (steps_for_done_check=5)
+            # Day 7: learn(s6,a6,r6,s7, done=F) (steps_for_done_check=1 after reset)
 
-            # So, done is True if coordinator.steps_since_last_episode_end was episode_length *before* reset
-            # The value of coordinator.steps_since_last_episode_end *at the time of the learn call* is the one to check
-            # This value is captured by the done_for_learn variable inside process_day
-            # If the current learn call is for the transition ending episode `k*episode_length`, then `done` is True.
-            # This happens on day `k*episode_length + 1`.
-            # For day=6, learn is for transition s5->s6. steps_since_last_episode_end inside process_day (before learn) is 5.
-            # So done is True.
+            # `(day - 1)` is the number of learnable transitions processed so far.
+            # `num_transitions_in_current_episode` is `(day - 1) % episode_length`. If 0, it means `episode_length` transitions.
+            # However, this needs to align with how `steps_since_last_episode_end` is used.
+            # `done_for_learn` is true if `steps_since_last_episode_end` (after increment for current day) is `>= episode_length`.
+            # This `steps_since_last_episode_end` effectively counts the current transition as the Nth in the episode.
+            # So, if `(day-1)` is the Nth transition overall, and the episode started at transition `S`.
+            # `done` is true if `(day - 1 - S + 1) == episode_length`.
+            # The `expected_done_flag` calculation below correctly captures this based on the trace.
+            expected_done = ((day - 1) % episode_length == 0) and ((day - 1) >= episode_length)
 
-            is_episode_end_step = (self.coordinator.steps_since_last_episode_end == 0) # True if it was just reset
-            if is_episode_end_step and (day-1) >= episode_length : # It was reset because it hit episode_length
-                 self.assertTrue(done, f"Day {day}: 'done' should be True as this is the first step of a new episode, meaning previous one ended.")
-            else:
-                 # If not end of episode, steps_since_last_episode_end should be > 0 unless it's the very first learning step (day 2)
-                 self.assertFalse(done, f"Day {day}: 'done' should be False. steps_since_last_episode_end={self.coordinator.steps_since_last_episode_end}")
+            self.assertEqual(done, expected_done,
+                             f"Day {day}: 'done' flag mismatch. Expected {expected_done}, got {done}. Coordinator steps: {self.coordinator.steps_since_last_episode_end}")
 
 
             self.coordinator.frontal.learn.reset_mock()
