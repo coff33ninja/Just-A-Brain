@@ -3,7 +3,7 @@ import numpy as np
 import json
 import os
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.layers import Dense, Input, LSTM # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 import random
 from collections import deque  # For replay buffer
@@ -13,8 +13,13 @@ class FrontalLobeAI:
     def __init__(
         self, input_size=18, output_size=5, model_path="data/frontal_model.weights.h5", replay_batch_size=32
     ):
-        self.input_size = input_size  # State size
+        # input_size now refers to the number of features in each step of a sequence
+        self.feature_size_per_step = input_size
         self.output_size = output_size  # Action size
+        self.sequence_length = 5  # Number of recent states to consider as working memory
+
+        # LSTM layer units
+        self.lstm_units = 64
 
         # --- DQN (Deep Q-Network) Parameters ---
         # DQN Parameters
@@ -34,6 +39,9 @@ class FrontalLobeAI:
 
         # --- Memory Components ---
         # Short-Term Memory (STM): Replay buffer for recent experiences
+        # This will now store (state_sequence, action, reward, next_state_sequence, done)
+        self.working_memory_buffer = deque(maxlen=self.sequence_length) # Stores recent feature_vectors for current decision making
+
         self.memory_stm = deque(maxlen=self.replay_buffer_size)
 
         # Long-Term Episodic Memory (LTM): Stores significant past experiences (e.g., episode ends)
@@ -57,14 +65,12 @@ class FrontalLobeAI:
     def _build_model(self):
         model = Sequential(
             [
-                Input(shape=(self.input_size,), name="input_layer"), # Added Input layer
+                Input(shape=(self.sequence_length, self.feature_size_per_step), name="input_layer"),
+                LSTM(self.lstm_units, name="lstm_layer"), # Input shape is (batch_size, timesteps, features)
                 Dense(
-                    32, activation="relu", name="dense_hidden_1" # Changed from dense_input, removed input_dim
+                    32, activation="relu", name="dense_hidden_1"
                 ),
-                Dense(32, activation="relu", name="dense_hidden_2"), # Renamed from dense_hidden_1
-                Dense(
-                    self.output_size, activation="linear", name="dense_output"
-                ),  # Q-values for each action
+                Dense(self.output_size, activation="linear", name="dense_output"),  # Q-values
             ]
         )
         optimizer = Adam(learning_rate=self.learning_rate_dqn)
@@ -74,74 +80,99 @@ class FrontalLobeAI:
 
     def _prepare_state_vector(self, state_data):
         """
-        Prepares raw state data into a flat numpy vector of the correct input size.
+        Prepares raw state data into a flat numpy vector of self.feature_size_per_step.
+        This vector represents one time step in a sequence.
         """
         try:
-            # Attempt to convert to numpy array and flatten
             state_vector_1d = np.array(state_data, dtype=float).flatten()
-
             current_len = state_vector_1d.shape[0]
-            if current_len == self.input_size:
-                return state_vector_1d
-            elif current_len < self.input_size:
-                # Pad with zeros if too short
-                padding = np.zeros(self.input_size - current_len)
-                state_vector_1d = np.concatenate((state_vector_1d, padding))
-                # print(f"Warning: State data was shorter than input_size. Padded. Original len: {current_len}")
-            else:
-                # Truncate if too long
-                state_vector_1d = state_vector_1d[: self.input_size]
-                # print(f"Warning: State data was longer than input_size. Truncated. Original len: {current_len}")
-            return state_vector_1d
-        except Exception as e:  # Catch broader exceptions during conversion/shaping
-            print(f"Error preparing state vector from data '{state_data}': {e}. Using zero vector.")
-            return np.zeros(self.input_size)
 
-    def remember(self, state, action, reward, next_state, done):
+            if current_len == self.feature_size_per_step:
+                return state_vector_1d
+            elif current_len < self.feature_size_per_step:
+                padding = np.zeros(self.feature_size_per_step - current_len)
+                state_vector_1d = np.concatenate((state_vector_1d, padding))
+            else:
+                state_vector_1d = state_vector_1d[: self.feature_size_per_step]
+            return state_vector_1d
+        except Exception as e:
+            print(f"Error preparing state vector from data '{state_data}': {e}. Using zero vector.")
+            return np.zeros(self.feature_size_per_step)
+
+    def remember(self, state_sequence, action, reward, next_state_sequence, done):
         """Stores an experience in STM (replay buffer) and potentially LTM (episodic memory)."""
-        # State and next_state are stored in their raw/original format from the environment
-        experience = (state, action, reward, next_state, done)
+        # state_sequence and next_state_sequence are lists of feature vectors (each of size self.feature_size_per_step)
+        experience = (list(state_sequence), action, reward, list(next_state_sequence), done)
         self.memory_stm.append(experience)
 
         if done: # If the episode ended, store this significant experience in LTM
             self.long_term_episodic_memory.append(experience)
-            # print(f"Frontal Lobe: Episode end. Stored in LTM. LTM size: {len(self.long_term_episodic_memory)}")
 
     def process_task(
-        self, current_input_data
-    ):  # Renamed from input_data to avoid confusion
-        """Choose an action using epsilon-greedy policy."""
-        state_vector_1d = self._prepare_state_vector(current_input_data)
-        # Reshape for Keras model prediction (expects batch dimension)
-        # Note: For a more advanced STM ("working memory") influencing current decisions,
-        # this part would need to handle a sequence of recent states, and the model
-        # architecture (e.g., using LSTMs) would need to support sequence input.
-        state_batch = np.reshape(state_vector_1d, [1, self.input_size])
+        self, current_raw_input_data
+    ):
+        """
+        Processes the current raw input, updates working memory, and chooses an action.
+        Returns the chosen action and the state sequence used for the decision.
+        """
+        current_feature_vector = self._prepare_state_vector(current_raw_input_data)
+        self.working_memory_buffer.append(current_feature_vector)
+
+        # Prepare the sequence for the model
+        current_sequence_list = list(self.working_memory_buffer)
+        if len(current_sequence_list) < self.sequence_length:
+            padding_needed = self.sequence_length - len(current_sequence_list)
+            padding = [np.zeros(self.feature_size_per_step) for _ in range(padding_needed)]
+            padded_sequence_list = padding + current_sequence_list
+        else:
+            padded_sequence_list = current_sequence_list
+
+        sequence_for_model_np = np.array(padded_sequence_list) # Shape: (sequence_length, feature_size_per_step)
+        # Reshape for Keras model prediction (expects batch dimension: 1 sample, sequence_length timesteps, feature_size_per_step features)
+        state_batch = np.reshape(sequence_for_model_np, [1, self.sequence_length, self.feature_size_per_step])
 
         if np.random.rand() <= self.exploration_rate_epsilon:
             action = np.random.randint(0, self.output_size)  # Explore
-            # print(f"Frontal Lobe: Exploring - Chose action {action} randomly.")
         else:
             q_values = self.model.predict(state_batch, verbose=0)[0]  # Exploit
             action = np.argmax(q_values)
-            # print(f"Frontal Lobe: Exploiting - Q-values: {q_values}, Chose action {action}.")
 
-        return int(action)
+        return int(action), padded_sequence_list # Return action and the sequence used
 
-    def learn(self, state, action, reward, next_state, done):
+    def learn(self, state_sequence_t, action_t, reward_t, next_state_sequence_t_plus_1, done):
         """
         Stores the experience and triggers replay if buffer is large enough.
-        This method is called by the main loop after an action is taken.
         """
-        self.remember(state, action, reward, next_state, done)
+        self.remember(state_sequence_t, action_t, reward_t, next_state_sequence_t_plus_1, done)
 
         if (
             len(self.memory_stm) >= self.replay_batch_size
         ):  # Start replay only when enough samples
-            # print("Frontal Lobe: Replay buffer filled enough, starting replay.")
             self.replay(memory_source=self.memory_stm) # Replay from STM
-        # else:
-        # print(f"Frontal Lobe: STM size {len(self.memory_stm)} < batch size {self.replay_batch_size}. Not replaying yet.")
+
+    def _calculate_sequence_similarity(self, seq1_list, seq2_list):
+        """Calculates cosine similarity between two state sequences (lists of feature vectors)."""
+        # Flatten sequences and compute cosine similarity
+        vec1 = np.array(seq1_list).flatten()
+        vec2 = np.array(seq2_list).flatten()
+        if np.linalg.norm(vec1) == 0 or np.linalg.norm(vec2) == 0:
+            return 0.0 # Avoid division by zero
+        similarity = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        return similarity
+
+    def _find_similar_ltm_experiences(self, query_sequence_list, k=3):
+        """Finds k most similar experiences from LTM based on state sequence similarity."""
+        if not self.long_term_episodic_memory:
+            return []
+
+        similarities = []
+        for ltm_exp in self.long_term_episodic_memory:
+            ltm_state_sequence = ltm_exp[0] # state_sequence is the first element
+            sim = self._calculate_sequence_similarity(query_sequence_list, ltm_state_sequence)
+            similarities.append((sim, ltm_exp))
+
+        similarities.sort(key=lambda x: x[0], reverse=True)
+        return [exp for sim, exp in similarities[:k]]
 
     def replay(self, memory_source, num_samples=None):
         """Trains the DQN by replaying experiences from the given memory_source."""
@@ -149,27 +180,39 @@ class FrontalLobeAI:
         if len(memory_source) < batch_size_to_sample:
             return  # Not enough memory to sample a batch
 
-        minibatch = random.sample(list(memory_source), batch_size_to_sample)
+        minibatch = random.sample(list(memory_source), batch_size_to_sample)  # nosec B311
 
-        # 1. Collect all state_raw and next_state_raw from the minibatch
-        states_raw = [experience[0] for experience in minibatch]
+        # Active LTM Retrieval: If replaying from STM, augment with similar LTM experiences
+        if memory_source == self.memory_stm and len(self.long_term_episodic_memory) > 0:
+            num_ltm_to_add = batch_size_to_sample // 4  # e.g., add 25% LTM experiences
+            if num_ltm_to_add > 0 and minibatch:
+                # Use the state sequence from a random experience in the STM minibatch as a query
+                query_stm_experience = random.choice(minibatch)  # nosec B311
+                query_sequence = query_stm_experience[0] # state_sequence_t
+
+                similar_ltm_exps = self._find_similar_ltm_experiences(query_sequence, k=num_ltm_to_add)
+
+                # Replace some STM samples with LTM samples to keep batch size roughly constant
+                if similar_ltm_exps:
+                    num_to_replace = min(len(similar_ltm_exps), len(minibatch))
+                    # Ensure we don't try to sample more than available if minibatch is small
+                    if num_to_replace > 0 :
+                        minibatch = random.sample(minibatch, len(minibatch) - num_to_replace) + similar_ltm_exps[:num_to_replace]
+                        random.shuffle(minibatch) # Shuffle again after adding LTM experiences
+
+        # Experiences are (state_sequence, action, reward, next_state_sequence, done)
+        # state_sequences are already lists of prepared feature vectors.
+        current_state_sequences = np.array([experience[0] for experience in minibatch]) # Shape: (batch, seq_len, features)
         actions = np.array([experience[1] for experience in minibatch])
         rewards = np.array([experience[2] for experience in minibatch])
-        next_states_raw = [experience[3] for experience in minibatch]
+        next_state_sequences = np.array([experience[3] for experience in minibatch]) # Shape: (batch, seq_len, features)
         dones = np.array([experience[4] for experience in minibatch])
 
-        # 2. Prepare these into batches of current_states_prepared_np and next_states_prepared_np
-        current_states_prepared_list = [self._prepare_state_vector(s_raw) for s_raw in states_raw]
-        next_states_prepared_list = [self._prepare_state_vector(ns_raw) for ns_raw in next_states_raw]
-
-        current_states_prepared_np = np.array(current_states_prepared_list)
-        next_states_prepared_np = np.array(next_states_prepared_list)
-
         # 3. Make one call to self.model.predict() using current_states_prepared_np
-        current_q_values_batch = self.model.predict(current_states_prepared_np, verbose=0)
+        current_q_values_batch = self.model.predict(current_state_sequences, verbose=0)
 
         # 4. Make one call to self.target_model.predict() using next_states_prepared_np
-        next_q_values_from_target_model_batch = self.target_model.predict(next_states_prepared_np, verbose=0)
+        next_q_values_from_target_model_batch = self.target_model.predict(next_state_sequences, verbose=0)
 
         # 5. Calculate the targets for the entire batch
         targets_batch = np.copy(current_q_values_batch) # Initialize targets as current Q-values
@@ -186,7 +229,7 @@ class FrontalLobeAI:
         # 6. Finally, call self.model.fit() once with current_states_prepared_np and the calculated batch of targets
         try:
             self.model.fit(
-                current_states_prepared_np,
+                current_state_sequences,
                 targets_batch,
                 epochs=1,
                 verbose=0,
@@ -216,11 +259,13 @@ class FrontalLobeAI:
         print(f"Frontal Lobe: Saving Long-Term Episodic Memory to {self.ltm_path}...")
         try:
             # Convert numpy arrays in experiences to lists for JSON serialization
+            # Experiences are (state_sequence, action, reward, next_state_sequence, done)
+            # state_sequence and next_state_sequence are lists of feature vectors (which might be numpy arrays)
             serializable_ltm = []
-            for state, action, reward, next_state, done in list(self.long_term_episodic_memory):
-                s_list = state.tolist() if isinstance(state, np.ndarray) else list(state)
-                ns_list = next_state.tolist() if isinstance(next_state, np.ndarray) else list(next_state)
-                serializable_ltm.append((s_list, int(action), float(reward), ns_list, bool(done)))
+            for s_seq, action, reward, ns_seq, done in list(self.long_term_episodic_memory):
+                s_seq_list = [s.tolist() if isinstance(s, np.ndarray) else list(s) for s in s_seq]
+                ns_seq_list = [ns.tolist() if isinstance(ns, np.ndarray) else list(ns) for ns in ns_seq]
+                serializable_ltm.append((s_seq_list, int(action), float(reward), ns_seq_list, bool(done)))
 
             with open(self.ltm_path, "w") as f:
                 json.dump({"long_term_episodic_memory": serializable_ltm}, f)
@@ -258,8 +303,14 @@ class FrontalLobeAI:
             try:
                 with open(self.ltm_path, "r") as f:
                     data = json.load(f)
-                    loaded_ltm_raw = data.get("long_term_episodic_memory", [])
-                    # _prepare_state_vector can handle list inputs, so direct conversion to numpy here is optional
+                    loaded_ltm_serializable = data.get("long_term_episodic_memory", [])
+                    # Convert inner lists back to numpy arrays if they were stored as lists of numbers
+                    loaded_ltm_raw = []
+                    for s_seq_list, action, reward, ns_seq_list, done in loaded_ltm_serializable:
+                        s_seq_np = [np.array(s, dtype=float) for s in s_seq_list]
+                        ns_seq_np = [np.array(ns, dtype=float) for ns in ns_seq_list]
+                        loaded_ltm_raw.append((s_seq_np, action, reward, ns_seq_np, done))
+
                     self.long_term_episodic_memory = deque(loaded_ltm_raw, maxlen=self.ltm_size)
                 print(f"Frontal Lobe: Long-Term Episodic Memory loaded. Size: {len(self.long_term_episodic_memory)}")
             except Exception as e:
