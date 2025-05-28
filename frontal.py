@@ -137,51 +137,49 @@ class FrontalLobeAI:
 
         minibatch = random.sample(self.memory, self.replay_batch_size)
 
-        states_prepared = []
-        q_values_updated = []
+        # 1. Collect all state_raw and next_state_raw from the minibatch
+        states_raw = [experience[0] for experience in minibatch]
+        actions = np.array([experience[1] for experience in minibatch])
+        rewards = np.array([experience[2] for experience in minibatch])
+        next_states_raw = [experience[3] for experience in minibatch]
+        dones = np.array([experience[4] for experience in minibatch])
 
-        for state_raw, action, reward, next_state_raw, done in minibatch:
-            state_prepared = self._prepare_state_vector(state_raw)
-            state_batch_for_predict = np.reshape(state_prepared, [1, self.input_size])
+        # 2. Prepare these into batches of current_states_prepared_np and next_states_prepared_np
+        current_states_prepared_list = [self._prepare_state_vector(s_raw) for s_raw in states_raw]
+        next_states_prepared_list = [self._prepare_state_vector(ns_raw) for ns_raw in next_states_raw]
 
-            target = reward
-            if not done:
-                next_state_prepared = self._prepare_state_vector(next_state_raw)
-                next_state_batch_for_predict = np.reshape(
-                    next_state_prepared, [1, self.input_size]
-                )
-                # Use target_model for predicting next Q-values (stabilizes learning)
-                target = reward + self.discount_factor_gamma * np.amax(
-                    self.target_model.predict(next_state_batch_for_predict, verbose=0)[
-                        0
-                    ]
-                )
+        current_states_prepared_np = np.array(current_states_prepared_list)
+        next_states_prepared_np = np.array(next_states_prepared_list)
 
-            # Get current Q-values for the original state from the main model
-            current_q_values_for_state = self.model.predict(
-                state_batch_for_predict, verbose=0
-            )
-            current_q_values_for_state[0][
-                action
-            ] = target  # Update Q-value for the action taken
+        # 3. Make one call to self.model.predict() using current_states_prepared_np
+        current_q_values_batch = self.model.predict(current_states_prepared_np, verbose=0)
 
-            states_prepared.append(state_prepared)
-            q_values_updated.append(
-                current_q_values_for_state[0]
-            )  # Append the full array of Q-values for this state
+        # 4. Make one call to self.target_model.predict() using next_states_prepared_np
+        next_q_values_from_target_model_batch = self.target_model.predict(next_states_prepared_np, verbose=0)
 
-        # Train the main model on the batch of experiences
-        # This is more efficient than training one by one in the loop
+        # 5. Calculate the targets for the entire batch
+        targets_batch = np.copy(current_q_values_batch) # Initialize targets as current Q-values
+        
+        # Calculate target values: reward + gamma * max_next_q for non-done states
+        # For done states, target is just the reward
+        for i in range(self.replay_batch_size):
+            if dones[i]:
+                targets_batch[i, actions[i]] = rewards[i]
+            else:
+                max_next_q = np.amax(next_q_values_from_target_model_batch[i])
+                targets_batch[i, actions[i]] = rewards[i] + self.discount_factor_gamma * max_next_q
+        
+        # 6. Finally, call self.model.fit() once with current_states_prepared_np and the calculated batch of targets
         try:
             self.model.fit(
-                np.array(states_prepared),
-                np.array(q_values_updated),
+                current_states_prepared_np,
+                targets_batch,
                 epochs=1,
                 verbose=0,
             )
         except Exception as e:
             print(f"Frontal Lobe: Error during batch model training in replay: {e}")
-            return  # Exit replay if training fails
+            return # Exit replay if training fails
 
         self.learn_step_counter += 1
         if self.learn_step_counter % self.target_update_frequency == 0:

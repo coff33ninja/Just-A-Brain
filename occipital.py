@@ -178,8 +178,9 @@ class OccipitalLobeAI:
                 f"Occipital Lobe: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}"
             )
             # Add to memory after successful training
-            self.memory.append((image_path, valid_label))
-            print(f"Occipital Lobe: Added ({os.path.basename(image_path)}, {valid_label}) to memory. Memory size: {len(self.memory)}")
+            # Store the preprocessed image array and its label
+            self.memory.append((processed_image_batch, valid_label)) 
+            print(f"Occipital Lobe: Added preprocessed image and label {valid_label} to memory. Memory size: {len(self.memory)}")
         except Exception as e:
             print(f"Occipital Lobe: Error during model training: {e}")
 
@@ -196,16 +197,18 @@ class OccipitalLobeAI:
         images_to_train = []
         labels_to_train = []
 
-        for img_path, lbl in list(self.memory): # Iterate over a snapshot
-            processed_img_batch = self._preprocess_image(img_path)
-            if processed_img_batch is not None:
-                images_to_train.append(processed_img_batch[0]) # Get the image array from the batch
+        # self.memory now stores (processed_image_batch, label)
+        for processed_image_batch, lbl in list(self.memory): # Iterate over a snapshot
+            if processed_image_batch is not None and processed_image_batch.ndim == 4 and processed_image_batch.shape[0] == 1:
+                # Extract the single image array from the batch stored in memory
+                images_to_train.append(processed_image_batch[0]) 
                 labels_to_train.append(int(lbl))
             else:
-                print(f"Occipital Lobe: Skipping {img_path} in consolidation due to preprocessing error.")
+                # This case should ideally not happen if learn() stores correctly preprocessed images
+                print(f"Occipital Lobe: Skipping invalid data in consolidation (label: {lbl}). Expected preprocessed image batch.")
 
         if not images_to_train:
-            print("Occipital Lobe: No valid images to train on after preprocessing memory. Saving model.")
+            print("Occipital Lobe: No valid images to train on after processing memory. Saving model.")
             self.save_model()
             return
 
