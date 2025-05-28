@@ -8,7 +8,7 @@ For a detailed technical and architectural explanation, see the [Whitepaper](./W
 
 ## System Design
 
-- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI. The Occipital, Limbic, and Frontal lobe modules are implemented using TensorFlow/Keras. The Temporal, Parietal, and Cerebellum modules are currently based on NumPy implementations.
+- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI. All six core AI modules (Occipital, Temporal, Parietal, Cerebellum, Frontal, and Limbic) are now implemented using TensorFlow/Keras.
 - **Main Script:** `main.py` initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
 - **Functionality:**
     - Each AI processes tasks relevant to its brain region.

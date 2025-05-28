@@ -166,7 +166,7 @@ Future work could involve:
 - Exploring more advanced learning algorithms within modules (e.g., Transformer networks for Temporal, Actor-Critic for Frontal).
 - Developing more complex memory management and retrieval strategies.
 - Integrating additional sensory modalities or cognitive functions.
-- Improving the robustness and efficiency of the NumPy-based implementations (currently Temporal, Parietal, Cerebellum modules) or migrating them to a framework like TensorFlow/Keras for potential GPU acceleration and easier integration with more complex architectures.
+- Further optimizing the TensorFlow/Keras implementations of all modules for performance and exploring advanced Keras features (e.g., custom layers, more complex model architectures, or optimized training loops where beneficial).
 - Further enhancing the Frontal Lobe's reinforcement learning by defining more complex tasks, developing sophisticated reward functions tied to these tasks, and exploring more advanced RL algorithms now that the foundational episodic learning loop is in place.
 
 ---

@@ -88,7 +88,7 @@ class OccipitalLobeAI:
                 return None
             img = Image.open(image_path).convert("RGB")  # Ensure 3 channels
             img = img.resize((self.input_shape[0], self.input_shape[1]))
-            img_array = np.array(img) / 255.0  # Normalize to [0, 1]
+            img_array = np.array(img, dtype=np.float32) / 255.0  # Normalize to [0, 1] and ensure float32
             return np.expand_dims(img_array, axis=0)  # Add batch dimension
         except FileNotFoundError:
             print(f"Occipital Lobe: Error: Image file not found at {image_path}")
@@ -162,27 +162,28 @@ class OccipitalLobeAI:
             )
             return
 
-        target_label_array = np.array([valid_label])
+        target_label_array = np.array([valid_label]) # Shape (1,) for sparse_categorical_crossentropy
 
         print(
-            f"Occipital Lobe: Training on image {os.path.basename(image_path)} with label {valid_label}..."
+            f"Occipital Lobe: Training on image {os.path.basename(image_path)} with label {valid_label} (train_on_batch)..."
         )
         try:
-            history = self.model.fit(
-                processed_image_batch, target_label_array, epochs=1, verbose=0
+            results = self.model.train_on_batch(
+                processed_image_batch, target_label_array
             )
-            # Safely get loss and accuracy from history
-            loss = history.history.get("loss", [float("nan")])[0]
-            accuracy = history.history.get("accuracy", [float("nan")])[0]
+            # train_on_batch returns a list: [loss, metric1, metric2, ...]
+            # Based on model.compile(metrics=["accuracy"]), results[1] is accuracy.
+            loss = results[0]
+            accuracy = results[1] 
             print(
-                f"Occipital Lobe: Training complete. Loss: {loss:.4f}, Accuracy: {accuracy:.4f}"
+                f"Occipital Lobe: Training complete (train_on_batch). Loss: {loss:.4f}, Accuracy: {accuracy:.4f}"
             )
             # Add to memory after successful training
             # Store the preprocessed image array and its label
             self.memory.append((processed_image_batch, valid_label)) 
             print(f"Occipital Lobe: Added preprocessed image and label {valid_label} to memory. Memory size: {len(self.memory)}")
         except Exception as e:
-            print(f"Occipital Lobe: Error during model training: {e}")
+            print(f"Occipital Lobe: Error during model training (train_on_batch): {e}")
 
     def consolidate(self):
         print("Occipital Lobe: Starting consolidation...")
@@ -257,8 +258,8 @@ if __name__ == "__main__":
     # Train the model a bit to get non-random predictions
     if os.path.exists(dummy_image_path):
         print("\n--- Initial training pass (to make predictions meaningful) ---")
-        for i in range(occipital_ai.output_size):  # Train on each label once
-            occipital_ai.learn(dummy_image_path, i)
+        for i in range(occipital_ai.output_size * 2):  # Train on each label multiple times for train_on_batch
+            occipital_ai.learn(dummy_image_path, i % occipital_ai.output_size)
         print("--- Initial training pass complete ---")
 
     print("\n--- Testing process_task method ---")

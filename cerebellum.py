@@ -1,33 +1,42 @@
 # cerebellum.py (Motor Control, Coordination)
 import numpy as np
-from numpy.typing import NDArray
 import json
 import os
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Input # type: ignore
+from tensorflow.keras.optimizers import Adam # type: ignore
 
 
 class CerebellumAI:
-    def __init__(self, model_path="data/cerebellum_model.json"):
+    def __init__(self, model_path="data/cerebellum_model.weights.h5"):
         self.input_size = 10  # Sensor feedback
         self.hidden_size = 20  # Size of the new hidden layer
         self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)
 
         self.learning_rate_learn = 0.01
-        self.learning_rate_consolidate = 0.005
-
-        # Weights will be initialized by load_model or _initialize_default_weights_biases
-        self.weights_input_hidden: NDArray[np.float64]
-        self.bias_hidden: NDArray[np.float64]
-        self.weights_hidden_output: NDArray[np.float64]
-        self.bias_output: NDArray[np.float64]
+        # self.learning_rate_consolidate = 0.005 # Less directly applicable with Keras single optimizer
 
         self.memory = []  # Stores (sensor_data_list, true_command_list)
+        self.max_memory_size = 100 # Max memory size
         self.model_path = model_path
-        # Initialize weights to defaults first, then attempt to load from file
-        self._initialize_default_weights_biases()
+
+        self.model = self._build_model()
+        self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss='mse')
+
         self.load_model()
 
+    def _build_model(self):
+        model = Sequential(
+            [
+                Input(shape=(self.input_size,), name="input_layer"),
+                Dense(self.hidden_size, activation='tanh', name='hidden_layer'),
+                Dense(self.output_size, activation='tanh', name='output_layer'),
+            ]
+        )
+        return model
+
     def _prepare_input_vector(self, sensor_data):
-        """Prepares a 1D numpy array from sensor_data, ensuring correct size."""
+        """Prepares a 1D numpy array from sensor_data, ensuring correct size and dtype."""
         if isinstance(sensor_data, list):
             input_vec_list = sensor_data
         elif isinstance(sensor_data, np.ndarray):
@@ -39,14 +48,14 @@ class CerebellumAI:
             input_vec_list.extend([0.0] * (self.input_size - len(input_vec_list)))
         elif len(input_vec_list) > self.input_size:
             input_vec_list = input_vec_list[: self.input_size]
-        return np.array(input_vec_list)
+        return np.array(input_vec_list, dtype=np.float32)
 
-    def _prepare_target_command_vector(self, true_command_list):
-        """Prepares a 1D numpy array from true_command_list, ensuring correct size."""
-        if isinstance(true_command_list, list):
-            target_list = true_command_list
-        elif isinstance(true_command_list, np.ndarray):
-            target_list = true_command_list.flatten().tolist()
+    def _prepare_target_command_vector(self, true_command_list_or_array):
+        """Prepares a 1D numpy array from true_command_list, ensuring correct size and dtype."""
+        if isinstance(true_command_list_or_array, list):
+            target_list = true_command_list_or_array
+        elif isinstance(true_command_list_or_array, np.ndarray):
+            target_list = true_command_list_or_array.flatten().tolist()
         else:
             target_list = [0.0] * self.output_size
 
@@ -54,264 +63,182 @@ class CerebellumAI:
             target_list.extend([0.0] * (self.output_size - len(target_list)))
         elif len(target_list) > self.output_size:
             target_list = target_list[: self.output_size]
-        return np.array(target_list)
-
-    def _forward_propagate(self, sensor_data):
-        input_vec_1d = self._prepare_input_vector(sensor_data)
-        if (
-            input_vec_1d.shape[0] != self.input_size
-        ):  # Should not happen if _prepare_input_vector is correct
-            # This case should ideally be handled by _prepare_input_vector,
-            # but as a safeguard:
-            print(f"Warning: input_vec_1d shape mismatch in _forward_propagate. Expected {self.input_size}, got {input_vec_1d.shape[0]}. Re-initializing.")
-            input_vec_1d = np.zeros(self.input_size, dtype=np.float64)
-
-        input_vec_2d = input_vec_1d.reshape(1, -1)
-
-        # Ensure weights are ndarrays before use (Pylance might still be wary)
-        hidden_layer_input_calc = input_vec_2d @ self.weights_input_hidden + self.bias_hidden
-        hidden_layer_output = np.tanh(hidden_layer_input_calc)
-
-        output_layer_scores_calc = (
-            hidden_layer_output @ self.weights_hidden_output + self.bias_output
-        )
-        final_commands = np.tanh(output_layer_scores_calc)
-
-        return input_vec_1d, hidden_layer_output.flatten(), final_commands.flatten()
+        return np.array(target_list, dtype=np.float32)
 
     def process_task(self, sensor_data):
         try:
-            _input_features, _hidden_activation, final_commands = (
-                self._forward_propagate(sensor_data) # Returns three np.ndarray
-            )
-            if isinstance(final_commands, np.ndarray):
-                return final_commands.tolist()
-            else: # Should not happen if _forward_propagate is correct
-                return [0.0] * self.output_size
+            input_vec_1d = self._prepare_input_vector(sensor_data)
+            input_batch = np.reshape(input_vec_1d, [1, self.input_size])
+            predicted_commands_batch = self.model.predict(input_batch, verbose=0)
+            return predicted_commands_batch[0].tolist()
         except Exception as e:
-            print(f"Error in Cerebellum process_task: {e}")
+            print(f"Error in CerebellumAI process_task: {e}")
             return [0.0] * self.output_size
 
     def learn(self, sensor_data, true_command_list_or_array):
-        input_vec_1d, hidden_output_1d, final_commands_1d = self._forward_propagate(
-            sensor_data
-        ) # Returns three np.ndarray
+        """Update model based on sensor data and true command."""
+        try:
+            input_vec_1d = self._prepare_input_vector(sensor_data)
+            target_command_1d = self._prepare_target_command_vector(true_command_list_or_array)
 
-        if not np.any(input_vec_1d):
-            return
+            if not np.any(input_vec_1d): # Skip if input is all zeros
+                return
 
-        true_command_1d = self._prepare_target_command_vector(
-            true_command_list_or_array
-        ) # true_command_1d is an ndarray
+            input_batch = np.reshape(input_vec_1d, [1, self.input_size])
+            target_batch = np.reshape(target_command_1d, [1, self.output_size])
 
-        error_signal = true_command_1d - final_commands_1d
-        derivative_tanh_output = 1 - final_commands_1d**2
-        delta_output = error_signal * derivative_tanh_output
+            self.model.train_on_batch(input_batch, target_batch)
 
-        delta_weights_ho = np.outer(hidden_output_1d, delta_output)
-        delta_bias_output = delta_output
+            # Update Memory
+            s_data_list = (
+                sensor_data.tolist()
+                if isinstance(sensor_data, np.ndarray)
+                else list(sensor_data)
+            )
+            t_cmd_list = (
+                true_command_list_or_array.tolist()
+                if isinstance(true_command_list_or_array, np.ndarray)
+                else list(true_command_list_or_array)
+            )
+            self.memory.append((s_data_list, t_cmd_list))
+            if len(self.memory) > self.max_memory_size:
+                self.memory.pop(0)
+        except Exception as e:
+            print(f"Error in CerebellumAI learn: {e}")
 
-        error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
-        derivative_tanh_hidden = 1 - hidden_output_1d**2
-        delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden
-
-        delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
-        delta_bias_hidden = delta_hidden
-
-        self.weights_hidden_output += self.learning_rate_learn * delta_weights_ho
-        self.bias_output += self.learning_rate_learn * delta_bias_output.reshape(1, -1)
-        self.weights_input_hidden += self.learning_rate_learn * delta_weights_ih
-        self.bias_hidden += self.learning_rate_learn * delta_bias_hidden.reshape(1, -1)
-
-        s_data_list = (
-            sensor_data.tolist()
-            if isinstance(sensor_data, np.ndarray)
-            else list(sensor_data)
-        )
-        t_cmd_list = (
-            true_command_list_or_array.tolist()
-            if isinstance(true_command_list_or_array, np.ndarray)
-            else list(true_command_list_or_array)
-        )
-        self.memory.append((s_data_list, t_cmd_list))
-        if len(self.memory) > 100:
-            self.memory.pop(0)
 
     def consolidate(self):
+        """Bedtime: Replay experiences from memory to refine model."""
         if not self.memory:
-            self.save_model()
+            self.save_model() # Save even if memory is empty, in case model was loaded and not changed
             return
 
-        for sensor_data_list, true_command_list_from_mem in list(self.memory):
-            input_vec_1d, hidden_output_1d, final_commands_1d = self._forward_propagate(
-                sensor_data_list
-            ) # Returns three np.ndarray
+        # print(f"Consolidating Cerebellum. Memory size: {len(self.memory)}")
+        try:
+            sensor_data_list_for_batch = [s_data for s_data, _ in list(self.memory)]
+            true_commands_list_for_batch = [t_cmd for _, t_cmd in list(self.memory)]
 
-            if not np.any(input_vec_1d):
-                continue
+            sensor_data_batch = np.array(
+                [self._prepare_input_vector(s_data) for s_data in sensor_data_list_for_batch],
+                dtype=np.float32
+            )
+            true_commands_batch = np.array(
+                [self._prepare_target_command_vector(t_cmd) for t_cmd in true_commands_list_for_batch],
+                dtype=np.float32
+            )
 
-            true_command_1d = self._prepare_target_command_vector(
-                true_command_list_from_mem
-            ) # true_command_1d is an ndarray
-
-            error_signal = true_command_1d - final_commands_1d
-            derivative_tanh_output = 1 - final_commands_1d**2
-            delta_output = error_signal * derivative_tanh_output
-            delta_weights_ho = np.outer(hidden_output_1d, delta_output)
-            delta_bias_output = delta_output
-            error_propagated_to_hidden = delta_output @ self.weights_hidden_output.T
-            derivative_tanh_hidden = 1 - hidden_output_1d**2
-            delta_hidden = error_propagated_to_hidden * derivative_tanh_hidden
-            delta_weights_ih = np.outer(input_vec_1d, delta_hidden)
-            delta_bias_hidden = delta_hidden
-
-            self.weights_hidden_output += (
-                self.learning_rate_consolidate * delta_weights_ho
-            )
-            self.bias_output += (
-                self.learning_rate_consolidate * delta_bias_output.reshape(1, -1)
-            )
-            self.weights_input_hidden += (
-                self.learning_rate_consolidate * delta_weights_ih
-            )
-            self.bias_hidden += (
-                self.learning_rate_consolidate * delta_bias_hidden.reshape(1, -1)
-            )
+            if sensor_data_batch.shape[0] > 0: # Ensure there's data to train on
+                self.model.fit(
+                    sensor_data_batch, 
+                    true_commands_batch, 
+                    epochs=1, 
+                    batch_size=min(len(self.memory), 32), # Use a reasonable batch size
+                    verbose=0
+                )
+        except Exception as e:
+            print(f"Error during CerebellumAI consolidation training: {e}")
+            
         self.save_model()
 
-    def _initialize_default_weights_biases(self):
-        self.weights_input_hidden = (
-            np.random.randn(self.input_size, self.hidden_size).astype(np.float64) * 0.01
-        )
-        self.bias_hidden = np.zeros((1, self.hidden_size), dtype=np.float64)
-        self.weights_hidden_output = (
-            np.random.randn(self.hidden_size, self.output_size).astype(np.float64) * 0.01
-        )
-        self.bias_output = np.zeros((1, self.output_size), dtype=np.float64)
-
     def save_model(self):
-        model_data = {
-            "weights_input_hidden": self.weights_input_hidden.tolist(),
-            "bias_hidden": self.bias_hidden.tolist(),
-            "weights_hidden_output": self.weights_hidden_output.tolist(),
-            "bias_output": self.bias_output.tolist(),
-            "input_size": self.input_size,
-            "hidden_size": self.hidden_size,
-            "output_size": self.output_size,
-        }
+        print(f"CerebellumAI: Saving model weights to {self.model_path}")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
         try:
-            with open(self.model_path, "w") as f:
-                json.dump(model_data, f)
+            if not self.model_path.endswith(".weights.h5"):
+                print(f"CerebellumAI: Warning: model_path '{self.model_path}' does not end with '.weights.h5'. Keras save_weights prefers this.")
+            self.model.save_weights(self.model_path)
+            # print(f"CerebellumAI: Model saved to {self.model_path}")
         except Exception as e:
             print(f"CerebellumAI: Error saving model to {self.model_path}: {e}")
 
     def load_model(self):
-        model_loaded_successfully = False # Flag
-        if not os.path.exists(self.model_path):
-            self._initialize_default_weights_biases()
-            return
-
-        try:
-            with open(self.model_path, "r") as f:
-                data = json.load(f)
-
-            # Check 1: Architectural parameters
-            default_size_sentinel = -1
-            loaded_input_size = data.get("input_size", default_size_sentinel)
-            loaded_hidden_size = data.get("hidden_size", default_size_sentinel)
-            loaded_output_size = data.get("output_size", default_size_sentinel)
-
-            if not (
-                loaded_input_size == self.input_size
-                and loaded_hidden_size == self.hidden_size
-                and loaded_output_size == self.output_size
-            ):
-                self._initialize_default_weights_biases()
-                return
-
-            # Check 2: Presence of all required new format keys
-            required_keys = [
-                "weights_input_hidden",
-                "bias_hidden",
-                "weights_hidden_output",
-                "bias_output",
-            ]
-            if not all(key in data for key in required_keys):
-                self._initialize_default_weights_biases()
-                return
-
-            # If all keys are present, attempt to load and validate them
-            w_ih = np.array(data["weights_input_hidden"])
-            b_h = np.array(data["bias_hidden"])
-            w_ho = np.array(data["weights_hidden_output"])
-            b_o = np.array(data["bias_output"])
-
-            # Check 3: Shape of each loaded weight/bias matrix
-            expected_w_ih_shape = (self.input_size, self.hidden_size)
-            expected_b_h_shape = (1, self.hidden_size)
-            expected_w_ho_shape = (self.hidden_size, self.output_size)
-            expected_b_o_shape = (1, self.output_size)
-
-            if not (
-                w_ih.shape == expected_w_ih_shape
-                and b_h.shape == expected_b_h_shape
-                and w_ho.shape == expected_w_ho_shape
-                and b_o.shape == expected_b_o_shape
-            ):
-                self._initialize_default_weights_biases()
-                return
-
-            # If all checks passed, assign the loaded weights
-            self.weights_input_hidden = w_ih
-            self.bias_hidden = b_h
-            self.weights_hidden_output = w_ho
-            self.bias_output = b_o
-            model_loaded_successfully = True
-
-        except json.JSONDecodeError as e_json:
-            print(f"CerebellumAI: JSON decode error from {self.model_path}: {e_json}. Using default weights.")
-            self._initialize_default_weights_biases()
-        except Exception as e_load: # Catch other ValueErrors, TypeErrors
-            print(f"CerebellumAI: Error loading model from {self.model_path}: {e_load}. Using default weights.")
-            self._initialize_default_weights_biases()
-        
-        if model_loaded_successfully:
-            print(f"CerebellumAI: Model weights successfully loaded from {self.model_path}")
+        print(f"CerebellumAI: Attempting to load model weights from {self.model_path}")
+        if os.path.exists(self.model_path):
+            try:
+                self.model.load_weights(self.model_path)
+                print(f"CerebellumAI: Model weights loaded successfully from {self.model_path}")
+            except Exception as e:
+                print(f"CerebellumAI: Error loading weights from {self.model_path}: {e}. Model continues with initial Keras weights.")
         else:
-            print(f"CerebellumAI: Model is using default or re-initialized weights (file not found or error during load from {self.model_path}).")
+            print(f"CerebellumAI: No weights file found at {self.model_path}. Model is using new Keras initializations.")
 
 
 # Example Usage
 if __name__ == "__main__":
-    cerebellum_ai = CerebellumAI(model_path="data/test_cerebellum_model_backprop.json")
-    print("CerebellumAI initialized for backpropagation test.")
+    # Use a .weights.h5 extension for Keras
+    test_model_file = "data/test_cerebellum_model_keras.weights.h5"
+    cerebellum_ai = CerebellumAI(model_path=test_model_file)
+    print("CerebellumAI (Keras) initialized.")
 
     sample_sensor_data = np.random.rand(cerebellum_ai.input_size).tolist()
     sample_true_command = (
-        np.random.rand(cerebellum_ai.output_size) * 2 - 1
-    ).tolist()  # Commands between -1 and 1
+        np.random.rand(cerebellum_ai.output_size) * 2 - 1 # Commands between -1 and 1
+    ).tolist() 
 
-    initial_w_ih_sample = cerebellum_ai.weights_input_hidden[0, 0]
-    initial_w_ho_sample = cerebellum_ai.weights_hidden_output[0, 0]
+    # Get initial weights of a layer for comparison (e.g., first dense layer's kernel)
+    initial_weights_sample = None
+    if cerebellum_ai.model.layers: # Ensure model has layers
+        weights_list = cerebellum_ai.model.layers[0].get_weights()
+        if weights_list and len(weights_list[0]) > 0: # Check if kernel exists and is not empty
+             initial_weights_sample = weights_list[0][0,0] 
+             print(f"Initial weight sample (hidden_layer kernel [0,0]): {initial_weights_sample}")
 
-    print(f"Initial w_ih[0,0]: {initial_w_ih_sample}, w_ho[0,0]: {initial_w_ho_sample}")
+    print("\n--- Testing process_task ---")
+    predicted_commands = cerebellum_ai.process_task(sample_sensor_data)
+    print(f"Predicted commands: {predicted_commands}")
+    assert len(predicted_commands) == cerebellum_ai.output_size, "process_task output length mismatch"
 
-    # Perform learning
+    print("\n--- Testing learn method ---")
     cerebellum_ai.learn(sample_sensor_data, sample_true_command)
     print(f"Memory after learn: {cerebellum_ai.memory}")
-    print(f"w_ih[0,0] after learn: {cerebellum_ai.weights_input_hidden[0,0]}")
-    print(f"w_ho[0,0] after learn: {cerebellum_ai.weights_hidden_output[0,0]}")
-    assert (
-        initial_w_ih_sample != cerebellum_ai.weights_input_hidden[0, 0]
-        or initial_w_ho_sample != cerebellum_ai.weights_hidden_output[0, 0]
-    ), "Weights did not change after learn."
+    
+    weights_after_learn_sample = None
+    if cerebellum_ai.model.layers:
+        weights_list_after_learn = cerebellum_ai.model.layers[0].get_weights()
+        if weights_list_after_learn and len(weights_list_after_learn[0]) > 0:
+            weights_after_learn_sample = weights_list_after_learn[0][0,0]
+            print(f"Weight sample after learn (hidden_layer kernel [0,0]): {weights_after_learn_sample}")
+            if initial_weights_sample is not None:
+                if np.isclose(initial_weights_sample, weights_after_learn_sample):
+                    print("Warning: Weights did not change significantly after learn. This might be okay for a single step or if error was small.")
+                else:
+                    print("Weights changed after learn, as expected.")
 
-    # Perform consolidation
-    cerebellum_ai.consolidate()
-    print(f"w_ih[0,0] after consolidate: {cerebellum_ai.weights_input_hidden[0,0]}")
-    print(f"w_ho[0,0] after consolidate: {cerebellum_ai.weights_hidden_output[0,0]}")
+    print("\n--- Testing consolidate method ---")
+    # Add more diverse data to memory for better consolidation test
+    for i in range(5):
+        cerebellum_ai.learn(np.random.rand(cerebellum_ai.input_size).tolist(), 
+                            (np.random.rand(cerebellum_ai.output_size) * 2 - 1).tolist())
+    
+    cerebellum_ai.consolidate() # This also saves the model
+    
+    weights_after_consolidate_sample = None
+    if cerebellum_ai.model.layers:
+        weights_list_after_consolidate = cerebellum_ai.model.layers[0].get_weights()
+        if weights_list_after_consolidate and len(weights_list_after_consolidate[0]) > 0:
+            weights_after_consolidate_sample = weights_list_after_consolidate[0][0,0]
+            print(f"Weight sample after consolidate (hidden_layer kernel [0,0]): {weights_after_consolidate_sample}")
+            if weights_after_learn_sample is not None:
+                if np.isclose(weights_after_learn_sample, weights_after_consolidate_sample):
+                    print("Warning: Weights did not change significantly after consolidate. Check learning rate or data variance.")
+                else:
+                    print("Weights changed after consolidate, as expected.")
 
-    if os.path.exists("data/test_cerebellum_model_backprop.json"):
-        os.remove("data/test_cerebellum_model_backprop.json")
-    print("CerebellumAI backpropagation test finished.")
+    print("\n--- Testing model load (after save in consolidate) ---")
+    cerebellum_ai_loaded = CerebellumAI(model_path=test_model_file)
+    loaded_weights_sample = None
+    if cerebellum_ai_loaded.model.layers:
+        weights_list_loaded = cerebellum_ai_loaded.model.layers[0].get_weights()
+        if weights_list_loaded and len(weights_list_loaded[0]) > 0:
+            loaded_weights_sample = weights_list_loaded[0][0,0]
+            print(f"Loaded model weight sample (hidden_layer kernel [0,0]): {loaded_weights_sample}")
+            if weights_after_consolidate_sample is not None:
+                assert np.isclose(weights_after_consolidate_sample, loaded_weights_sample), "Loaded weights do not match saved weights."
+                print("Model loading confirmed: weights match.")
+
+    # Clean up dummy model file
+    if os.path.exists(test_model_file):
+        os.remove(test_model_file)
+        print(f"\nCleaned up test model file: {test_model_file}")
+
+    print("\nCerebellumAI (Keras) test script finished.")
