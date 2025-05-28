@@ -11,6 +11,11 @@ class OccipitalLobeAI:
     def __init__(
         self, model_path="data/occipital_model.weights.h5"
     ):  # Changed extension
+        """
+        Initializes the OccipitalLobeAI convolutional neural network for object classification.
+        
+        Sets up the model architecture, compiles it with appropriate loss and optimizer, initializes a memory buffer for recent training experiences, and attempts to load existing model weights from disk.
+        """
         self.input_shape = (64, 64, 3)  # Height, Width, Channels (color images)
         self.output_size = 5  # Number of object labels/classes
         self.model_path = model_path
@@ -27,6 +32,13 @@ class OccipitalLobeAI:
         self.load_model()  # Load weights if they exist
 
     def _build_model(self):
+        """
+        Constructs and returns a sequential convolutional neural network for image classification.
+        
+        The model processes 64x64 RGB images and consists of two Conv2D and MaxPooling2D layers,
+        followed by a Flatten layer, a dense hidden layer, and a softmax output layer for
+        multi-class classification into five categories.
+        """
         model = Sequential(
             [
             Input(shape=self.input_shape, name="input_layer"), # Add Input layer
@@ -52,6 +64,11 @@ class OccipitalLobeAI:
         return model
 
     def save_model(self):
+        """
+        Saves the current model weights to the specified file path.
+        
+        Creates necessary directories if they do not exist. Warns if the file extension is not '.weights.h5'. Prints status messages and errors encountered during saving.
+        """
         print(f"Saving Occipital Lobe model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
         try:
@@ -63,6 +80,11 @@ class OccipitalLobeAI:
             print(f"Error saving Occipital Lobe model weights: {e}")
 
     def load_model(self):
+        """
+        Loads model weights from the specified file path if available.
+        
+        If the weights file exists, attempts to load the model weights; otherwise, the model remains initialized with new weights. Prints status messages indicating success or failure.
+        """
         if os.path.exists(self.model_path):
             print(f"Loading Occipital Lobe model weights from {self.model_path}...")
             try:
@@ -79,8 +101,13 @@ class OccipitalLobeAI:
 
     def _preprocess_image(self, image_path):
         """
-        Loads and preprocesses an image to be suitable for the CNN.
-        Returns a numpy array (batch_size, height, width, channels) or None if error.
+        Loads an image from the specified path, converts it to RGB, resizes it to the model's input shape, normalizes pixel values to [0, 1], and adds a batch dimension.
+        
+        Args:
+            image_path: Path to the image file.
+        
+        Returns:
+            A numpy array of shape (1, height, width, channels) suitable for model input, or None if loading or preprocessing fails.
         """
         try:
             if not os.path.exists(image_path):
@@ -99,6 +126,12 @@ class OccipitalLobeAI:
 
     def process_task(self, image_path):
         # Ensure os and np are imported in the file
+        """
+        Predicts the class label for a given image using the CNN model.
+        
+        Preprocesses the specified image and returns the predicted class label as an integer.
+        If preprocessing or prediction fails, returns -1.
+        """
         print(
             f"Occipital Lobe: Processing task for image {os.path.basename(image_path)}..."
         )
@@ -135,6 +168,11 @@ class OccipitalLobeAI:
             return -1  # Indicator of failure
 
     def learn(self, image_path, label):
+        """
+        Trains the model on a single labeled image and stores the experience in memory.
+        
+        Preprocesses the specified image and updates the model using the provided label if valid. On successful training, the (image_path, label) pair is added to the memory buffer for future consolidation. Skips training if preprocessing fails or the label is invalid.
+        """
         print(
             f"Occipital Lobe: learn called for image {os.path.basename(image_path)} with label {label}"
         )
@@ -184,6 +222,11 @@ class OccipitalLobeAI:
             print(f"Occipital Lobe: Error during model training: {e}")
 
     def consolidate(self):
+        """
+        Performs batch training on all stored experiences in memory to reinforce learning.
+        
+        If the memory buffer contains valid image-label pairs, preprocesses the images, trains the model on the batch for one epoch, and saves the updated model weights. If memory is empty or all images fail preprocessing, only saves the model without training.
+        """
         print("Occipital Lobe: Starting consolidation...")
         if not self.memory:
             print("Occipital Lobe: Memory is empty. Nothing to consolidate beyond saving.")

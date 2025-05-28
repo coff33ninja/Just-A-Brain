@@ -7,6 +7,11 @@ import os
 
 class ParietalLobeAI:
     def __init__(self, model_path="data/parietal_model.json"):
+        """
+        Initializes the ParietalLobeAI neural network model and its parameters.
+        
+        Sets up the network architecture, learning rates, memory buffer, and model file path. Initializes weights and biases to default values, then attempts to load saved model parameters from disk if available.
+        """
         self.input_size = 20  # Sensory data (e.g., sensor readings)
         self.hidden_size = 25  # Size of the new hidden layer
         self.output_size = (
@@ -32,7 +37,11 @@ class ParietalLobeAI:
         self.load_model()
 
     def _prepare_input_vector(self, sensor_data):
-        """Prepares a 1D numpy array from sensor_data, ensuring correct size."""
+        """
+        Converts sensor data into a fixed-size 1D numpy array suitable for network input.
+        
+        If the input is shorter than the required size, it is padded with zeros; if longer, it is truncated. Unexpected input types result in a zero-filled array.
+        """
         if isinstance(sensor_data, list):
             input_vec_list = sensor_data
         elif isinstance(sensor_data, np.ndarray):
@@ -48,7 +57,11 @@ class ParietalLobeAI:
         return np.array(input_vec_list)  # Return 1D array
 
     def _prepare_target_coords_vector(self, true_coords_list_or_array):
-        """Prepares a 1D numpy array from true_coords, ensuring correct size."""
+        """
+        Converts the target coordinates input into a 1D numpy array of fixed length matching the output size.
+        
+        If the input is shorter than the required size, pads with zeros; if longer, truncates.
+        """
         if isinstance(true_coords_list_or_array, list):
             target_list = true_coords_list_or_array
         elif isinstance(true_coords_list_or_array, np.ndarray):
@@ -64,6 +77,15 @@ class ParietalLobeAI:
         return np.array(target_list)  # Return 1D array, shape (self.output_size,)
 
     def _forward_propagate(self, sensor_data):
+        """
+        Performs a forward pass through the neural network to compute predicted spatial coordinates from sensory input.
+        
+        Args:
+            sensor_data: Sensory input data as a list or ndarray.
+        
+        Returns:
+            A tuple containing the prepared input vector, the hidden layer activations, and the predicted output coordinates, all as 1D numpy arrays.
+        """
         input_vec_1d = self._prepare_input_vector(sensor_data)
         if input_vec_1d.shape[0] != self.input_size: # Should not happen if _prepare_input_vector is correct
              # This case should ideally be handled by _prepare_input_vector,
@@ -80,6 +102,11 @@ class ParietalLobeAI:
         return input_vec_1d, hidden_layer_output.flatten(), output_coords_calc.flatten()
 
     def process_task(self, sensory_data):
+        """
+        Processes sensory input data and returns predicted spatial coordinates.
+        
+        If an error occurs during processing, returns a list of zeros matching the output size.
+        """
         try:
             _input_features, _hidden_activation, output_coords = (
                 self._forward_propagate(sensory_data)
@@ -90,7 +117,11 @@ class ParietalLobeAI:
             return [0.0] * self.output_size
 
     def learn(self, sensory_data, true_coords):
-        """Update based on spatial error using backpropagation."""
+        """
+        Performs a learning step by updating network weights and biases using backpropagation based on the error between predicted and true spatial coordinates.
+        
+        If the input vector is all zeros, learning is skipped. The sensory data and true coordinates pair are stored in memory, maintaining the memory size limit.
+        """
 
         # Forward propagation
         fwd_results = self._forward_propagate(sensory_data)
@@ -156,7 +187,11 @@ class ParietalLobeAI:
             self.memory.pop(0)
 
     def consolidate(self):
-        """Bedtime: Replay experiences from memory to refine model."""
+        """
+        Replays stored sensory experiences to refine model weights and biases using a lower learning rate.
+        
+        Iterates through the memory buffer, performing backpropagation on each stored sensory input and true coordinate pair to consolidate learning. Skips entries with zero input vectors. Saves the updated model after consolidation.
+        """
         if not self.memory:
             self.save_model()
             return
@@ -197,6 +232,12 @@ class ParietalLobeAI:
         self.save_model()
 
     def _initialize_default_weights_biases(self):
+        """
+        Initializes network weights with small random values and biases with zeros.
+        
+        Sets up the input-to-hidden and hidden-to-output weight matrices and bias vectors
+        using appropriate shapes and data types for the neural network layers.
+        """
         self.weights_input_hidden = (
             np.random.randn(self.input_size, self.hidden_size).astype(np.float64) * 0.01
         )
@@ -207,6 +248,11 @@ class ParietalLobeAI:
         self.bias_output = np.zeros((1, self.output_size), dtype=np.float64)
 
     def save_model(self):
+        """
+        Saves the current model parameters to a JSON file at the specified model path.
+        
+        Serializes weights, biases, and architecture sizes for later retrieval. Creates necessary directories if they do not exist. Logs an error message if saving fails.
+        """
         model_data = {
             "weights_input_hidden": self.weights_input_hidden.tolist(),
             "bias_hidden": self.bias_hidden.tolist(),
@@ -225,6 +271,11 @@ class ParietalLobeAI:
             print(f"ParietalLobeAI: Error saving model to {self.model_path}: {e}")
 
     def load_model(self):
+        """
+        Loads model weights and biases from a JSON file, validating architecture and data integrity.
+        
+        If the model file is missing, corrupted, or contains mismatched architecture or shapes, initializes default weights and biases instead. Logs status messages for each outcome.
+        """
         model_loaded_successfully = False # Flag to track if weights were loaded from file
         print(f"ParietalLobeAI: Attempting to load model from {self.model_path}")
         if not os.path.exists(self.model_path):

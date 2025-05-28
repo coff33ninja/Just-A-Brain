@@ -7,6 +7,11 @@ import os
 
 # Helper function for Softmax (module-level)
 def softmax(x):
+    """
+    Computes the softmax of an input array along the last axis.
+    
+    Supports both 1D and 2D NumPy arrays, normalizing exponentials to produce a probability distribution.
+    """
     if x.ndim == 1:
         e_x = np.exp(x - np.max(x))
         return e_x / np.sum(e_x)
@@ -21,6 +26,11 @@ class TemporalLobeAI:
         model_path="data/temporal_model.json",
         memory_path="data/temporal_memory.json",
     ):
+        """
+        Initializes the TemporalLobeAI neural network with architecture parameters, file paths, and memory.
+        
+        Sets up network dimensions, learning rates, weight and bias attributes, memory structures, and file paths for model and memory persistence. Initializes weights and biases with default values and attempts to load existing model parameters and memory from disk.
+        """
         self.input_size = 15
         self.output_size = 10  # Dimension of text embeddings
         self.visual_output_size = 5
@@ -53,6 +63,13 @@ class TemporalLobeAI:
         self.load_model()
 
     def _initialize_default_weights_biases(self):
+        """
+        Initializes all neural network weights and biases with small random values or zeros.
+        
+        This method sets up the weight matrices and bias vectors for both the text processing
+        and visual association pathways, ensuring all arrays are of type float64 and match the
+        network's architecture parameters.
+        """
         self.weights_text_input_hidden = (
             np.random.randn(self.input_size, self.text_hidden_size).astype(np.float64) * 0.01
         )
@@ -73,6 +90,13 @@ class TemporalLobeAI:
         self.bias_visual_assoc_label = np.zeros((1, self.visual_output_size), dtype=np.float64)
 
     def _to_numerical_vector(self, data, size, context="input"):
+        """
+        Converts input data to a fixed-size numerical vector of type float64.
+        
+        If the input is a string, generates a deterministic random vector based on its hash.
+        If the input is numeric, flattens and pads or truncates it to the specified size.
+        Returns a zero vector if conversion fails.
+        """
         if isinstance(data, str):
             hash_val = hash(data)
             np.random.seed(hash_val % (2**32 - 1))
@@ -91,6 +115,11 @@ class TemporalLobeAI:
             return vec[:size]
 
     def _forward_prop_text(self, input_text_1d):
+        """
+        Performs forward propagation through the text processing pathway.
+        
+        Converts the input text vector to the correct shape, computes the hidden layer activations using tanh, and produces the text embedding scores. Returns the processed input vector, hidden layer output, and embedding scores as flattened arrays.
+        """
         if input_text_1d.shape[0] != self.input_size:
             input_text_1d = self._to_numerical_vector(input_text_1d, self.input_size)
         input_text_2d = input_text_1d.reshape(1, -1) # input_text_1d is already float64
@@ -109,6 +138,20 @@ class TemporalLobeAI:
         )
 
     def _forward_prop_visual_assoc(self, text_embedding_1d):
+        """
+        Performs forward propagation through the visual association pathway using a text embedding.
+        
+        Given a 1D text embedding vector, computes the activations of the visual association hidden layer and the output scores for visual labels.
+        
+        Args:
+            text_embedding_1d: A 1D NumPy array representing the text embedding.
+        
+        Returns:
+            A tuple containing:
+                - The input text embedding vector.
+                - The flattened output of the visual association hidden layer.
+                - The flattened output scores for each visual label.
+        """
         if text_embedding_1d.shape[0] != self.output_size:
             text_embedding_1d = np.zeros(self.output_size, dtype=np.float64)
         text_embedding_2d = text_embedding_1d.reshape(1, -1) # text_embedding_1d is float64
@@ -128,6 +171,18 @@ class TemporalLobeAI:
         )
 
     def process_task(self, input_data_item, predict_visual=False):
+        """
+        Processes an input data item to generate a text embedding or predict a visual label.
+        
+        If `predict_visual` is True, returns both the text embedding and the index of the predicted visual label. Otherwise, returns only the text embedding as a list.
+        
+        Args:
+            input_data_item: The input data, either a single item or a list; if a list, the last element is used.
+            predict_visual: If True, also predicts the associated visual label.
+        
+        Returns:
+            The text embedding as a list, or a tuple of (embedding list, predicted visual label index) if `predict_visual` is True.
+        """
         actual_input_data = (
             input_data_item[-1]
             if isinstance(input_data_item, list) and input_data_item
@@ -143,6 +198,11 @@ class TemporalLobeAI:
 
     def learn(self, sequence, visual_label_as_context=None):
         # --- A. Text Processing Learning ---
+        """
+        Trains the model on a sequence of text input-target pairs and optionally associates text with a visual label.
+        
+        If a sequence of (input, target) tuples is provided, the model updates its text processing pathway using supervised learning and stores the sequence in memory. If a valid visual label is given, the model also associates the first input string in the sequence with the visual label, updates the visual association pathway, and stores the cross-modal association in memory.
+        """
         if (
             isinstance(sequence, list)
             and sequence
@@ -307,6 +367,11 @@ class TemporalLobeAI:
                 )
 
     def consolidate(self):
+        """
+        Reinforces learned associations from memory by replaying stored experiences and updating model weights with a lower consolidation learning rate.
+        
+        This method iterates over all stored text sequences and cross-modal (text-to-visual) associations, performing backpropagation to strengthen previously learned patterns. After consolidation, updated model parameters and memory are saved to disk.
+        """
         lr = self.learning_rate_consolidate
         # Consolidate text processing (memory_db)
         for sequence_item in list(self.memory_db):
@@ -408,6 +473,11 @@ class TemporalLobeAI:
         self.save_memory()
 
     def save_model(self):
+        """
+        Saves the model's weights, biases, and architecture parameters to a JSON file.
+        
+        Serializes all neural network parameters and architecture settings to the file path specified by `self.model_path`, creating directories as needed.
+        """
         model_data_to_save = {
             "weights_text_input_hidden": self.weights_text_input_hidden.tolist(),
             "bias_text_hidden": self.bias_text_hidden.tolist(),
@@ -428,6 +498,11 @@ class TemporalLobeAI:
             json.dump(model_data_to_save, f)
 
     def save_memory(self):
+        """
+        Saves the current memory database and cross-modal associations to a JSON file.
+        
+        The memory is serialized to the file path specified by `self.memory_path`, creating any necessary directories.
+        """
         os.makedirs(os.path.dirname(self.memory_path), exist_ok=True)
         with open(self.memory_path, "w") as f:
             json.dump(
@@ -442,6 +517,11 @@ class TemporalLobeAI:
         # Weights are not initialized here by default. They will be initialized
         # if the model file is not found, or if loading fails.
         # Memory lists are initialized in __init__ or can be reset here if preferred.
+        """
+        Loads model weights, biases, and memory from disk, validating architecture and data integrity.
+        
+        If the model file exists and matches the expected architecture, loads weights and biases into the network; otherwise, reinitializes them to default values. Also loads memory data, converting lists to tuples as needed and filtering malformed entries. Initializes empty memory if the memory file is missing or invalid. Prints status messages indicating the outcome of loading operations.
+        """
         self.memory_db = []  # Reset memory when loading model state
         self.cross_modal_memory = []  # Reset memory when loading model state
 

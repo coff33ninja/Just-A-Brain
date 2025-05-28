@@ -7,6 +7,11 @@ import os
 
 class CerebellumAI:
     def __init__(self, model_path="data/cerebellum_model.json"):
+        """
+        Initializes the CerebellumAI neural network model with default architecture and parameters.
+        
+        Sets up input, hidden, and output layer sizes, learning rates, and initializes weight and bias matrices. Attempts to load model parameters from the specified file path; if unavailable or invalid, uses default weights and biases. Prepares memory for storing training examples.
+        """
         self.input_size = 10  # Sensor feedback
         self.hidden_size = 20  # Size of the new hidden layer
         self.output_size = 3  # Motor commands (e.g., scaled between -1 and 1)
@@ -27,7 +32,11 @@ class CerebellumAI:
         self.load_model()
 
     def _prepare_input_vector(self, sensor_data):
-        """Prepares a 1D numpy array from sensor_data, ensuring correct size."""
+        """
+        Converts sensor data into a fixed-size 1D numpy array suitable for network input.
+        
+        If the input is shorter than the required size, it is padded with zeros; if longer, it is truncated.
+        """
         if isinstance(sensor_data, list):
             input_vec_list = sensor_data
         elif isinstance(sensor_data, np.ndarray):
@@ -42,7 +51,11 @@ class CerebellumAI:
         return np.array(input_vec_list)
 
     def _prepare_target_command_vector(self, true_command_list):
-        """Prepares a 1D numpy array from true_command_list, ensuring correct size."""
+        """
+        Converts the target command data into a 1D numpy array of fixed output size.
+        
+        If the input is shorter than the required output size, it is padded with zeros; if longer, it is truncated.
+        """
         if isinstance(true_command_list, list):
             target_list = true_command_list
         elif isinstance(true_command_list, np.ndarray):
@@ -57,6 +70,15 @@ class CerebellumAI:
         return np.array(target_list)
 
     def _forward_propagate(self, sensor_data):
+        """
+        Performs a forward pass through the neural network using the provided sensor data.
+        
+        Args:
+            sensor_data: Input sensor readings as a list or ndarray.
+        
+        Returns:
+            A tuple containing the prepared input vector, hidden layer activations, and final output commands, each as a 1D numpy array.
+        """
         input_vec_1d = self._prepare_input_vector(sensor_data)
         if (
             input_vec_1d.shape[0] != self.input_size
@@ -80,6 +102,11 @@ class CerebellumAI:
         return input_vec_1d, hidden_layer_output.flatten(), final_commands.flatten()
 
     def process_task(self, sensor_data):
+        """
+        Processes sensor data through the neural network and returns motor command outputs.
+        
+        If an error occurs during processing, returns a list of zeros matching the output size.
+        """
         try:
             _input_features, _hidden_activation, final_commands = (
                 self._forward_propagate(sensor_data) # Returns three np.ndarray
@@ -93,6 +120,11 @@ class CerebellumAI:
             return [0.0] * self.output_size
 
     def learn(self, sensor_data, true_command_list_or_array):
+        """
+        Performs a single backpropagation learning step using the provided sensor data and target motor commands.
+        
+        Updates the neural network's weights and biases based on the error between the predicted and true commands. Stores the training example in memory for later consolidation. If the input vector is all zeros, the learning step is skipped.
+        """
         input_vec_1d, hidden_output_1d, final_commands_1d = self._forward_propagate(
             sensor_data
         ) # Returns three np.ndarray
@@ -138,6 +170,11 @@ class CerebellumAI:
             self.memory.pop(0)
 
     def consolidate(self):
+        """
+        Performs consolidation learning by replaying stored experiences and updating network weights.
+        
+        Iterates over stored memory samples, applies backpropagation updates with a reduced learning rate, and saves the updated model to file. Skips memory entries with zero input vectors.
+        """
         if not self.memory:
             self.save_model()
             return
@@ -180,6 +217,12 @@ class CerebellumAI:
         self.save_model()
 
     def _initialize_default_weights_biases(self):
+        """
+        Initializes network weights with small random values and biases with zeros.
+        
+        Sets up the input-to-hidden and hidden-to-output weight matrices and bias vectors
+        using appropriate shapes and data types for the neural network layers.
+        """
         self.weights_input_hidden = (
             np.random.randn(self.input_size, self.hidden_size).astype(np.float64) * 0.01
         )
@@ -190,6 +233,11 @@ class CerebellumAI:
         self.bias_output = np.zeros((1, self.output_size), dtype=np.float64)
 
     def save_model(self):
+        """
+        Saves the current model parameters to a JSON file at the specified model path.
+        
+        Serializes weights, biases, and architecture sizes. Creates directories as needed. Prints an error message if saving fails.
+        """
         model_data = {
             "weights_input_hidden": self.weights_input_hidden.tolist(),
             "bias_hidden": self.bias_hidden.tolist(),
@@ -207,6 +255,11 @@ class CerebellumAI:
             print(f"CerebellumAI: Error saving model to {self.model_path}: {e}")
 
     def load_model(self):
+        """
+        Loads model weights and biases from a JSON file if available and valid.
+        
+        If the model file does not exist or fails validation (architecture mismatch, missing keys, or incorrect shapes), reinitializes weights and biases to default values. Prints status messages indicating whether loading was successful or if defaults are used.
+        """
         model_loaded_successfully = False # Flag
         if not os.path.exists(self.model_path):
             self._initialize_default_weights_biases()
