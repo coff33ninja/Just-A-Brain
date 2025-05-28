@@ -1,6 +1,5 @@
 # parietal.py (Sensory Integration, Spatial Awareness)
 import numpy as np
-import json
 import os
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Input # type: ignore
@@ -26,7 +25,7 @@ class ParietalLobeAI:
 
         self.model = self._build_model()
         self.model.compile(optimizer=Adam(learning_rate=self.learning_rate_learn), loss='mse')
-        
+
         self.load_model()
 
     def _build_model(self):
@@ -119,7 +118,7 @@ class ParietalLobeAI:
             return
 
         # print(f"Consolidating Parietal Lobe. Memory size: {len(self.memory)}")
-        
+
         try:
             sensory_data_list_for_batch = [s_data for s_data, _ in list(self.memory)]
             true_coords_list_for_batch = [t_coords for _, t_coords in list(self.memory)]
@@ -135,10 +134,10 @@ class ParietalLobeAI:
 
             if sensory_data_batch.shape[0] > 0: # Ensure there's data to train on
                 self.model.fit(
-                    sensory_data_batch, 
-                    true_coords_batch, 
-                    epochs=1, 
-                    batch_size=min(len(self.memory), 32), 
+                    sensory_data_batch,
+                    true_coords_batch,
+                    epochs=1,
+                    batch_size=min(len(self.memory), 32),
                     verbose=0
                 )
         except Exception as e:
@@ -194,7 +193,7 @@ if __name__ == "__main__":
     print("\n--- Testing learn method ---")
     parietal_ai.learn(sample_sensor_data, sample_true_coords)
     print(f"Memory after learn: {parietal_ai.memory}")
-    
+
     weights_after_learn_sample = None
     if parietal_ai.model.layers:
         weights_after_learn_sample = parietal_ai.model.layers[0].get_weights()[0][0,0]
@@ -208,12 +207,12 @@ if __name__ == "__main__":
 
     print("\n--- Testing consolidate method ---")
     # Add more diverse data to memory for better consolidation test
-    for i in range(5):
-        parietal_ai.learn(np.random.rand(parietal_ai.input_size).tolist(), 
+    for _ in range(5):
+        parietal_ai.learn(np.random.rand(parietal_ai.input_size).tolist(),
                           np.random.rand(parietal_ai.output_size).tolist())
-    
+
     parietal_ai.consolidate() # This also saves the model
-    
+
     weights_after_consolidate_sample = None
     if parietal_ai.model.layers:
         weights_after_consolidate_sample = parietal_ai.model.layers[0].get_weights()[0][0,0]

@@ -1,6 +1,5 @@
 # cerebellum.py (Motor Control, Coordination)
 import numpy as np
-import json
 import os
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Input # type: ignore
@@ -129,15 +128,15 @@ class CerebellumAI:
 
             if sensor_data_batch.shape[0] > 0: # Ensure there's data to train on
                 self.model.fit(
-                    sensor_data_batch, 
-                    true_commands_batch, 
-                    epochs=1, 
+                    sensor_data_batch,
+                    true_commands_batch,
+                    epochs=1,
                     batch_size=min(len(self.memory), 32), # Use a reasonable batch size
                     verbose=0
                 )
         except Exception as e:
             print(f"Error during CerebellumAI consolidation training: {e}")
-            
+
         self.save_model()
 
     def save_model(self):
@@ -173,14 +172,14 @@ if __name__ == "__main__":
     sample_sensor_data = np.random.rand(cerebellum_ai.input_size).tolist()
     sample_true_command = (
         np.random.rand(cerebellum_ai.output_size) * 2 - 1 # Commands between -1 and 1
-    ).tolist() 
+    ).tolist()
 
     # Get initial weights of a layer for comparison (e.g., first dense layer's kernel)
     initial_weights_sample = None
     if cerebellum_ai.model.layers: # Ensure model has layers
         weights_list = cerebellum_ai.model.layers[0].get_weights()
         if weights_list and len(weights_list[0]) > 0: # Check if kernel exists and is not empty
-             initial_weights_sample = weights_list[0][0,0] 
+             initial_weights_sample = weights_list[0][0,0]
              print(f"Initial weight sample (hidden_layer kernel [0,0]): {initial_weights_sample}")
 
     print("\n--- Testing process_task ---")
@@ -191,7 +190,7 @@ if __name__ == "__main__":
     print("\n--- Testing learn method ---")
     cerebellum_ai.learn(sample_sensor_data, sample_true_command)
     print(f"Memory after learn: {cerebellum_ai.memory}")
-    
+
     weights_after_learn_sample = None
     if cerebellum_ai.model.layers:
         weights_list_after_learn = cerebellum_ai.model.layers[0].get_weights()
@@ -206,12 +205,12 @@ if __name__ == "__main__":
 
     print("\n--- Testing consolidate method ---")
     # Add more diverse data to memory for better consolidation test
-    for i in range(5):
-        cerebellum_ai.learn(np.random.rand(cerebellum_ai.input_size).tolist(), 
+    for _ in range(5):
+        cerebellum_ai.learn(np.random.rand(cerebellum_ai.input_size).tolist(),
                             (np.random.rand(cerebellum_ai.output_size) * 2 - 1).tolist())
-    
+
     cerebellum_ai.consolidate() # This also saves the model
-    
+
     weights_after_consolidate_sample = None
     if cerebellum_ai.model.layers:
         weights_list_after_consolidate = cerebellum_ai.model.layers[0].get_weights()

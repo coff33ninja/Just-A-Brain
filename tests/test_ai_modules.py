@@ -21,7 +21,7 @@ from main import ( # noqa: E402
     load_image_text_pairs,
     load_vision_data,
     load_text_data,
-    BrainCoordinator, 
+    BrainCoordinator,
 )
 from temporal import TemporalLobeAI # noqa: E402
 from cerebellum import CerebellumAI # noqa: E402
@@ -109,7 +109,7 @@ class TestTemporalLobeAI(unittest.TestCase):
         for path in [self.test_instance_model_path, self.test_instance_arch_path, self.test_instance_memory_path]:
             if os.path.exists(path):
                 os.remove(path)
-        
+
         self.ai = TemporalLobeAI(model_path=self.test_instance_model_path, memory_path=self.test_instance_memory_path)
 
     def tearDown(self):
@@ -138,12 +138,12 @@ class TestTemporalLobeAI(unittest.TestCase):
         output_tuple = self.ai.process_task("sample text", predict_visual=True)
         self.assertIsInstance(output_tuple, tuple, "Output should be a tuple when predict_visual=True.")
         self.assertEqual(len(output_tuple), 2, "Output tuple should have two elements.")
-        
+
         embedding_list, visual_label_int = output_tuple
         self.assertIsInstance(embedding_list, list, "First element of tuple (embedding) should be a list.")
         self.assertEqual(len(embedding_list), self.ai.output_size, "Embedding list length in tuple mismatch.")
         self.assertTrue(all(isinstance(x, float) for x in embedding_list), "All elements in tuple's embedding list should be floats.")
-        
+
         self.assertIsInstance(visual_label_int, int, "Second element of tuple (visual_label) should be an int.")
         self.assertTrue(0 <= visual_label_int < self.ai.visual_output_size, "Visual label out of expected range.")
 
@@ -160,7 +160,7 @@ class TestTemporalLobeAI(unittest.TestCase):
 
         mock_model.train_on_batch.assert_called_once()
         args_call = mock_model.train_on_batch.call_args
-        
+
         # Check y (targets) argument
         y_targets = args_call[0][1] # Second positional argument to train_on_batch
         self.assertIn('text_embedding_output', y_targets)
@@ -172,7 +172,7 @@ class TestTemporalLobeAI(unittest.TestCase):
         sample_weights = args_call[1]['sample_weight'] # Keyword argument
         self.assertEqual(sample_weights['text_embedding_output'], 1.0)
         self.assertEqual(sample_weights['visual_label_output'], 0.0)
-        
+
         self.assertIn(sequence_to_learn, self.ai.memory_db)
 
 
@@ -191,10 +191,10 @@ class TestTemporalLobeAI(unittest.TestCase):
         final_weights_all_layers = self.ai.model.get_weights()
 
         # Check that weights in *all* layers have changed (text path and visual path)
-        weights_changed = any(not np.array_equal(initial_w, final_w) 
+        weights_changed = any(not np.array_equal(initial_w, final_w)
                               for initial_w, final_w in zip(initial_weights_all_layers, final_weights_all_layers))
         self.assertTrue(weights_changed, "Model weights (including text path) should change after visual association learning due to shared embedding.")
-        
+
         self.assertIn((text_for_assoc, visual_label), self.ai.cross_modal_memory)
 
 
@@ -203,7 +203,7 @@ class TestTemporalLobeAI(unittest.TestCase):
         """Test consolidate method for both memory_db and cross_modal_memory paths."""
         mock_model.fit = MagicMock()
         # Mock predict for the self-supervised part of cross_modal_memory consolidation
-        mock_model.predict.return_value = [np.random.rand(1, self.ai.output_size).astype(np.float32), 
+        mock_model.predict.return_value = [np.random.rand(1, self.ai.output_size).astype(np.float32),
                                            np.random.rand(1, self.ai.visual_output_size).astype(np.float32)]
         self.ai.model = mock_model
 
@@ -226,7 +226,7 @@ class TestTemporalLobeAI(unittest.TestCase):
         # We cannot easily check weight changes with a fully mocked model.fit
         # This part mainly tests if fit is called with expected structure.
         self.ai.consolidate()
-        
+
         mock_model.fit.assert_called_once()
         args_fit_visual = mock_model.fit.call_args
         y_targets_visual = args_fit_visual[0][1]
@@ -244,15 +244,15 @@ class TestTemporalLobeAI(unittest.TestCase):
         original_weights = self.ai.model.get_weights()
         modified_weights = [w * 0.33 for w in original_weights]
         self.ai.model.set_weights(modified_weights)
-        
+
         self.ai.save_model()
 
         self.assertTrue(os.path.exists(self.test_instance_model_path))
         self.assertTrue(os.path.exists(self.test_instance_arch_path))
 
-        loaded_ai = TemporalLobeAI(model_path=self.test_instance_model_path, 
+        loaded_ai = TemporalLobeAI(model_path=self.test_instance_model_path,
                                    memory_path=self.test_instance_memory_path)
-        
+
         loaded_keras_weights = loaded_ai.model.get_weights()
         self.assertEqual(len(loaded_keras_weights), len(modified_weights))
         for i in range(len(modified_weights)):
@@ -274,7 +274,7 @@ class TestTemporalLobeAI(unittest.TestCase):
 
         new_ai = TemporalLobeAI(model_path=self.test_instance_model_path,
                                 memory_path=self.test_instance_memory_path)
-        
+
         self.assertIn([("m_item1","t_item1")], new_ai.memory_db)
         self.assertIn(("cm_text",1), new_ai.cross_modal_memory)
 
@@ -282,23 +282,23 @@ class TestTemporalLobeAI(unittest.TestCase):
         if os.path.exists(self.test_instance_model_path):
              os.remove(self.test_instance_model_path)
 
-        loaded_ai = TemporalLobeAI(model_path=self.test_instance_model_path, 
+        loaded_ai = TemporalLobeAI(model_path=self.test_instance_model_path,
                                    memory_path=self.test_instance_memory_path)
         self.assertIsNotNone(loaded_ai.model, "Keras model should be initialized.")
         self.assertTrue(len(loaded_ai.model.layers) > 0, "Keras model should have layers.")
 
     def test_combined_model_load_corrupted_weights_file(self):
-        self.ai.save_model() 
+        self.ai.save_model()
         with open(self.test_instance_model_path, 'w') as f:
             f.write('this is not a valid HDF5 file')
 
         with patch('builtins.print') as mock_print:
             corrupted_ai = TemporalLobeAI(model_path=self.test_instance_model_path,
                                           memory_path=self.test_instance_memory_path)
-            error_printed = any("Error loading Keras combined model weights" in call_args[0][0] 
+            error_printed = any("Error loading Keras combined model weights" in call_args[0][0]
                                 for call_args in mock_print.call_args_list)
             self.assertTrue(error_printed)
-        
+
         self.assertIsNotNone(corrupted_ai.model)
         self.assertTrue(len(corrupted_ai.model.layers) > 0)
 
@@ -437,20 +437,20 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Use model.predict for forward propagation
         input_shape = self.ai.model.input_shape # e.g., (64, 64, 3)
         # Create a dummy input batch of 1 image
-        dummy_input_batch = np.random.rand(1, *input_shape) 
+        dummy_input_batch = np.random.rand(1, *input_shape)
         output_scores_batch = self.ai.model.predict(dummy_input_batch, verbose=0)
         self.assertEqual(output_scores_batch.shape, (1, self.ai.output_size))
 
 
     def test_learn_updates_and_memory(self):
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
-        
+
         # Ensure test_img_path exists for learn to proceed
         if not os.path.exists(self.test_img_path):
             self.skipTest(f"Test image {self.test_img_path} not found, skipping learn test.")
 
         self.ai.learn(self.test_img_path, 0) # Label 0
-        
+
         final_weights = self.ai.model.get_weights()
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
         self.assertTrue(weights_changed, "Model weights did not change after learn")
@@ -459,7 +459,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
         cached_experience = self.ai.memory[0]
         self.assertIsInstance(cached_experience, tuple, "Memory item should be a tuple.")
         self.assertEqual(len(cached_experience), 2, "Memory tuple should have two elements.")
-        
+
         self.assertIsInstance(cached_experience[0], np.ndarray, "First element of memory tuple should be a NumPy array.")
         self.assertEqual(cached_experience[0].shape, (1,) + self.ai.input_shape, "Cached image array shape is incorrect.")
         self.assertTrue(np.issubdtype(cached_experience[0].dtype, np.floating), "Cached image array dtype should be float.")
@@ -469,7 +469,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
         if not os.path.exists(self.test_img_path):
             self.skipTest(f"Test image {self.test_img_path} not found, skipping consolidate test.")
 
-        self.ai.learn(self.test_img_path, 1) 
+        self.ai.learn(self.test_img_path, 1)
         self.assertTrue(len(self.ai.memory) > 0, "Memory should be populated before testing consolidate.")
 
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
@@ -477,7 +477,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
         with patch.object(self.ai, '_preprocess_image') as mock_preprocess:
             self.ai.consolidate()
             mock_preprocess.assert_not_called("consolidate should use cached images, not call _preprocess_image.")
-        
+
         final_weights = self.ai.model.get_weights()
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
         if len(self.ai.memory) > 0 and self.ai.model.optimizer.learning_rate > 0: # Weights change if there's data and LR > 0
@@ -498,12 +498,12 @@ class TestOccipitalLobeAI(unittest.TestCase):
         original_weights = [w.copy() for w in self.ai.model.get_weights()]
         new_weights = [np.full(w.shape, 0.55) for w in original_weights]
         self.ai.model.set_weights(new_weights)
-        
+
         self.ai.save_model() # Uses self.test_instance_model_path
-        
+
         loaded_ai = OccipitalLobeAI(model_path=self.test_instance_model_path)
         loaded_weights = loaded_ai.model.get_weights()
-        
+
         self.assertEqual(len(loaded_weights), len(new_weights), "Number of weight arrays differs.")
         for i in range(len(new_weights)):
             np.testing.assert_array_almost_equal(loaded_weights[i], new_weights[i],
@@ -514,8 +514,9 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Simulating an "old" format that Keras would try to load is complex.
         # Instead, we'll test that loading a non-existent file results in a fresh model.
         non_existent_path = os.path.join(TEST_DATA_DIR, "non_existent_occipital.weights.h5")
-        if os.path.exists(non_existent_path): os.remove(non_existent_path) # Ensure it doesn't exist
-        
+        if os.path.exists(non_existent_path):
+            os.remove(non_existent_path) # Ensure it doesn't exist
+
         loaded_ai = OccipitalLobeAI(model_path=non_existent_path)
         self.assertIsNotNone(loaded_ai.model, "Model should be initialized even if no weights file found.")
         # Further checks could involve comparing weights to a newly built model,
@@ -525,7 +526,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
     def test_load_model_shape_mismatch_occipital(self):
         # Create a valid model and save it
         self.ai.save_model()
-        
+
         # Create another AI instance with a different architecture (e.g., different output_size)
         # and save its weights to the *same path*, simulating a shape mismatch.
         # This is hard to do without actually changing OccipitalLobeAI's definition or
@@ -536,20 +537,20 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # For now, we'll test loading a corrupted H5 file.
         with open(self.test_instance_model_path, 'w') as f: # Corrupt the file
             f.write('not a valid h5 file')
-        
+
         # Should not crash, should reinitialize or keep initial model
         # Keras load_weights will likely raise an OSError or similar.
         # The OccipitalLobeAI load_model has a try-except that prints an error.
         # We can check if the model's weights are still the initial ones (or re-initialized).
         initial_weights_before_corrupt_load = [w.copy() for w in self.ai.model.get_weights()]
-        
+
         # Suppress print output during this expected failure
         with patch('builtins.print') as mock_print:
             self.ai.load_model() # Attempt to load corrupted file
             mock_print.assert_any_call(unittest.mock.ANY) # Check that an error was printed
 
         weights_after_corrupt_load = self.ai.model.get_weights()
-        
+
         # Check if weights are the same as before the load attempt (meaning load failed and model was preserved)
         weights_match = all(np.array_equal(initial_w, loaded_w) for initial_w, loaded_w in zip(initial_weights_before_corrupt_load, weights_after_corrupt_load))
         self.assertTrue(weights_match, "Model weights should remain unchanged after attempting to load a corrupted file.")
@@ -561,12 +562,12 @@ class TestFrontalLobeAI(unittest.TestCase):
         # Use a unique model path for each test instance
         self.test_instance_model_path = os.path.join(TEST_DATA_DIR, f"test_frontal_{self._testMethodName}.weights.h5")
         self.epsilon_path = self.test_instance_model_path + "_epsilon.json"
-        
+
         if os.path.exists(self.test_instance_model_path):
             os.remove(self.test_instance_model_path)
         if os.path.exists(self.epsilon_path):
             os.remove(self.epsilon_path)
-        
+
         self.ai = FrontalLobeAI(model_path=self.test_instance_model_path, replay_batch_size=1)
         # self.ai.save_model() # Save initial model if needed by specific tests, but often not for unit tests
         self.sample_state = np.random.rand(self.ai.input_size).tolist()
@@ -575,7 +576,7 @@ class TestFrontalLobeAI(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.test_instance_model_path):
             os.remove(self.test_instance_model_path)
-        if os.path.exists(self.epsilon_path): 
+        if os.path.exists(self.epsilon_path):
             os.remove(self.epsilon_path)
 
 
@@ -596,7 +597,7 @@ class TestFrontalLobeAI(unittest.TestCase):
         new_kernel = np.zeros(kernel_shape)
         # Favor action 1 (index 1)
         if self.ai.output_size > 1:
-            new_kernel[:, 1] = 10.0 
+            new_kernel[:, 1] = 10.0
             expected_action = 1
         else: # Single output, action must be 0
             new_kernel[:, 0] = 10.0
@@ -622,11 +623,11 @@ class TestFrontalLobeAI(unittest.TestCase):
         reward = 1.0
         next_state = np.random.rand(self.ai.input_size).tolist()
         done = False
-        
+
         # Ensure the model is built before getting weights
-        _ = self.ai.model.predict(np.array([state])) 
+        _ = self.ai.model.predict(np.array([state]))
         initial_model_weights = [w.copy() for w in self.ai.model.get_weights()]
-        
+
         for _ in range(self.ai.replay_batch_size):
              self.ai.learn(state, action_taken, reward, next_state, done)
 
@@ -638,9 +639,9 @@ class TestFrontalLobeAI(unittest.TestCase):
                     weights_changed = True
                     break
             self.assertTrue(weights_changed, "Model weights should change after learning enough to trigger replay if LR > 0.")
-        
+
         self.assertIn((list(state), action_taken, reward, list(next_state), done), self.ai.memory)
-        
+
         self.ai.memory.clear()
         for _ in range(self.ai.replay_buffer_size + 5):
             self.ai.learn(state, action_taken, reward, next_state, done)
@@ -648,21 +649,21 @@ class TestFrontalLobeAI(unittest.TestCase):
 
 
     def test_consolidate_experience_replay(self):
-        for i in range(self.ai.replay_batch_size * 2): 
+        for i in range(self.ai.replay_batch_size * 2):
             state = np.random.rand(self.ai.input_size).tolist()
             action = np.random.randint(0, self.ai.output_size)
             reward_val = float(np.random.choice([-1,0,1]))
             next_s = np.random.rand(self.ai.input_size).tolist()
             done_val = bool(np.random.choice([True,False]))
-            self.ai.learn(state, action, reward_val, next_s, done_val) 
-        
+            self.ai.learn(state, action, reward_val, next_s, done_val)
+
         self.assertTrue(len(self.ai.memory) > 0, "Memory should be populated before consolidation.")
         # Ensure model is built
         _ = self.ai.model.predict(np.array([self.sample_state]))
         initial_model_weights = [w.copy() for w in self.ai.model.get_weights()]
-        
-        self.ai.consolidate() 
-        
+
+        self.ai.consolidate()
+
         final_model_weights = self.ai.model.get_weights()
         weights_changed = any(
             not np.array_equal(iw, fw)
@@ -694,9 +695,9 @@ class TestFrontalLobeAI(unittest.TestCase):
         batch_size = 2
         # ai instance for this test uses self.test_instance_model_path
         ai = FrontalLobeAI(model_path=self.test_instance_model_path, replay_batch_size=batch_size)
-        input_size = ai.input_size 
+        input_size = ai.input_size
         output_size = ai.output_size
-        ai.exploration_rate_epsilon = 0 
+        ai.exploration_rate_epsilon = 0
 
         state1_raw = np.array([0.1] * input_size).tolist()
         action1 = 0
@@ -708,7 +709,7 @@ class TestFrontalLobeAI(unittest.TestCase):
         state2_raw = np.array([0.3] * input_size).tolist()
         action2 = 1 % output_size # Ensure valid action
         reward2 = -1.0
-        next_state2_raw = np.array([0.4] * input_size).tolist() 
+        next_state2_raw = np.array([0.4] * input_size).tolist()
         done2 = True
         ai.remember(state2_raw, action2, reward2, next_state2_raw, done2)
 
@@ -719,7 +720,7 @@ class TestFrontalLobeAI(unittest.TestCase):
         mock_next_q_ns1 = np.random.rand(output_size)
         mock_next_q_ns2 = np.random.rand(output_size) # Will be used by _prepare_state_vector
         mock_next_q_values_target_batch = np.array([mock_next_q_ns1, mock_next_q_ns2])
-        
+
         expected_prepared_state1 = ai._prepare_state_vector(state1_raw)
         expected_prepared_state2 = ai._prepare_state_vector(state2_raw)
         expected_current_states_batch_np = np.array([expected_prepared_state1, expected_prepared_state2])
@@ -734,7 +735,7 @@ class TestFrontalLobeAI(unittest.TestCase):
             ai.replay()
 
             mock_model_fit.assert_called_once()
-            
+
             args_call_to_fit = mock_model_fit.call_args[0]
             actual_current_states_batch_np = args_call_to_fit[0]
             np.testing.assert_array_almost_equal(actual_current_states_batch_np, expected_current_states_batch_np)
@@ -746,13 +747,13 @@ class TestFrontalLobeAI(unittest.TestCase):
 
             actual_targets_batch = args_call_to_fit[1]
             np.testing.assert_array_almost_equal(actual_targets_batch, expected_targets_batch)
-            
+
             mock_model_predict.assert_called_once()
             np.testing.assert_array_almost_equal(mock_model_predict.call_args[0][0], expected_current_states_batch_np)
 
             expected_next_states_batch_np = np.array([
                 ai._prepare_state_vector(next_state1_raw),
-                ai._prepare_state_vector(next_state2_raw) 
+                ai._prepare_state_vector(next_state2_raw)
             ])
             mock_target_model_predict.assert_called_once()
             np.testing.assert_array_almost_equal(mock_target_model_predict.call_args[0][0], expected_next_states_batch_np)
@@ -790,8 +791,8 @@ class TestCerebellumAI(unittest.TestCase):
         self.assertEqual(vec_long.dtype, np.float32)
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.input_size], dtype=np.float32))
 
-    def test_prepare_target_command_vector(self): 
-        vec = self.ai._prepare_target_command_vector(self.sample_true_command) 
+    def test_prepare_target_command_vector(self):
+        vec = self.ai._prepare_target_command_vector(self.sample_true_command)
         self.assertEqual(vec.shape, (self.ai.output_size,))
         self.assertEqual(vec.dtype, np.float32, "Target vector dtype should be np.float32")
         long_data = self.sample_true_command + [0.1] # Longer than output_size
@@ -815,7 +816,7 @@ class TestCerebellumAI(unittest.TestCase):
         initial_weights = self.ai.model.get_weights()
 
         self.ai.learn(self.sample_sensor_data, self.sample_true_command)
-        
+
         final_weights = self.ai.model.get_weights()
 
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
@@ -826,7 +827,7 @@ class TestCerebellumAI(unittest.TestCase):
         self.assertIn((expected_mem_sensor, expected_mem_command), self.ai.memory)
 
         self.ai.memory.clear()
-        for i in range(self.ai.max_memory_size + 5): 
+        for i in range(self.ai.max_memory_size + 5):
             self.ai.learn(self.sample_sensor_data, (np.array(self.sample_true_command) * (i/(self.ai.max_memory_size+4.0))).tolist())
         self.assertEqual(len(self.ai.memory), self.ai.max_memory_size)
 
@@ -834,35 +835,35 @@ class TestCerebellumAI(unittest.TestCase):
     def test_consolidate_updates_weights(self):
         # Populate memory
         for _ in range(5):
-             self.ai.learn(np.random.rand(self.ai.input_size).tolist(), 
+             self.ai.learn(np.random.rand(self.ai.input_size).tolist(),
                           (np.random.rand(self.ai.output_size) * 2 - 1).tolist())
-        
+
         if not self.ai.memory:
             self.skipTest("Memory is empty, skipping consolidate weight change test.")
 
         _ = self.ai.model.predict(np.array([self.sample_sensor_data], dtype=np.float32)) # Build model
         initial_weights = self.ai.model.get_weights()
-        
+
         self.ai.consolidate()
-        
+
         final_weights = self.ai.model.get_weights()
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
-        
+
         if len(self.ai.memory) > 0 and self.ai.model.optimizer.learning_rate > 0:
             self.assertTrue(weights_changed, "Model weights should change after consolidate if memory is not empty and LR > 0.")
 
     def test_model_save_load_new_cerebellum_architecture(self):
         _ = self.ai.model.predict(np.array([self.sample_sensor_data], dtype=np.float32)) # Build model
         original_weights = self.ai.model.get_weights()
-        
+
         modified_weights = [w * 0.75 for w in original_weights] # Modify weights
         self.ai.model.set_weights(modified_weights)
-        
+
         self.ai.save_model() # Saves to self.test_instance_model_path
-        
+
         loaded_ai = CerebellumAI(model_path=self.test_instance_model_path)
         loaded_weights = loaded_ai.model.get_weights()
-        
+
         self.assertEqual(len(loaded_weights), len(modified_weights), "Number of weight arrays differs.")
         for i in range(len(modified_weights)):
             np.testing.assert_array_almost_equal(loaded_weights[i], modified_weights[i], decimal=5,
@@ -872,17 +873,17 @@ class TestCerebellumAI(unittest.TestCase):
         non_existent_path = os.path.join(TEST_DATA_DIR, "non_existent_cerebellum.weights.h5")
         if os.path.exists(non_existent_path):
             os.remove(non_existent_path)
-        
+
         loaded_ai = CerebellumAI(model_path=non_existent_path)
         self.assertIsNotNone(loaded_ai.model, "Model should be initialized even if no weights file found.")
         self.assertTrue(len(loaded_ai.model.layers) > 0, "Model should have layers after initialization.")
 
     def test_load_model_corrupted_file(self):
         self.ai.save_model() # Save a valid model first
-        
+
         with open(self.test_instance_model_path, 'w') as f:
             f.write('this is not a valid HDF5 file content for Keras weights')
-            
+
         with patch('builtins.print') as mock_print:
             corrupted_ai = CerebellumAI(model_path=self.test_instance_model_path)
             error_printed = any("Error loading weights" in call_args[0][0] for call_args in mock_print.call_args_list)
@@ -904,8 +905,8 @@ class TestParietalLobeAI(unittest.TestCase):
         # Keras model is initialized in ParietalLobeAI.__init__
         # No need to call _initialize_default_weights_biases or save_model here
 
-        self.sample_sensory_data = np.random.rand(self.ai.input_size).tolist() 
-        self.sample_true_coords = np.random.rand(self.ai.output_size).tolist() 
+        self.sample_sensory_data = np.random.rand(self.ai.input_size).tolist()
+        self.sample_true_coords = np.random.rand(self.ai.output_size).tolist()
 
     def tearDown(self):
         if os.path.exists(self.test_instance_model_path):
@@ -949,7 +950,7 @@ class TestParietalLobeAI(unittest.TestCase):
         initial_weights = self.ai.model.get_weights()
 
         self.ai.learn(self.sample_sensory_data, self.sample_true_coords)
-        
+
         final_weights = self.ai.model.get_weights()
 
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
@@ -963,27 +964,27 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertIn((expected_mem_sensor, expected_mem_coords), self.ai.memory)
 
         self.ai.memory.clear()
-        for i in range(self.ai.max_memory_size + 5): 
+        for i in range(self.ai.max_memory_size + 5):
             self.ai.learn(self.sample_sensory_data, (np.array(self.sample_true_coords) * (i / (self.ai.max_memory_size + 4.0))).tolist())
         self.assertEqual(len(self.ai.memory), self.ai.max_memory_size)
 
     def test_consolidate_updates_weights_parietal(self):
         # Populate memory
         for _ in range(5): # Add a few experiences
-            self.ai.learn(np.random.rand(self.ai.input_size).tolist(), 
+            self.ai.learn(np.random.rand(self.ai.input_size).tolist(),
                           np.random.rand(self.ai.output_size).tolist())
-        
+
         if not self.ai.memory:
              self.skipTest("Memory is empty, skipping consolidate weight change test.")
 
         _ = self.ai.model.predict(np.array([self.sample_sensory_data], dtype=np.float32)) # Build model
         initial_weights = self.ai.model.get_weights()
-        
+
         self.ai.consolidate()
-        
+
         final_weights = self.ai.model.get_weights()
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
-        
+
         if len(self.ai.memory) > 0 and self.ai.model.optimizer.learning_rate > 0:
             self.assertTrue(weights_changed, "Model weights should change after consolidate if memory is not empty and LR > 0.")
 
@@ -991,16 +992,16 @@ class TestParietalLobeAI(unittest.TestCase):
         # Ensure model is built
         _ = self.ai.model.predict(np.array([self.sample_sensory_data], dtype=np.float32))
         original_weights = self.ai.model.get_weights()
-        
+
         # Create slightly modified weights
         modified_weights = [w * 0.5 for w in original_weights]
         self.ai.model.set_weights(modified_weights)
-        
+
         self.ai.save_model() # Saves to self.test_instance_model_path
-        
+
         loaded_ai = ParietalLobeAI(model_path=self.test_instance_model_path)
         loaded_weights = loaded_ai.model.get_weights()
-        
+
         self.assertEqual(len(loaded_weights), len(modified_weights), "Number of weight arrays differs.")
         for i in range(len(modified_weights)):
             np.testing.assert_array_almost_equal(loaded_weights[i], modified_weights[i], decimal=5,
@@ -1010,7 +1011,7 @@ class TestParietalLobeAI(unittest.TestCase):
         non_existent_path = os.path.join(TEST_DATA_DIR, "non_existent_parietal.weights.h5")
         if os.path.exists(non_existent_path):
             os.remove(non_existent_path)
-        
+
         loaded_ai = ParietalLobeAI(model_path=non_existent_path)
         self.assertIsNotNone(loaded_ai.model, "Model should be initialized even if no weights file found.")
         self.assertTrue(len(loaded_ai.model.layers) > 0, "Model should have layers after initialization.")
@@ -1018,15 +1019,16 @@ class TestParietalLobeAI(unittest.TestCase):
     def test_load_model_corrupted_file(self):
         # First, save a valid model
         self.ai.save_model() # Uses self.test_instance_model_path
-        
+
         # Corrupt the saved .weights.h5 file
         with open(self.test_instance_model_path, 'w') as f:
             f.write('this is not a valid HDF5 file content for Keras weights')
-            
+
         # Store initial weights of a fresh model for comparison (Keras initializes randomly)
         fresh_ai_for_comparison = ParietalLobeAI(model_path="some_other_temp_path.h5") # ensure it's a new model
         initial_fresh_weights = fresh_ai_for_comparison.model.get_weights()
-        if os.path.exists("some_other_temp_path.h5"): os.remove("some_other_temp_path.h5")
+        if os.path.exists("some_other_temp_path.h5"):
+            os.remove("some_other_temp_path.h5")
 
 
         # Attempt to load the corrupted file, expecting an error message to be printed
@@ -1035,18 +1037,18 @@ class TestParietalLobeAI(unittest.TestCase):
             # Check if an error message related to loading was printed
             error_printed = any("Error loading weights" in call_args[0][0] for call_args in mock_print.call_args_list)
             no_file_printed = any("No weights file found" in call_args[0][0] for call_args in mock_print.call_args_list) # Should not happen if file exists
-            
+
             # If file was found but corrupted, an error should be printed.
             # If Keras load_weights fails, it might not re-initialize within the same instance in a way
             # that's easily distinguishable from a *successful* load of different weights without deep inspection.
             # The key is that ParietalLobeAI's load_model catches the error and the model remains usable (Keras default init).
-            self.assertTrue(error_printed or not no_file_printed, 
+            self.assertTrue(error_printed or not no_file_printed,
                             "Expected an error message or for the file to be processed (even if failing internally by Keras).")
 
 
         self.assertIsNotNone(corrupted_ai.model, "Model should still exist after attempting to load corrupted file.")
         self.assertTrue(len(corrupted_ai.model.layers) > 0, "Model should have layers.")
-        
+
         # Check if weights are different from the successfully saved ones (they should be, as load failed)
         # This assumes Keras re-initializes or keeps initial weights if load fails.
         weights_after_corrupt_load = corrupted_ai.model.get_weights()
@@ -1072,11 +1074,15 @@ class TestBrainCoordinator(unittest.TestCase):
         self.coordinator.occipital = MagicMock(spec=OccipitalLobeAI)
         self.coordinator.cerebellum = MagicMock(spec=CerebellumAI)
         self.coordinator.limbic = MagicMock(spec=LimbicSystemAI)
+        self.coordinator.episode_length = 5 # Default from main.BrainCoordinator
 
         # Configure mock return values for process_task
         # Frontal
-        self.mock_action = 0 # Predictable action
-        self.coordinator.frontal.process_task.return_value = self.mock_action
+        self.mock_action_value = 0 # Predictable action
+        self.coordinator.frontal.process_task.return_value = self.mock_action_value
+        # Set input_size for frontal lobe as it's used by _get_expected_frontal_state indirectly
+        # The actual frontal_input_size is determined by concatenation in main.py
+        # vision_features (occipital.output_size) + spatial_result_1d (3) + memory_result_embedding_1d (10)
         # Occipital
         self.mock_vision_label = 0
         self.coordinator.occipital.output_size = 5 # Default from OccipitalLobeAI
@@ -1084,10 +1090,14 @@ class TestBrainCoordinator(unittest.TestCase):
         # Parietal
         self.mock_spatial_output = [0.1, 0.2, 0.3]
         self.coordinator.parietal.process_task.return_value = self.mock_spatial_output
+        self.coordinator.parietal.input_size = 20 # Default from ParietalLobeAI
+        self.coordinator.parietal.output_size = 3 # Default from ParietalLobeAI
         # Temporal
         self.mock_memory_embedding = [0.01] * 10 # Default embedding size for TemporalLobeAI
         self.coordinator.temporal.process_task.return_value = self.mock_memory_embedding
-        
+        self.coordinator.temporal.output_size = 10 # Default from TemporalLobeAI
+
+
         # Cerebellum and Limbic are called but their output isn't directly in frontal_state
         self.coordinator.cerebellum.process_task.return_value = [0.0, 0.0, 0.0]
         self.coordinator.limbic.process_task.return_value = {"label": 0, "probabilities": [1.0, 0.0, 0.0]}
@@ -1097,7 +1107,7 @@ class TestBrainCoordinator(unittest.TestCase):
         vision_features = np.zeros(occipital_output_size)
         if 0 <= vision_label < occipital_output_size:
             vision_features[vision_label] = 1.0
-        
+
         parietal_1d = np.array(parietal_output).flatten()
         if parietal_1d.shape[0] != 3: # Ensure consistent shape as in main.py
             temp_p = np.zeros(3)
@@ -1111,7 +1121,7 @@ class TestBrainCoordinator(unittest.TestCase):
             min_len = min(temporal_1d.shape[0], 10)
             temp_t[:min_len] = temporal_1d[:min_len]
             temporal_1d = temp_t
-            
+
         return np.concatenate([vision_features, parietal_1d, temporal_1d])
 
     def test_frontal_learn_episodic_calls(self):
@@ -1121,7 +1131,7 @@ class TestBrainCoordinator(unittest.TestCase):
         sensor_data = [0.5, 0.5, 0.5]
         text_data = "test text"
         feedback_reward = 0.75
-        
+
         # Store expected states for verification
         expected_states_history = []
 
@@ -1138,9 +1148,9 @@ class TestBrainCoordinator(unittest.TestCase):
             # For this test, keeping inputs same means mock outputs will be same, leading to same current_frontal_state
             # This is fine as we are testing the *sequence* of (s, a, r, s', done)
             current_day_reward = feedback_reward + (day * 0.01) # Slightly varying reward
-            
+
             self.coordinator.process_day(vision_input_path, sensor_data, text_data, {"action_reward": current_day_reward})
-            
+
             # current_frontal_state for this day becomes next_state for the previous learn call
             current_expected_state = self._get_expected_frontal_state(
                 self.mock_vision_label, self.mock_spatial_output, self.mock_memory_embedding
@@ -1149,7 +1159,7 @@ class TestBrainCoordinator(unittest.TestCase):
 
             # Assertions for the learn call that happened due to *previous* day's state
             self.coordinator.frontal.learn.assert_called_once()
-            
+
             args, _ = self.coordinator.frontal.learn.call_args
             state, action, reward, next_state, done = args
 
@@ -1170,14 +1180,14 @@ class TestBrainCoordinator(unittest.TestCase):
             # For day=2, steps_since_last_episode_end = 1. For day=6 (end of ep), steps = 5.
             # So, learn call on day N corresponds to experience ending after day N-1.
             # Episode ends after day 5's experience, so learn call on day 6 gets done=True
-            expected_done = (day - 1) % episode_length == 0 and (day-1) > 0 
+            expected_done = (day - 1) % episode_length == 0 and (day-1) > 0
             # Correction: done is True when steps_since_last_episode_end (which is day-1 for the *transition*) hits episode_length
             # coordinator.steps_since_last_episode_end is state *after* processing current day, before learn.
             # The learn call uses the state of coordinator.steps_since_last_episode_end *before* it's potentially reset.
             # The learn() call for the transition (s_{d-1}, a_{d-1}, r_{d-1}) -> s_d
             # uses steps_since_last_episode_end that has been incremented for day d.
             # So, if day d makes steps_since_last_episode_end == episode_length, then done is True for that learn call.
-            
+
             # Let's trace coordinator's internal state:
             # Day 1: last_state=None. process_day(1). last_state=s1, last_action=a1, last_reward=r1. steps=0. learn not called.
             # Day 2: last_state=s1. process_day(2). steps becomes 1. learn(s1,a1,r1, s2, done=1==5(F)). last_state=s2, last_action=a2, last_reward=r2.
@@ -1186,7 +1196,7 @@ class TestBrainCoordinator(unittest.TestCase):
             # Day 5: last_state=s4. process_day(5). steps becomes 4. learn(s4,a4,r4, s5, done=4==5(F)). last_state=s5, last_action=a5, last_reward=r5.
             # Day 6: last_state=s5. process_day(6). steps becomes 5. learn(s5,a5,r5, s6, done=5==5(T)). steps resets to 0. last_state=s6, last_action=a6, last_reward=r6.
             # Day 7: last_state=s6. process_day(7). steps becomes 1. learn(s6,a6,r6, s7, done=1==5(F)). last_state=s7, last_action=a7, last_reward=r7.
-            
+
             # So, done is True if coordinator.steps_since_last_episode_end was episode_length *before* reset
             # The value of coordinator.steps_since_last_episode_end *at the time of the learn call* is the one to check
             # This value is captured by the done_for_learn variable inside process_day
@@ -1194,7 +1204,7 @@ class TestBrainCoordinator(unittest.TestCase):
             # This happens on day `k*episode_length + 1`.
             # For day=6, learn is for transition s5->s6. steps_since_last_episode_end inside process_day (before learn) is 5.
             # So done is True.
-            
+
             is_episode_end_step = (self.coordinator.steps_since_last_episode_end == 0) # True if it was just reset
             if is_episode_end_step and (day-1) >= episode_length : # It was reset because it hit episode_length
                  self.assertTrue(done, f"Day {day}: 'done' should be True as this is the first step of a new episode, meaning previous one ended.")
@@ -1208,5 +1218,3 @@ class TestBrainCoordinator(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-[end of tests/test_ai_modules.py]
