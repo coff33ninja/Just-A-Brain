@@ -163,7 +163,7 @@ class CerebellumAI:
 
     def reset_training_data(self):
         """Clears all learned data, resets model, and deletes saved files."""
-        print(f"CerebellumAI: Resetting all training data and model state...")
+        print("CerebellumAI: Resetting all training data and model state...")
         # Clear memory
         self.memory = []
         print("CerebellumAI: Memory cleared.")
