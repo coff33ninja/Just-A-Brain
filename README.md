@@ -8,11 +8,11 @@ For a detailed technical and architectural explanation, see the [Whitepaper](./W
 
 ## System Design
 
-- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI. All modules are implemented with TensorFlow/Keras, replacing their original NumPy-based implementations.
+- **Modules:** Six Python modules (`frontal.py`, `parietal.py`, `temporal.py`, `occipital.py`, `cerebellum.py`, `limbic.py`), each containing a class for its respective AI. The Occipital, Limbic, and Frontal lobe modules are implemented using TensorFlow/Keras. The Temporal, Parietal, and Cerebellum modules are currently based on NumPy implementations.
 - **Main Script:** `main.py` initializes the AIs, routes inputs/outputs, and manages the "daytime" (task processing) and "bedtime" (consolidation) cycles.
 - **Functionality:**
     - Each AI processes tasks relevant to its brain region.
-    - Learning occurs via backpropagation for most modules and Q-learning for the Frontal lobe.
+    - Learning occurs via backpropagation for most modules. The Frontal Lobe employs Q-learning, which now operates over defined multi-step episodes, allowing it to learn from sequences of states and actions for better long-term decision-making.
     - Bedtime consolidation refines models by replaying experiences and saving updates to disk.
     - Purpose emerges from environmental feedback, with no predefined goals.
 - **Dependencies:** Python 3.8+ with NumPy, Pillow, Gradio, and TensorFlow. Install dependencies using the provided `requirements.txt` file.
@@ -146,7 +146,7 @@ This AI does **not** use any pre-trained models or transformer architectures. Al
 
 - **Real Inputs:** Expand with more diverse and real-world data. Consider OpenCV for advanced vision tasks or audio libraries for direct sound processing by the Temporal Lobe.
 - **Scaling Models:** Further scaling (more layers, more neurons) or specialized architectures (e.g., convolutional layers for Occipital, recurrent layers for Temporal) can be explored.
-- **Advanced RL for Frontal Lobe:** Enhance the DQN with techniques like Prioritized Experience Replay, Dueling DQN architectures, or more complex state representations and reward functions. The current `done` signal (always True) and `next_state` (same as current state) in `main.py`'s simulation loop limit long-term planning; refining this would enable more sophisticated learning.
+- **Advanced RL for Frontal Lobe:** The Frontal Lobe's DQN now learns with a proper episodic structure, using meaningful `done` signals and `next_state` transitions, which provides a better foundation for long-term planning. Future enhancements can build on this by exploring techniques like Prioritized Experience Replay, Dueling DQN architectures, or developing more complex state representations and reward functions tied to specific tasks.
 - **Purpose Emergence:** Refine reward functions and feedback mechanisms to guide specialization and emergent behaviors more effectively.
 - **Visualization:** Develop tools to visualize network states, learned features, or decision processes.
 - **Specific Use Case:** Tailor inputs, outputs, and rewards to simulate specific scenarios (e.g., simple robotics, chatbot interaction).

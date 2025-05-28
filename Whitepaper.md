@@ -83,7 +83,7 @@ Each module is a Python class with standard methods:
 The system employs a hybrid approach to learning, tailored to the function of each module:
 
 - **Supervised Learning:** Used by OccipitalLobeAI (image classification), ParietalLobeAI (sensor-to-coordinate mapping), TemporalLobeAI (text embedding, cross-modal association), CerebellumAI (sensor-to-command mapping), and LimbicSystemAI (emotion classification). All use TensorFlow/Keras models and backpropagation.
-- **Reinforcement Learning (DQN):** FrontalLobeAI implements a Deep Q-Network (DQN) using TensorFlow/Keras. It learns an action policy by maximizing expected future rewards based on the current state (a concatenated vector of outputs from other modules). It uses an epsilon-greedy strategy for exploration and a target network for stable learning.
+- **Reinforcement Learning (DQN):** FrontalLobeAI implements a Deep Q-Network (DQN) using TensorFlow/Keras. It learns an action policy by maximizing expected future rewards based on the current state (a concatenated vector of outputs from other modules). The learning process for the DQN is now structured into episodes of a fixed length (e.g., 5 'days'). Within each episode, the `done` signal correctly indicates the end of the episode, and the `next_state` provided to the learning algorithm is the actual state observed in the subsequent time step. This allows for more effective temporal difference learning, enabling the agent to better learn the value of sequences of actions. It uses an epsilon-greedy strategy for exploration and a target network for stable learning.
 - **Experience Replay & Consolidation:** All modules use an internal memory buffer. The `consolidate()` method simulates offline learning ("sleep"), replaying stored experiences to reinforce learning and prevent catastrophic forgetting.
 
 ---
@@ -121,7 +121,7 @@ The `BrainCoordinator` orchestrates the flow of information:
 4. The state is fed to FrontalLobeAI for decision-making.
 5. Sensor data is sent to CerebellumAI for motor commands.
 6. Temporal lobe output is sent to LimbicSystemAI for emotion classification.
-7. Feedback signals (rewards, labels) are generated and used to update modules via `learn()`.
+7. Feedback signals (rewards, labels) are generated. For most modules, `learn()` is called with current inputs and specific targets/feedback. For the FrontalLobeAI, `learn()` is called with the state from the previous step (`s_t`), the action taken (`a_t`), the reward received after that action (`r_t`), the current state as the `next_state` (`s_{t+1}`), and a `done` signal indicating if the current step concludes an episode. This structured experience tuple enables the DQN to learn over sequences.
 8. At the end of each "day," `consolidate()` is called on all modules, followed by saving updated models and memory states.
 
 ---
@@ -134,6 +134,7 @@ The system is implemented primarily in Python.
 - Model weights are saved in Keras `.weights.h5` format; additional state (e.g., tokenizer, replay memory) is saved as JSON.
 - The main simulation (`main.py`) provides a command-line interface for running the system over multiple "days." The Gradio interface (`gui.py`) provides a web-based UI for interactive experimentation.
 - Unit tests (`tests/test_ai_modules.py`) verify core functionality, including data processing, learning, consolidation, and persistence.
+- Performance enhancements have been implemented, including batched predictions within the Frontal Lobe's DQN replay mechanism and caching of preprocessed images in the Occipital Lobe's memory to reduce redundant computations during consolidation.
 
 ---
 
@@ -165,7 +166,8 @@ Future work could involve:
 - Exploring more advanced learning algorithms within modules (e.g., Transformer networks for Temporal, Actor-Critic for Frontal).
 - Developing more complex memory management and retrieval strategies.
 - Integrating additional sensory modalities or cognitive functions.
-- Improving the robustness and efficiency of the NumPy-based implementations.
+- Improving the robustness and efficiency of the NumPy-based implementations (currently Temporal, Parietal, Cerebellum modules) or migrating them to a framework like TensorFlow/Keras for potential GPU acceleration and easier integration with more complex architectures.
+- Further enhancing the Frontal Lobe's reinforcement learning by defining more complex tasks, developing sophisticated reward functions tied to these tasks, and exploring more advanced RL algorithms now that the foundational episodic learning loop is in place.
 
 ---
 
