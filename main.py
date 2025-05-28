@@ -116,9 +116,9 @@ class BrainCoordinator:
         self.limbic = LimbicSystemAI()
 
         # Episode Tracking Attributes for FrontalLobeAI
-        self.episode_length = 5 
+        self.episode_length = 5
         self.steps_since_last_episode_end = 0
-        self.last_frontal_state_for_learning = None
+        self.last_frontal_sequence_for_learning = None # Stores the sequence s_t
         self.last_action_for_learning = None
         self.last_reward_for_learning = None
 
@@ -149,7 +149,7 @@ class BrainCoordinator:
         # Ensure feedback_data is a dictionary
         current_feedback = feedback_data if feedback_data is not None else {}
 
-        # --- Calculate current_frontal_state (s_t or s_{t+1}) ---
+        # --- Prepare features for Frontal Lobe's current time step ---
         vision_result_label = self.occipital.process_task(current_vision_path)
         vision_features_for_frontal = np.zeros(self.occipital.output_size)
         if 0 <= vision_result_label < self.occipital.output_size:
@@ -172,36 +172,39 @@ class BrainCoordinator:
             min_len_memory = min(memory_result_embedding_1d.shape[0], 10)
             temp_memory[:min_len_memory] = memory_result_embedding_1d[:min_len_memory]
             memory_result_embedding_1d = temp_memory
-        
-        current_frontal_state = np.concatenate(
+
+        current_frontal_features_for_step = np.concatenate(
             [vision_features_for_frontal, spatial_result_1d, memory_result_embedding_1d]
         )
 
-        # --- Action Selection (a_t) ---
-        action_from_current_state = self.frontal.process_task(current_frontal_state)
-        
+        # --- Action Selection (a_t) and get current state sequence (s_t or s_{t+1}) ---
+        # frontal.process_task takes the features for the *current* step,
+        # updates its internal working_memory_buffer, and returns the action
+        # and the sequence that represents the current state (s_t or s_{t+1} depending on call order).
+        action_from_current_state, current_frontal_sequence = self.frontal.process_task(current_frontal_features_for_step)
+
         # --- Reward Determination (r_{t+1}) ---
         # Default reward if not specified in feedback_data
-        current_reward = current_feedback.get("action_reward", 0) 
+        current_reward = current_feedback.get("action_reward", 0)
 
         # --- Frontal Lobe Learning Step ---
-        if self.last_frontal_state_for_learning is not None:
+        # Learn if we have a previous state sequence (s_t) to learn from.
+        if self.last_frontal_sequence_for_learning is not None:
             self.steps_since_last_episode_end += 1
             done_for_learn = self.steps_since_last_episode_end >= self.episode_length
 
             self.frontal.learn(
-                state=self.last_frontal_state_for_learning, # s_t
-                action=self.last_action_for_learning,       # a_t
-                reward=self.last_reward_for_learning,       # r_t (reward after a_t in s_t)
-                next_state=current_frontal_state,           # s_{t+1}
-                done=done_for_learn
+                state_sequence_t=self.last_frontal_sequence_for_learning, # This is s_t
+                action_t=self.last_action_for_learning,                   # This is a_t
+                reward_t=self.last_reward_for_learning,                   # This is r_t (reward after a_t in s_t)
+                next_state_sequence_t_plus_1=current_frontal_sequence,    # This is s_{t+1}
+                done=done_for_learn # Whether s_{t+1} is a terminal state
             )
-
             if done_for_learn:
                 self.steps_since_last_episode_end = 0
-        
+
         # --- Update Stored Values for Next Step's Learning ---
-        self.last_frontal_state_for_learning = current_frontal_state
+        self.last_frontal_sequence_for_learning = current_frontal_sequence # s_t for the next iteration
         self.last_action_for_learning = action_from_current_state
         self.last_reward_for_learning = current_reward # This is r_{t+1} which becomes r_t for next cycle
 
@@ -209,7 +212,7 @@ class BrainCoordinator:
         # These use the current inputs and specific feedback for their tasks
         self.occipital.learn(current_vision_path, current_feedback.get("vision_label", 0))
         self.parietal.learn(current_sensor_data, current_feedback.get("spatial_error", np.random.rand(3).tolist()))
-        
+
         temporal_target = current_feedback.get("memory_target", current_text_data)
         self.temporal.learn(
             [(current_text_data, temporal_target)],
@@ -221,12 +224,12 @@ class BrainCoordinator:
             self.temporal.learn([(text_data, correction_text)])
 
         self.cerebellum.learn(current_sensor_data, current_feedback.get("motor_command", np.random.rand(3).tolist()))
-        
+
         # Limbic system processing (after other sensory inputs are processed for context)
         emotion_processing_result = self.limbic.process_task(memory_result_embedding_1d)
         emotion_label = emotion_processing_result["label"]
         emotion_probabilities = emotion_processing_result["probabilities"]
-        
+
         self.limbic.learn(
             memory_result_embedding_1d,
             current_feedback.get("emotion_label", emotion_label), # Use predicted if no specific feedback
@@ -243,7 +246,7 @@ class BrainCoordinator:
                     break
             if ai_textual_response is not None:
                 break
-        
+
         # --- Motor Command (based on current sensor data) ---
         motor_command = self.cerebellum.process_task(current_sensor_data)
 
@@ -352,7 +355,7 @@ def main():
         day_display_str = f"--- Day {day_index + 1}"
         if num_simulation_days != float("inf"):
             day_display_str += (
-                f"/{int(num_simulation_days)}" 
+                f"/{int(num_simulation_days)}"
             )
         day_display_str += " ---"
         print(f"\n{day_display_str}")
@@ -405,7 +408,7 @@ def main():
                     visual_label_for_processing = last_visual_label
             else:
                 visual_label_for_processing = last_visual_label
-            
+
             new_action_reward_input = input(
                 f"Enter action reward for Frontal Lobe (e.g., -1, 0, 1, default: {last_action_reward}): "
             ).strip()
@@ -430,7 +433,7 @@ def main():
                 sensor_data_for_processing = None # Will generate random in process_day
             else:
                 sensor_data_for_processing = last_sensor_data
-            
+
             # audio_input_path = input("Enter path to audio file for input (optional, not yet used): ").strip()
             # if audio_input_path:
             #     print(f"Audio input received: {audio_input_path} (audio training not yet implemented)")
@@ -453,13 +456,13 @@ def main():
                     else:
                         print("Quitting simulation.")
                         break
-                else: 
+                else:
                     print(
                         "No more scheduled image-text pairs available to process with 'n'."
                     )
                     pass # Will go to next action prompt
 
-            if image_text_pairs_list: 
+            if image_text_pairs_list:
                 current_pair_index = day_index % len(image_text_pairs_list)
                 pair = image_text_pairs_list[current_pair_index]
 
@@ -467,7 +470,7 @@ def main():
                 scheduled_text_description = pair.get("text_description")
                 scheduled_visual_label = pair.get("visual_label")
                 # For scheduled data, let's use a default reward or make it part of the schedule if needed
-                action_reward_for_processing = pair.get("action_reward", 0) 
+                action_reward_for_processing = pair.get("action_reward", 0)
 
 
                 if (
@@ -490,19 +493,19 @@ def main():
                     elif missing_data_action == "i":
                         user_choice_for_current_day_data_source = "i"
                         continue
-                    else: 
+                    else:
                         if missing_data_action != "n":
                             print("Invalid input. Proceeding to next day.")
-                        day_index += 1 
+                        day_index += 1
                         user_choice_for_current_day_data_source = "n"
                         if (
                             day_index >= num_simulation_days
-                        ): 
+                        ):
                             print(
                                 f"Specified number of simulation days ({int(num_simulation_days)}) reached by skipping."
                             )
                             break
-                        continue 
+                        continue
 
                 image_path_for_processing = scheduled_image_path
                 text_description_for_processing = scheduled_text_description
@@ -534,7 +537,7 @@ def main():
             "memory_target": text_description_for_processing, # Default target if no explicit expected_response
             "action_reward": action_reward_for_processing, # This is the crucial reward for frontal.learn
             # Other feedback items can be defaulted or randomized inside process_day if not provided here
-            "spatial_error": np.random.rand(3).tolist(), 
+            "spatial_error": np.random.rand(3).tolist(),
             "motor_command": np.random.rand(3).tolist(),
             "emotion_label": np.random.randint(0, getattr(coordinator.limbic, "output_size", 3)),
         }
@@ -566,9 +569,9 @@ def main():
             text_data=text_description_for_processing,
             feedback_data=current_feedback_for_day, # Pass the constructed feedback
             language_training_pair=language_training_pair,
-            correction_text=None 
+            correction_text=None
         )
-        
+
         ai_textual_response_from_day = result.get("ai_textual_response")
         if ai_textual_response_from_day is not None:
             print(f"[Memory] The AI's current answer for '{text_description_for_processing}': {ai_textual_response_from_day}")
@@ -601,7 +604,7 @@ def main():
                 print(f"Expected: {expected_response}")
                 print("Reinforcing correct answer...")
                 coordinator.temporal.learn([(text_description_for_processing, expected_response)])
-        
+
         correction_text_input = input("If the AI output was wrong, enter the correct response here (or press Enter to skip): ").strip()
         if correction_text_input and text_description_for_processing:
             print("Reinforcing correct answer with correction text...")
@@ -617,16 +620,16 @@ def main():
 
         coordinator.bedtime()
 
-        day_index += 1 
+        day_index += 1
 
         if day_index >= num_simulation_days:
             if num_simulation_days != float(
                 "inf"
-            ): 
+            ):
                 print(
                     f"Specified number of simulation days ({int(num_simulation_days)}) reached."
                 )
-            else: 
+            else:
                 print(
                     "Simulation cycle complete (indefinite run ended unexpectedly here)."
                 )
@@ -635,11 +638,11 @@ def main():
         while True:
             can_use_scheduled_data = bool(
                 image_text_pairs_list and (day_index < len(image_text_pairs_list) if num_simulation_days == float('inf') else True)
-            ) 
+            )
 
             if can_use_scheduled_data:
                 next_action_prompt = f"Next day ({day_index + 1}) using scheduled data (n), provide input (i), or quit (q)? "
-            else: 
+            else:
                 next_action_prompt = f"No more scheduled data. Provide input for next day ({day_index + 1}) (i) or quit (q)? "
 
             user_input_next_action = input(next_action_prompt).lower().strip()
@@ -709,7 +712,7 @@ if __name__ == "__main__":
     if '--help' in sys.argv or '-h' in sys.argv:
         print(__doc__)
         sys.exit(0)
-    
+
     coordinator = BrainCoordinator() # Create coordinator once
 
     if '--book' in sys.argv:
@@ -721,5 +724,5 @@ if __name__ == "__main__":
         else:
             print("Usage: python main.py --book path/to/book.txt")
             sys.exit(1)
-    
+
     main()

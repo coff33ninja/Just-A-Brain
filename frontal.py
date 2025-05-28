@@ -419,19 +419,31 @@ if __name__ == "__main__":
 
     # Simulate some learning steps
     num_test_steps = frontal_ai.replay_batch_size * 2  # Ensure enough for a few replays
+    # Initialize a deque to hold the last sequence for learning, similar to BrainCoordinator
+    # For the example, we'll just use a simple variable to hold the last sequence.
+    # The first `learn` call will be skipped if `last_sequence_for_learn` is None.
+    last_sequence_for_learn = None
+    last_action_for_learn = None
+    last_reward_for_learn = None
+
     print(f"\n--- Simulating {num_test_steps} learning steps ---")
     for i in range(num_test_steps):
-        # Example state: concatenation of vision (5), parietal (3), temporal (10) outputs
-        # For testing, use random data that matches input_size
-        state_raw = np.random.rand(frontal_ai.input_size).tolist()
+        # current_raw_features represents the features for the current time step
+        current_raw_features = np.random.rand(frontal_ai.feature_size_per_step).tolist()
 
-        action = frontal_ai.process_task(state_raw)  # This also decays epsilon
+        # process_task returns the action for the current state and the sequence representing the current state
+        action_for_current_step, current_sequence = frontal_ai.process_task(current_raw_features)
 
-        reward = np.random.choice([-1, 0, 1])
-        next_state_raw = np.random.rand(frontal_ai.input_size).tolist()
+        # Reward is determined after the action is taken
+        reward_for_action = np.random.choice([-1, 0, 1])
         done = i % 10 == 9  # Episode ends every 10 steps
 
-        frontal_ai.learn(state_raw, action, reward, next_state_raw, done)
+        if last_sequence_for_learn is not None: # Can only learn if there was a previous state
+            frontal_ai.learn(last_sequence_for_learn, last_action_for_learn, last_reward_for_learn, current_sequence, done)
+
+        last_sequence_for_learn = current_sequence
+        last_action_for_learn = action_for_current_step
+        last_reward_for_learn = reward_for_action
 
         if (i + 1) % (frontal_ai.replay_batch_size // 2) == 0:  # Log progress
             print(
