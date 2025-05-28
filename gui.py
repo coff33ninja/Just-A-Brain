@@ -139,6 +139,7 @@ def run_ai_day_interface(
         print("--- GUI: Starting Bedtime Consolidation ---")
         coordinator.bedtime()
         print("[DEBUG] coordinator.bedtime finished")
+        gr.Info("Daily consolidation (training) complete!") # Popup notification
         print("--- GUI: Bedtime Consolidation Complete ---")
 
         # Prepare data for emotion bar plot
@@ -193,6 +194,7 @@ def train_on_book(book_file):
         for pair in pairs:
             coordinator.temporal.learn([pair])
         print("Book training complete.")
+        gr.Info("Book training complete!") # Popup notification
         sys.stdout = old_stdout
         return {"result": f"Trained on {len(pairs)} text pairs from book."}, captured_output.getvalue()
     except Exception as e:
