@@ -35,6 +35,11 @@ IMAGE_TEXT_PAIRS_FILE = os.path.join(DATA_DIR, "image_text_pairs.json")
 DEFAULT_IMAGE_PATH = "data/images/default_image.png"
 
 def load_vision_data(filepath=VISION_FILE):
+    """
+    Loads a list of image paths from a vision data JSON file.
+    
+    If the file does not exist, is not a dictionary with an "image_paths" list, or cannot be read, returns an empty list and prints a warning or error message.
+    """
     if not os.path.exists(filepath):
         print(f"Warning: Vision data file not found at {filepath}. Returning empty list.")
         return []
@@ -53,6 +58,11 @@ def load_vision_data(filepath=VISION_FILE):
 
 
 def load_sensor_data(filepath=SENSOR_FILE):
+    """
+    Loads sensor data from a JSON file.
+    
+    If the file does not exist or cannot be loaded, returns an empty list and prints a warning or error message.
+    """
     if not os.path.exists(filepath):
         print(
             f"Warning: Sensor data file not found at {filepath}. Returning empty list."
@@ -67,6 +77,11 @@ def load_sensor_data(filepath=SENSOR_FILE):
         return []
 
 def load_text_data(filepath=TEXT_FILE):
+    """
+    Loads text data from a JSON file, expecting a list of strings.
+    
+    If the file does not exist, is not a list, or cannot be read, returns an empty list and prints a warning or error message.
+    """
     if not os.path.exists(filepath):
         print(f"Warning: Text data file not found at {filepath}. Returning empty list.")
         return []
@@ -83,6 +98,11 @@ def load_text_data(filepath=TEXT_FILE):
 
 
 def load_image_text_pairs(filepath=IMAGE_TEXT_PAIRS_FILE):
+    """
+    Loads image-text pair data from a JSON file.
+    
+    If the file does not exist, is not a list, or cannot be loaded, returns an empty list.
+    """
     if not os.path.exists(filepath):
         print(
             f"Error: Image-text pairs file not found at {filepath}. Returning empty list."
@@ -106,6 +126,9 @@ def load_image_text_pairs(filepath=IMAGE_TEXT_PAIRS_FILE):
 
 class BrainCoordinator:
     def __init__(self):
+        """
+        Initializes the BrainCoordinator by creating necessary data directories and instantiating all AI brain region modules.
+        """
         os.makedirs(DATA_DIR, exist_ok=True)
         os.makedirs(os.path.join(DATA_DIR, "images"), exist_ok=True)
         self.frontal = FrontalLobeAI()
@@ -119,6 +142,21 @@ class BrainCoordinator:
         self, vision_input_path, sensor_data, text_data, feedback_data=None,
         language_training_pair=None, correction_text=None
     ):
+        """
+        Processes a single simulation day by coordinating all AI brain region modules.
+        
+        Args:
+            vision_input_path: Path to the vision input image file.
+            sensor_data: Sensor data array or list for the current day.
+            text_data: Textual input for the current day.
+            feedback_data: Optional dictionary with feedback signals (e.g., rewards, labels).
+            language_training_pair: Optional list of (question, answer) pairs for language training.
+            correction_text: Optional correction text to reinforce learning if the AI's response was incorrect.
+        
+        Returns:
+            A dictionary containing the action, motor command, emotion label, emotion probabilities,
+            predicted vision label, and the AI's textual response from memory if available.
+        """
         current_vision_path = (
             vision_input_path
             if vision_input_path and os.path.exists(vision_input_path)
@@ -247,6 +285,11 @@ class BrainCoordinator:
 
 
     def bedtime(self):
+        """
+        Performs end-of-day consolidation for all AI brain region modules.
+        
+        Triggers the consolidate method on each brain region AI module to update and reinforce learned information at the end of a simulation day.
+        """
         print("Starting bedtime consolidation...")
         self.frontal.consolidate()
         self.parietal.consolidate()
@@ -258,6 +301,12 @@ class BrainCoordinator:
 
 
 def list_learned_qa(coordinator):
+    """
+    Displays all learned question-and-answer pairs stored in the temporal AI's memory database.
+    
+    Args:
+        coordinator: The BrainCoordinator instance containing the temporal AI module.
+    """
     print("\n--- Learned Q&A Pairs (Temporal Lobe) ---")
     if not coordinator.temporal.memory_db:
         print("No Q&A pairs learned yet.")
@@ -270,6 +319,11 @@ def list_learned_qa(coordinator):
 
 def main():
     # Introductory Message
+    """
+    Runs the interactive Baby AI simulation, allowing users to guide and observe AI learning.
+    
+    This function launches a command-line interface where users can simulate the Baby AI system over multiple days. Users may choose to run the simulation for a fixed number of days or indefinitely, and for each day, can either provide new input data (images, text, feedback) or use pre-scheduled data if available. The simulation supports reinforcement and correction of AI responses, displays learned Q&A pairs, and provides feedback on the AI's actions, vision predictions, and emotions. The simulation loop continues until the specified number of days is reached or the user chooses to quit.
+    """
     print("Welcome to the Interactive Baby AI Simulation!\n")
     print("This simulation allows you to observe and interact with an AI as it learns.")
     print("You will have options to:")
@@ -662,6 +716,11 @@ def main():
     print("Simulation ended.")
 
 def train_on_book_cli(book_file_path, coordinator):
+    """
+    Trains the temporal AI module on sequential text pairs extracted from a book file.
+    
+    Reads the specified book file, splits its content into paragraphs or sentences, forms consecutive text pairs, and uses them to train the temporal AI's language memory. Prints progress and completion messages.
+    """
     if not os.path.exists(book_file_path):
         print(f"Book file '{book_file_path}' not found.")
         return

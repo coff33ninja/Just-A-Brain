@@ -9,6 +9,11 @@ from tensorflow.keras.optimizers import Adam # type: ignore
 
 class LimbicSystemAI:
     def __init__(self, model_path="data/limbic_model.weights.h5"):  # Updated extension
+        """
+        Initializes the LimbicSystemAI with a Keras neural network model and persistent memory.
+        
+        Sets up the model architecture, loads existing model weights and memory if available, and prepares internal parameters for emotion classification and reward-based learning.
+        """
         self.input_size = 10  # Processed output from TemporalLobeAI (size 10)
         self.output_size = 3  # Emotion labels (e.g., happy, urgent, sad)
 
@@ -32,6 +37,12 @@ class LimbicSystemAI:
         self._load_memory()  # Load memory if it exists
 
     def _build_model(self):
+        """
+        Builds and compiles the Keras neural network model for emotion classification.
+        
+        Returns:
+            A compiled Keras Sequential model with one hidden dense layer and softmax output.
+        """
         model = Sequential(
             [
                 Input(shape=(self.input_size,), name="input_layer"),
@@ -52,7 +63,11 @@ class LimbicSystemAI:
         return model
 
     def _ensure_input_vector_shape(self, data_list_or_array):
-        """Pads or truncates data_list to match self.input_size. Returns 1D array."""
+        """
+        Ensures input data is a 1D numpy array of length `self.input_size` by padding with zeros or truncating as needed.
+        
+        If the input is not a list or numpy array, returns a zero-filled array of the required length.
+        """
         if isinstance(data_list_or_array, np.ndarray):
             data_list = data_list_or_array.flatten().tolist()
         elif isinstance(data_list_or_array, list):
@@ -75,6 +90,12 @@ class LimbicSystemAI:
 
     def process_task(self, processed_temporal_data):
         # print("Limbic System: Processing task with temporal data...") # Optional: reduce print verbosity
+        """
+        Predicts the emotion label and probability distribution for the given temporal data.
+        
+        If the input is invalid or prediction fails, returns a random label and uniform probabilities.
+        Returns a dictionary with keys 'label' (predicted emotion class) and 'probabilities' (list of class probabilities).
+        """
         input_vec_1d = self._ensure_input_vector_shape(processed_temporal_data)
 
         default_probabilities = [1.0 / self.output_size] * self.output_size
@@ -103,6 +124,11 @@ class LimbicSystemAI:
             return {"label": default_label, "probabilities": default_probabilities}
 
     def learn(self, processed_temporal_data, true_emotion_label, reward):
+        """
+        Trains the model on a single example using the provided temporal data, emotion label, and reward.
+        
+        The input data is prepared to the correct shape, and the emotion label is validated. The reward value is used to adjust the sample weight, emphasizing or de-emphasizing the learning impact of the example. The training example is appended to memory, maintaining the maximum memory size. Learning is skipped if the input is invalid or the label is out of range.
+        """
         print(
             f"Limbic System: Learning with temporal data, emotion label {true_emotion_label}, reward {reward}..."
         )
@@ -176,6 +202,11 @@ class LimbicSystemAI:
             print(f"Limbic System: Error during model training: {e}")
 
     def save_model(self):
+        """
+        Saves the current model weights to disk at the specified file path.
+        
+        Creates necessary directories if they do not exist. Issues a warning if the file extension is not '.weights.h5'. Handles and reports any errors encountered during saving.
+        """
         print(f"Limbic System: Saving model weights to {self.model_path}...")
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
         try:
@@ -187,6 +218,11 @@ class LimbicSystemAI:
             print(f"Limbic System: Error saving model weights: {e}")
 
     def load_model(self):
+        """
+        Loads model weights from disk if available, initializing the model if necessary.
+        
+        If the weights file does not exist, the model remains in its initialized state. Errors during loading are caught and reported.
+        """
         if os.path.exists(self.model_path):
             print(f"Limbic System: Loading model weights from {self.model_path}...")
             try:
@@ -204,6 +240,11 @@ class LimbicSystemAI:
             )
 
     def _save_memory(self):
+        """
+        Saves the current memory buffer to a JSON file on disk.
+        
+        The memory is serialized and written to the file specified by `self.memory_path`. If the target directory does not exist, it is created automatically. Errors during saving are caught and reported.
+        """
         print("Limbic System: Saving memory...")
         os.makedirs(os.path.dirname(self.memory_path), exist_ok=True)
         try:
@@ -214,6 +255,11 @@ class LimbicSystemAI:
             print(f"Limbic System: Error saving memory: {e}")
 
     def _load_memory(self):
+        """
+        Loads the experience memory from a JSON file, validating and converting each entry.
+        
+        If the memory file exists, attempts to load and parse its contents. Malformed or invalid entries are skipped, and if the file is missing or unreadable, initializes an empty memory list.
+        """
         if os.path.exists(self.memory_path):
             print("Limbic System: Loading memory...")
             try:
@@ -253,6 +299,11 @@ class LimbicSystemAI:
             self.memory = []
 
     def consolidate(self):
+        """
+        Performs batch training on all stored memory experiences to consolidate learning.
+        
+        Retrains the neural network using all examples in memory, applying reward-based sample weights to emphasize positive or negative experiences. Saves the updated model weights and memory to disk after consolidation. If memory is empty, no training occurs.
+        """
         print("Limbic System: Starting consolidation...")
         if not self.memory:
             print("Limbic System: Memory is empty. Nothing to consolidate.")

@@ -27,6 +27,11 @@ elif coordinator.limbic.output_size == 0: # Handle edge case
 
 # Helper to parse JSON string input for lists
 def parse_json_list(json_string, default_value, expected_type=list):
+    """
+    Parses a JSON string into a Python object of the expected type.
+    
+    If the input string is empty, invalid, or does not match the expected type, returns the provided default value.
+    """
     if not json_string: # If string is empty or None
         return default_value
     try:
@@ -56,6 +61,31 @@ def run_ai_day_interface(
     audio_input,  # New audio input
 ):
     # Capture stdout for logging
+    """
+    Processes a single day of multi-modal AI experience using user-provided inputs and feedback.
+    
+    This function collects vision, text, sensor data, and feedback signals from the user, processes them through the global BrainCoordinator instance, and returns the AI's outputs, detailed logs, and emotion probability data for visualization. It also reinforces correct answers if the AI's response does not match the expected response, and consolidates learning at the end of each cycle.
+    
+    Args:
+        vision_input_path: Path to the input vision image file.
+        text_data: Input text or question for the AI.
+        expected_response: The desired or correct textual response for the input.
+        sensor_data_str: JSON string representing sensor input data.
+        action_reward: Integer reward signal for the AI's action.
+        spatial_error_str: JSON string representing spatial error feedback.
+        memory_target: Optional target text for memory reinforcement.
+        vision_label: Integer label for vision feedback.
+        motor_command_str: JSON string representing motor command feedback.
+        emotion_label: Integer label for emotion feedback.
+        correction_text: Optional correction or reinforcement text.
+        audio_input: Audio input data (currently logged but not used for training).
+    
+    Returns:
+        A tuple containing:
+            - A dictionary of AI processing results.
+            - Captured log output as a string.
+            - A dictionary mapping emotion names to probabilities for plotting, or None if unavailable.
+    """
     old_stdout = sys.stdout
     sys.stdout = captured_output = StringIO()
 
@@ -165,6 +195,17 @@ def run_ai_day_interface(
 
 # Add a function to train the AI on a book (text file)
 def train_on_book(book_file):
+    """
+    Trains the AI on sequential text pairs extracted from an uploaded book file.
+    
+    Reads the provided text file, splits it into paragraphs or sentences, and forms training pairs from consecutive segments. Each pair is used to reinforce sequential associations in the AI's temporal memory. Returns a summary of the training process and captured logs.
+    
+    Args:
+        book_file: Path to the uploaded text file for training.
+    
+    Returns:
+        A tuple containing a result dictionary and the captured log output.
+    """
     old_stdout = sys.stdout
     sys.stdout = captured_output = StringIO()
     try:
@@ -205,6 +246,11 @@ def train_on_book(book_file):
 
 # Add a button to list all learned Q&A pairs in the GUI
 def list_learned_qa_gui():
+    """
+    Returns a list of all learned question-answer pairs from the AI's temporal memory.
+    
+    If no Q&A pairs have been learned, returns a default message indicating this.
+    """
     qa_list = []
     for idx, seq in enumerate(coordinator.temporal.memory_db):
         for q, a in seq:
@@ -214,18 +260,39 @@ def list_learned_qa_gui():
     return qa_list
 
 def qa_list_gui():
+    """
+    Returns the list of all learned question-answer pairs from the AI's temporal memory.
+    """
     return list_learned_qa_gui()
 
 # --- Functions for "Generate Example" buttons ---
 def get_example_sensor_data():
+    """
+    Generates example sensor data as a JSON-formatted list of random floats.
+    
+    Returns:
+        A JSON string representing a list of random sensor values, rounded to three decimals.
+    """
     example_data = np.random.rand(coordinator.parietal.input_size).tolist()
     return json.dumps([round(x, 3) for x in example_data])
 
 def get_example_spatial_error():
+    """
+    Generates example spatial error data as a JSON-formatted list of random floats.
+    
+    Returns:
+        A JSON string representing a list of rounded random float values, with length matching the parietal output size.
+    """
     example_data = np.random.rand(coordinator.parietal.output_size).tolist()
     return json.dumps([round(x, 3) for x in example_data])
 
 def get_example_motor_command():
+    """
+    Generates an example motor command as a JSON-formatted list of random values.
+    
+    Returns:
+        A JSON string representing a list of random motor command values, rounded to three decimal places.
+    """
     example_data = np.random.rand(coordinator.cerebellum.output_size).tolist()
     return json.dumps([round(x, 3) for x in example_data])
 

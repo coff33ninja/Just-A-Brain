@@ -54,6 +54,9 @@ TEST_PARIETAL_MODEL_PATH = os.path.join(TEST_DATA_DIR, "test_parietal_model.json
 class TestDataLoading(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        """
+        Creates a temporary test data directory and writes sample vision, sensor, text, and image-text pair JSON files for use in data loading tests.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         cls.vision_content = {"image_paths": [os.path.join(TEST_IMAGES_SUBDIR, "img1.png")]}
         with open(TEST_VISION_FILE, 'w') as f:
@@ -71,10 +74,18 @@ class TestDataLoading(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Removes the temporary test data directory and its contents after all tests in the class have run.
+        """
         if os.path.exists(TEST_DATA_DIR):
             shutil.rmtree(TEST_DATA_DIR)
 
     def test_load_vision_data_valid(self):
+        """
+        Tests that vision data is loaded correctly from a valid file.
+        
+        Verifies that the loaded data matches the expected image paths.
+        """
         data = load_vision_data(filepath=TEST_VISION_FILE)
         self.assertEqual(data, self.vision_content["image_paths"])
     def test_load_sensor_data_valid(self):
@@ -98,6 +109,11 @@ class TestDataLoading(unittest.TestCase):
 
 class TestTemporalLobeAI(unittest.TestCase):
     def setUp(self):
+        """
+        Sets up the test environment for TemporalLobeAI tests.
+        
+        Creates the test data directory, removes any existing model and memory files to ensure a clean state, initializes a TemporalLobeAI instance, and saves its model and memory.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_TEMPORAL_MODEL_PATH):
@@ -111,12 +127,18 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.ai.save_memory()
 
     def tearDown(self):
+        """
+        Removes temporary model and memory files created during TemporalLobeAI tests to ensure a clean test environment.
+        """
         if os.path.exists(TEST_TEMPORAL_MODEL_PATH):
             os.remove(TEST_TEMPORAL_MODEL_PATH)
         if os.path.exists(TEST_TEMPORAL_MEMORY_PATH):
             os.remove(TEST_TEMPORAL_MEMORY_PATH)
 
     def test_forward_prop_text_output_shapes(self):
+        """
+        Tests that the _forward_prop_text method returns outputs with correct shapes for hidden and embedding layers.
+        """
         input_vec_1d = self.ai._to_numerical_vector("sample", self.ai.input_size)
         # Expected return: text_input_vec, text_hidden_output, text_embedding_scores
         _, text_hidden_output, text_embedding_scores = self.ai._forward_prop_text(input_vec_1d)
@@ -124,6 +146,12 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertEqual(text_embedding_scores.shape, (self.ai.output_size,)) # output_size is embedding_size
 
     def test_forward_prop_visual_assoc_output_shapes(self):
+        """
+        Tests that the visual association forward propagation returns outputs with correct shapes.
+        
+        Verifies that the hidden layer output and label scores produced by the visual association
+        forward propagation method have the expected dimensions.
+        """
         test_embedding_vec = np.random.rand(self.ai.output_size) # output_size is embedding_size
         # Expected return: visual_input_vec (embedding), visual_hidden_output, visual_label_scores
         _, visual_hidden_output, visual_label_scores = self.ai._forward_prop_visual_assoc(test_embedding_vec)
@@ -131,6 +159,10 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertEqual(visual_label_scores.shape, (self.ai.visual_output_size,))
 
     def test_process_task_predict_visual_flag(self):
+        """
+        Tests that process_task returns a tuple with visual prediction when predict_visual is True,
+        and a list when predict_visual is False.
+        """
         output_with_visual = self.ai.process_task("text", predict_visual=True)
         self.assertIsInstance(output_with_visual, tuple)
         self.assertEqual(len(output_with_visual), 2)
@@ -139,6 +171,11 @@ class TestTemporalLobeAI(unittest.TestCase):
         output_without_visual = self.ai.process_task("text", predict_visual=False)
         self.assertIsInstance(output_without_visual, list)
     def test_learn_updates_all_weights_and_biases(self):
+        """
+        Verifies that the learn method updates all weights and biases and appends to memory.
+        
+        Ensures that after calling learn, all model weights and biases are modified, the training sequence is added to memory_db, and the cross-modal memory is updated with the correct association.
+        """
         initial_w = [p.copy() for p in [self.ai.weights_text_input_hidden, self.ai.bias_text_hidden, self.ai.weights_text_hidden_embedding, self.ai.bias_text_embedding, self.ai.weights_embed_to_visual_hidden, self.ai.bias_visual_assoc_hidden, self.ai.weights_visual_hidden_to_label, self.ai.bias_visual_assoc_label]]
         self.ai.learn([("text", "target")], visual_label_as_context=1)
         final_w = [self.ai.weights_text_input_hidden, self.ai.bias_text_hidden, self.ai.weights_text_hidden_embedding, self.ai.bias_text_embedding, self.ai.weights_embed_to_visual_hidden, self.ai.bias_visual_assoc_hidden, self.ai.weights_visual_hidden_to_label, self.ai.bias_visual_assoc_label]
@@ -147,6 +184,11 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertIn([("text", "target")], self.ai.memory_db, "Sequence [('text', 'target')] not found in memory_db")
         self.assertIn(("text", 1), self.ai.cross_modal_memory)
     def test_consolidate_updates_all_weights_and_biases(self):
+        """
+        Verifies that the consolidate method updates all weights and biases of the TemporalLobeAI model.
+        
+        This test ensures that after calling consolidate, every weight and bias attribute differs from its previous value, confirming that model consolidation affects all relevant parameters.
+        """
         self.ai.learn(sequence=[("text c1", "target c1")], visual_label_as_context=0)
         self.ai.learn(sequence=[("text c2", "target c2")], visual_label_as_context=2)
         # Capture all weights and biases
@@ -168,6 +210,9 @@ class TestTemporalLobeAI(unittest.TestCase):
 
     def test_model_save_load_new_temporal_architecture(self):
         # Set known, distinct values for a selection of weights and biases
+        """
+        Tests that saving and loading a TemporalLobeAI model with the new architecture correctly preserves all weights, biases, and architectural parameters.
+        """
         self.ai.weights_text_input_hidden = np.full((self.ai.input_size, self.ai.text_hidden_size), 0.11)
         self.ai.bias_text_embedding = np.full((1, self.ai.output_size), 0.22) # output_size is embedding_size
         self.ai.weights_visual_hidden_to_label = np.full((self.ai.visual_assoc_hidden_size, self.ai.visual_output_size), 0.33)
@@ -191,6 +236,11 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertEqual(loaded_ai.visual_output_size, self.ai.visual_output_size)
 
     def test_memory_persistence_dict_format(self):
+        """
+        Tests that memory persistence correctly saves and loads memory structures in dictionary format.
+        
+        Ensures that both `memory_db` and `cross_modal_memory` are preserved after saving and reloading the model's memory.
+        """
         self.ai.memory_db.append([("m_item","t_item")])
         self.ai.cross_modal_memory.append(("cm_text",1))
         self.ai.save_memory()
@@ -204,6 +254,14 @@ class TestTemporalLobeAI(unittest.TestCase):
     def test_load_model_backward_compatibility_temporal(self):
         # Simulate an old model file with only text-processing parts
         # (missing visual_assoc parts and their architectural params)
+        """
+        Tests that TemporalLobeAI can load legacy model files missing visual association parameters,
+        initializing missing architectural parameters and weights to default values without errors.
+        
+        Simulates loading an old-format model file containing only text-processing weights and biases,
+        then verifies that missing visual association parameters are set to nonzero defaults and
+        corresponding weights and biases are properly initialized.
+        """
         old_model_data = {
             "input_size": self.ai.input_size,
             "text_hidden_size": self.ai.text_hidden_size,
@@ -230,6 +288,11 @@ class TestTemporalLobeAI(unittest.TestCase):
         # ... and so on for other visual_assoc weights and biases
 
     def test_load_model_shape_mismatch_temporal(self):
+        """
+        Tests that loading a TemporalLobeAI model with corrupted weight shapes does not result in None attributes.
+        
+        This test verifies that when the model file contains weights with incorrect shapes, the TemporalLobeAI instance still initializes all weight and bias attributes, ensuring they are not None after loading.
+        """
         np.random.seed(0)  # Ensure reproducible random initializations
         self.ai.save_model() # Save a valid new model first
         with open(TEST_TEMPORAL_MODEL_PATH, 'r') as f:
@@ -261,6 +324,11 @@ class TestTemporalLobeAI(unittest.TestCase):
 
 class TestLimbicSystemAI(unittest.TestCase):
     def setUp(self):
+        """
+        Sets up the test environment for LimbicSystemAI tests.
+        
+        Creates the test data directory, removes any existing model file, initializes and saves a new LimbicSystemAI instance, and prepares sample input, label, and reward values for use in tests.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         if os.path.exists(TEST_LIMBIC_MODEL_PATH):
             os.remove(TEST_LIMBIC_MODEL_PATH)
@@ -271,15 +339,26 @@ class TestLimbicSystemAI(unittest.TestCase):
         self.sample_reward = 1.0
 
     def tearDown(self):
+        """
+        Removes the test LimbicSystemAI model file if it exists after each test.
+        """
         if os.path.exists(TEST_LIMBIC_MODEL_PATH):
             os.remove(TEST_LIMBIC_MODEL_PATH)
 
     def test_ensure_input_vector_shape(self):
+        """
+        Tests that the input vector is correctly reshaped to match the expected input size.
+        """
         vec = self.ai._ensure_input_vector_shape(self.sample_temporal_output)
         self.assertEqual(vec.shape, (self.ai.input_size,))
 
     def test_forward_propagate_output_shapes_limbic(self):
         # Use Keras model.predict for forward propagation
+        """
+        Tests that the LimbicSystemAI model's forward propagation produces outputs with expected shapes.
+        
+        Verifies that the input vector and the model's output scores have shapes matching the configured input and output sizes.
+        """
         input_vec = self.ai._ensure_input_vector_shape(self.sample_temporal_output)
         input_vec_2d = input_vec.reshape(1, -1)
         # Get hidden layer output via intermediate layer if possible, else just check output
@@ -289,11 +368,17 @@ class TestLimbicSystemAI(unittest.TestCase):
         self.assertEqual(output_scores_1d.shape, (self.ai.output_size,))
 
     def test_process_task_output_label_limbic(self):
+        """
+        Tests that the LimbicSystemAI process_task method returns a valid label within the output range.
+        """
         label = self.ai.process_task(self.sample_temporal_output)
         # process_task now returns a dict: {"label": ..., "probabilities": ...}
         self.assertTrue(0 <= label["label"] < self.ai.output_size)
 
     def test_learn_updates_and_memory_limbic(self):
+        """
+        Tests that the LimbicSystemAI learn method updates model weights and appends the training sample to memory.
+        """
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
         self.ai.learn(self.sample_temporal_output, self.sample_true_emotion, self.sample_reward)
         final_weights = self.ai.model.get_weights()
@@ -302,6 +387,11 @@ class TestLimbicSystemAI(unittest.TestCase):
         self.assertIn((self.sample_temporal_output, self.sample_true_emotion, self.sample_reward), self.ai.memory)
 
     def test_consolidate_updates_weights_limbic(self):
+        """
+        Tests that the consolidate method updates the model weights in LimbicSystemAI.
+        
+        Verifies that calling consolidate after learning results in a change to the model's weights.
+        """
         self.ai.learn(self.sample_temporal_output, self.sample_true_emotion, self.sample_reward)
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
         self.ai.consolidate()
@@ -311,6 +401,11 @@ class TestLimbicSystemAI(unittest.TestCase):
 
     def test_model_save_load_new_limbic_architecture(self):
         # Set known values for all weights
+        """
+        Tests that saving and loading a LimbicSystemAI model preserves all weights and architectural parameters.
+        
+        Verifies that after setting known weights, saving, and reloading the model, the weights and key architecture attributes remain consistent.
+        """
         weights = self.ai.model.get_weights()
         new_weights = [np.full(w.shape, 0.77) for w in weights]
         self.ai.model.set_weights(new_weights)
@@ -326,6 +421,11 @@ class TestLimbicSystemAI(unittest.TestCase):
     def test_load_model_backward_compatibility_limbic(self):
         # Simulate an old model file with only weights
         # Use model.get_weights() to infer hidden size
+        """
+        Tests that LimbicSystemAI can load and initialize from an old-format model file containing only weight matrices.
+        
+        Simulates a legacy model file with minimal parameters, verifies that the model loads without error, initializes all weights, and preserves correct input and output shapes.
+        """
         weights = self.ai.model.get_weights()
         output_size = weights[-1].shape[-1]
         old_model_data = {
@@ -346,6 +446,9 @@ class TestLimbicSystemAI(unittest.TestCase):
 
     def test_load_model_shape_mismatch_limbic(self):
         # Overwrite the weights file with invalid data
+        """
+        Tests that loading a corrupted LimbicSystemAI model file does not crash and results in reinitialized model weights.
+        """
         with open(TEST_LIMBIC_MODEL_PATH, 'w') as f:
             f.write('not a valid h5 file')
         # Should not crash, should reinitialize
@@ -356,6 +459,11 @@ class TestLimbicSystemAI(unittest.TestCase):
 class TestOccipitalLobeAI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        """
+        Creates a test images directory and generates a white test image file for use in image-related tests.
+        
+        This method is called once before any tests in the class are run.
+        """
         os.makedirs(TEST_IMAGES_SUBDIR, exist_ok=True)
         cls.img_size = (32, 32)
         cls.test_img_path = os.path.join(TEST_IMAGES_SUBDIR, "test_image.png")
@@ -363,12 +471,20 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Removes the test images directory and Occipital model file after all tests in the class have run.
+        """
         if os.path.exists(TEST_IMAGES_SUBDIR):
             shutil.rmtree(TEST_IMAGES_SUBDIR)
         if os.path.exists(TEST_OCCIPITAL_MODEL_PATH):
             os.remove(TEST_OCCIPITAL_MODEL_PATH)
 
     def setUp(self):
+        """
+        Sets up the test environment for OccipitalLobeAI tests.
+        
+        Creates the test data directory, removes any existing OccipitalLobeAI model file, initializes a new OccipitalLobeAI instance, and saves its initial model state.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         if os.path.exists(TEST_OCCIPITAL_MODEL_PATH):
             os.remove(TEST_OCCIPITAL_MODEL_PATH)
@@ -376,6 +492,9 @@ class TestOccipitalLobeAI(unittest.TestCase):
         self.ai.save_model()
 
     def tearDown(self):
+        """
+        Removes the test OccipitalLobeAI model file if it exists after each test.
+        """
         if os.path.exists(TEST_OCCIPITAL_MODEL_PATH):
             os.remove(TEST_OCCIPITAL_MODEL_PATH)
 
@@ -383,12 +502,22 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Use model.predict for forward propagation
         # Prepare input as needed by OccipitalLobeAI (assume a method exists or use a dummy image)
         # Use correct input shape for Keras model (e.g., (1, 64, 64, 3))
+        """
+        Tests that the model's forward propagation returns output with the expected shape.
+        
+        Verifies that the Keras model produces a one-dimensional output vector of the correct length when given an input matching its expected shape.
+        """
         input_shape = self.ai.model.input_shape
         dummy_input = np.random.rand(*[d if d is not None else 1 for d in input_shape])
         output_scores_1d = self.ai.model.predict(dummy_input, verbose=0)[0]
         self.assertEqual(output_scores_1d.shape, (self.ai.model.output_shape[1],))
 
     def test_learn_updates_and_memory(self):
+        """
+        Tests that the learn method updates the model's weights after training on an image.
+        
+        Verifies that at least one model weight changes after calling learn with a test image and label.
+        """
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
         self.ai.learn(self.test_img_path, 0)
         final_weights = self.ai.model.get_weights()
@@ -397,6 +526,11 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Memory check skipped if not exposed
 
     def test_consolidate_updates_weights(self):
+        """
+        Tests that the consolidate method updates the model's weights.
+        
+        Ensures that calling consolidate after learning results in changes to the model's weights, verifying that consolidation performs an actual update rather than just saving the model.
+        """
         self.ai.learn(self.test_img_path, 1)
         initial_weights = [w.copy() for w in self.ai.model.get_weights()]
         self.ai.consolidate()
@@ -406,6 +540,11 @@ class TestOccipitalLobeAI(unittest.TestCase):
         self.assertTrue(weights_changed, "Model weights did not change after consolidate")
 
     def test_model_save_load_new_architecture(self):
+        """
+        Tests that saving and loading the model preserves the weights and architecture.
+        
+        This test sets the model's weights to known values, saves the model, reloads it, and verifies that the loaded weights have the correct shapes, ensuring model persistence and architectural consistency.
+        """
         weights = self.ai.model.get_weights()
         new_weights = [np.full(w.shape, 0.55) for w in weights]
         self.ai.model.set_weights(new_weights)
@@ -419,6 +558,9 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Simulate an old model file with only weights
         # If OccipitalLobeAI does not expose input_size/hidden_size/output_size, skip those checks
         # Just check that model weights are loaded and have correct shapes
+        """
+        Tests that OccipitalLobeAI can load model files from older formats containing only weights, ensuring weights are initialized and have valid shapes.
+        """
         old_model_data = {
             "weights_input_hidden": (np.random.rand(10, 10) * 0.1).tolist(),
             "weights_hidden_output": (np.random.rand(10, 5) * 0.1).tolist(),
@@ -434,6 +576,11 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
     def test_load_model_shape_mismatch_occipital(self):
         # Overwrite the weights file with invalid data
+        """
+        Tests that loading a corrupted OccipitalLobeAI model file does not crash and results in reinitialized model weights.
+        
+        Ensures that when the model file contains invalid data, the OccipitalLobeAI instance reinitializes its weights instead of failing.
+        """
         with open(TEST_OCCIPITAL_MODEL_PATH, 'w') as f:
             f.write('not a valid h5 file')
         # Should not crash, should reinitialize
@@ -443,6 +590,11 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
 class TestFrontalLobeAI(unittest.TestCase):
     def setUp(self):
+        """
+        Sets up the test environment for FrontalLobeAI tests.
+        
+        Creates the test directory, removes any existing model and epsilon files, initializes a FrontalLobeAI instance with a replay batch size of 1, saves the initial model state, and generates a random sample state for use in tests.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         self.epsilon_path = (
             TEST_FRONTAL_MODEL_PATH + "_epsilon.json"
@@ -456,11 +608,19 @@ class TestFrontalLobeAI(unittest.TestCase):
         self.sample_state = np.random.rand(self.ai.input_size).tolist()
 
     def tearDown(self):
+        """
+        Removes the epsilon file if it exists to clean up after each test.
+        """
         if os.path.exists(self.epsilon_path):
             os.remove(self.epsilon_path)
 
     def test_process_task_epsilon_greedy_selection(self):
         # Test with high exploration: actions should be somewhat random
+        """
+        Tests epsilon-greedy action selection and epsilon decay in process_task.
+        
+        Verifies that with high exploration rate, actions are selected randomly, and with zero exploration, the action with the highest Q-value is chosen. Also checks that the exploration rate decays after each call.
+        """
         self.ai.exploration_rate_epsilon = 1.0
         action_counts_explore = {i:0 for i in range(self.ai.output_size)}
         for _ in range(1000):
@@ -491,6 +651,11 @@ class TestFrontalLobeAI(unittest.TestCase):
                                msg="Epsilon decay is not working as expected")
 
     def test_learn_q_update_and_memory(self):
+        """
+        Tests that the FrontalLobeAI's learn method updates model weights and appends experiences to memory.
+        
+        Verifies that model weights change after learning, experiences are stored in memory, and the memory size limit is enforced.
+        """
         state = self.sample_state
         action_taken = 1
         reward = 1.0
@@ -516,6 +681,12 @@ class TestFrontalLobeAI(unittest.TestCase):
 
     def test_consolidate_experience_replay(self):
         # Populate memory with diverse experiences reflecting new input_size
+        """
+        Tests that the consolidate method updates model weights using experience replay.
+        
+        Populates the AI's memory with multiple experiences, verifies that consolidation
+        alters the model's weights, and ensures that memory is not empty prior to consolidation.
+        """
         for i in range(10):
             state = np.random.rand(self.ai.input_size).tolist()
             action = np.random.randint(0, self.ai.output_size)
@@ -538,6 +709,11 @@ class TestFrontalLobeAI(unittest.TestCase):
 
     def test_model_save_load_q_learning_params(self):
         # Set specific values to test save/load
+        """
+        Tests that the model's exploration rate epsilon and Keras model weights are correctly saved and reloaded.
+        
+        Verifies that after saving the model with modified epsilon and weights, a new instance loads these parameters accurately from disk.
+        """
         self.ai.exploration_rate_epsilon = 0.678
         # Modify Keras model weights slightly to ensure they are saved and loaded
         original_weights = [w.copy() for w in self.ai.model.get_weights()]
@@ -555,6 +731,11 @@ class TestFrontalLobeAI(unittest.TestCase):
 
 class TestCerebellumAI(unittest.TestCase):
     def setUp(self):
+        """
+        Sets up the test environment for CerebellumAI tests.
+        
+        Creates the test data directory, removes any existing model file to ensure a clean state, initializes a CerebellumAI instance with default weights and biases, saves the model, and generates sample sensor data and command values for use in tests.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_CEREBELLUM_MODEL_PATH):
@@ -572,6 +753,9 @@ class TestCerebellumAI(unittest.TestCase):
             os.remove(TEST_CEREBELLUM_MODEL_PATH)
 
     def test_prepare_input_vector(self):
+        """
+        Tests that _prepare_input_vector correctly pads or truncates sensor data to match the input size.
+        """
         vec = self.ai._prepare_input_vector(self.sample_sensor_data)
         self.assertEqual(vec.shape, (self.ai.input_size,))
         short_data = self.sample_sensor_data[:-2]
@@ -584,6 +768,9 @@ class TestCerebellumAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.input_size]), decimal=5)
 
     def test_prepare_target_command_vector(self): # noqa E702
+        """
+        Tests that the target command vector is correctly padded or truncated to match the output size.
+        """
         vec = self.ai._prepare_target_command_vector(self.sample_true_command) # noqa E702
         self.assertEqual(vec.shape, (self.ai.output_size,))
         long_data = self.sample_true_command + [0.1]
@@ -592,6 +779,9 @@ class TestCerebellumAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.output_size]), decimal=5)
 
     def test_forward_propagate_output_shapes_and_ranges(self):
+        """
+        Tests that the _forward_propagate method returns outputs with correct shapes and ensures all values are within the expected Tanh range.
+        """
         input_vec_1d, hidden_layer_output, final_commands_output = self.ai._forward_propagate(self.sample_sensor_data)
         self.assertEqual(input_vec_1d.shape, (self.ai.input_size,), "Input vector shape mismatch.")
         self.assertEqual(hidden_layer_output.shape, (self.ai.hidden_size,), "Hidden layer output shape mismatch.")
@@ -600,6 +790,11 @@ class TestCerebellumAI(unittest.TestCase):
         self.assertTrue(np.all(final_commands_output >= -1) and np.all(final_commands_output <= 1), "Final commands out of Tanh range.")
 
     def test_process_task_output(self):
+        """
+        Tests that process_task returns a list of command values within the expected range.
+        
+        Verifies that the output is a list of the correct length and that each command value is within [-1, 1].
+        """
         commands = self.ai.process_task(self.sample_sensor_data)
         self.assertIsInstance(commands, list)
         self.assertEqual(len(commands), self.ai.output_size)
@@ -607,6 +802,11 @@ class TestCerebellumAI(unittest.TestCase):
             self.assertTrue(-1.0 <= val <= 1.0)
 
     def test_learn_updates_and_memory(self):
+        """
+        Tests that the learn method updates all weights and biases and appends to memory.
+        
+        Verifies that after calling learn, all weight and bias matrices are modified, and the input-target pair is added to memory. Also checks that the memory size limit is enforced after multiple learning steps.
+        """
         initial_w_ih = self.ai.weights_input_hidden.copy()
         initial_b_h = self.ai.bias_hidden.copy()
         initial_w_ho = self.ai.weights_hidden_output.copy()
@@ -629,6 +829,11 @@ class TestCerebellumAI(unittest.TestCase):
         self.assertEqual(len(self.ai.memory), 100)
 
     def test_consolidate_updates_weights(self):
+        """
+        Verifies that the consolidate method updates all weights and biases of the AI model.
+        
+        Ensures that after consolidation, the input-to-hidden weights, hidden-to-output weights, and both bias vectors are modified compared to their previous values.
+        """
         self.ai.learn(self.sample_sensor_data, self.sample_true_command)
         w_ih_before = self.ai.weights_input_hidden.copy()
         b_o_before = self.ai.bias_output.copy()
@@ -644,6 +849,9 @@ class TestCerebellumAI(unittest.TestCase):
 
     def test_model_save_load_new_cerebellum_architecture(self):
         # Set known values for all attributes
+        """
+        Tests that saving and loading a CerebellumAI model with the new architecture correctly preserves all weights, biases, and architectural parameters.
+        """
         self.ai.weights_input_hidden = np.full((self.ai.input_size, self.ai.hidden_size), 0.51)
         self.ai.bias_hidden = np.full((1, self.ai.hidden_size), 0.52)
         self.ai.weights_hidden_output = np.full((self.ai.hidden_size, self.ai.output_size), 0.53)
@@ -665,6 +873,10 @@ class TestCerebellumAI(unittest.TestCase):
 
     def test_load_model_backward_compatibility_cerebellum(self):
         # Simulate an old model file with only "weights"
+        """
+        Tests that CerebellumAI can load model files saved in an older format containing only "weights",
+        and correctly initializes new attributes with appropriate shapes for backward compatibility.
+        """
         old_model_data = {"weights": (np.random.rand(self.ai.input_size, self.ai.output_size) * 0.01).tolist()} # Old structure
         with open(TEST_CEREBELLUM_MODEL_PATH, 'w') as f:
             json.dump(old_model_data, f)
@@ -681,6 +893,9 @@ class TestCerebellumAI(unittest.TestCase):
         self.assertEqual(loaded_ai.bias_output.shape, (1, self.ai.output_size))
 
     def test_load_model_shape_mismatch_cerebellum(self):
+        """
+        Tests that loading a CerebellumAI model file with corrupted weight shapes reinitializes weights and biases to valid shapes without crashing.
+        """
         np.random.seed(0)  # Ensure reproducible random initializations
         self.ai.save_model() # Save a valid new model first
         with open(TEST_CEREBELLUM_MODEL_PATH, 'r') as f:
@@ -704,6 +919,11 @@ class TestCerebellumAI(unittest.TestCase):
 
 class TestParietalLobeAI(unittest.TestCase):
     def setUp(self):
+        """
+        Sets up the test environment for ParietalLobeAI tests.
+        
+        Creates the test data directory, removes any existing model file to ensure a clean state, initializes a ParietalLobeAI instance with default weights and biases, saves the model, and generates sample sensory data and true coordinates for use in tests.
+        """
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
         # Ensure clean state before AI initialization
         if os.path.exists(TEST_PARIETAL_MODEL_PATH):
@@ -733,6 +953,11 @@ class TestParietalLobeAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.input_size]), decimal=5)
 
     def test_prepare_target_coords_vector_parietal(self):
+        """
+        Tests that the ParietalLobeAI target coordinates vector is correctly padded or truncated.
+        
+        Verifies that the output vector from `_prepare_target_coords_vector` matches the expected shape and values, regardless of input length.
+        """
         vec = self.ai._prepare_target_coords_vector(self.sample_true_coords)
         self.assertEqual(vec.shape, (self.ai.output_size,))
         long_data = self.sample_true_coords + [0.1]
@@ -741,6 +966,11 @@ class TestParietalLobeAI(unittest.TestCase):
         np.testing.assert_array_almost_equal(vec_long, np.array(long_data[:self.ai.output_size]), decimal=5)
 
     def test_forward_propagate_output_shapes_parietal(self):
+        """
+        Tests that the ParietalLobeAI forward propagation returns outputs with correct shapes and value ranges.
+        
+        Verifies that the input vector, hidden layer output, and output coordinates have expected dimensions, and that the hidden layer output values are within the Tanh activation range.
+        """
         input_vec_1d, hidden_layer_output, output_coords_final = self.ai._forward_propagate(self.sample_sensory_data)
         self.assertEqual(input_vec_1d.shape, (self.ai.input_size,), "Input vector shape mismatch.")
         self.assertEqual(hidden_layer_output.shape, (self.ai.hidden_size,), "Hidden layer output shape mismatch.")
@@ -749,11 +979,17 @@ class TestParietalLobeAI(unittest.TestCase):
         # Output_coords has no explicit activation, so no range check beyond shape.
 
     def test_process_task_output_parietal(self):
+        """
+        Tests that process_task returns a coordinate list of the correct length for ParietalLobeAI.
+        """
         coords = self.ai.process_task(self.sample_sensory_data)
         self.assertIsInstance(coords, list)
         self.assertEqual(len(coords), self.ai.output_size)
 
     def test_learn_updates_and_memory_parietal(self):
+        """
+        Tests that the ParietalLobeAI's learn method updates all weights and biases and appends experiences to memory, enforcing the memory size limit.
+        """
         initial_w_ih = self.ai.weights_input_hidden.copy()
         initial_b_h = self.ai.bias_hidden.copy()
         initial_w_ho = self.ai.weights_hidden_output.copy()
@@ -776,6 +1012,11 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertEqual(len(self.ai.memory), self.ai.max_memory_size)
 
     def test_consolidate_updates_weights_parietal(self):
+        """
+        Tests that the consolidate method updates all weights and biases in the ParietalLobeAI model.
+        
+        Verifies that after calling consolidate, the input-to-hidden weights, hidden biases, hidden-to-output weights, and output biases have all changed from their initial values.
+        """
         self.ai.learn(self.sample_sensory_data, self.sample_true_coords) # Populate memory
         initial_params = {
             "w_ih": self.ai.weights_input_hidden.copy(),
@@ -792,6 +1033,9 @@ class TestParietalLobeAI(unittest.TestCase):
 
     def test_model_save_load_new_parietal_architecture(self):
         # Set known values for all attributes
+        """
+        Tests that saving and loading a ParietalLobeAI model preserves all weights, biases, and architectural parameters.
+        """
         self.ai.weights_input_hidden = np.full((self.ai.input_size, self.ai.hidden_size), 0.81)
         self.ai.bias_hidden = np.full((1, self.ai.hidden_size), 0.82)
         self.ai.weights_hidden_output = np.full((self.ai.hidden_size, self.ai.output_size), 0.83)
@@ -810,6 +1054,9 @@ class TestParietalLobeAI(unittest.TestCase):
         self.assertEqual(loaded_ai.output_size, self.ai.output_size)
 
     def test_load_model_backward_compatibility_parietal(self):
+        """
+        Tests that ParietalLobeAI can load models saved in an older format with only a 'weights' key, correctly initializing missing weights and biases for backward compatibility.
+        """
         old_model_data = {"weights": (np.random.rand(self.ai.input_size, self.ai.output_size) * 0.01).tolist()} # Old structure
         with open(TEST_PARIETAL_MODEL_PATH, 'w') as f:
             json.dump(old_model_data, f)
@@ -826,6 +1073,9 @@ class TestParietalLobeAI(unittest.TestCase):
 
     def test_load_model_shape_mismatch_parietal(self):
         # Overwrite the model file with invalid data
+        """
+        Tests that loading a corrupted or invalid ParietalLobeAI model file does not crash and all weights and biases are reinitialized with correct shapes.
+        """
         with open(TEST_PARIETAL_MODEL_PATH, 'w') as f:
             f.write('not a valid json file')
         # Should not crash, should reinitialize

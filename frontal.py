@@ -13,6 +13,11 @@ class FrontalLobeAI:
     def __init__(
         self, input_size=18, output_size=5, model_path="data/frontal_model.weights.h5", replay_batch_size=32
     ):
+        """
+        Initializes the FrontalLobeAI agent with DQN architecture and experience replay.
+        
+        Sets up neural network models, replay buffer, exploration parameters, and file paths for model persistence. Loads existing model weights and exploration rate if available.
+        """
         self.input_size = input_size  # State size
         self.output_size = output_size  # Action size
 
@@ -44,6 +49,12 @@ class FrontalLobeAI:
         self.load_model()  # Load weights and epsilon if they exist
 
     def _build_model(self):
+        """
+        Builds and compiles the neural network model for Q-value prediction.
+        
+        Returns:
+            A compiled Keras Sequential model with two hidden layers for use as the DQN.
+        """
         model = Sequential(
             [
                 Input(shape=(self.input_size,), name="input_layer"), # Added Input layer
@@ -63,7 +74,9 @@ class FrontalLobeAI:
 
     def _prepare_state_vector(self, state_data):
         """
-        Prepares raw state data into a flat numpy vector of the correct input size.
+        Converts raw state data into a flat numpy array of length `input_size`.
+        
+        If the input is shorter than `input_size`, pads with zeros; if longer, truncates. Returns a zero vector if conversion fails.
         """
         try:
             # Attempt to convert to numpy array and flatten
@@ -87,14 +100,28 @@ class FrontalLobeAI:
             return np.zeros(self.input_size)
 
     def remember(self, state, action, reward, next_state, done):
-        """Stores an experience in the replay buffer."""
+        """
+        Stores a single experience tuple in the replay buffer for later training.
+        
+        The experience consists of the current state, action taken, reward received, next state, and a boolean indicating if the episode ended.
+        """
         # State and next_state are stored in their raw/original format from the environment
         self.memory.append((state, action, reward, next_state, done))
 
     def process_task(
         self, current_input_data
     ):  # Renamed from input_data to avoid confusion
-        """Choose an action using epsilon-greedy policy."""
+        """
+        Selects an action based on the current state using an epsilon-greedy policy.
+        
+        Converts the input state to a vector and, with probability epsilon, chooses a random action for exploration; otherwise, selects the action with the highest predicted Q-value from the model. Decays the exploration rate after each call.
+        
+        Args:
+            current_input_data: The current state representation to be processed for action selection.
+        
+        Returns:
+            The index of the selected action as an integer.
+        """
         state_vector_1d = self._prepare_state_vector(current_input_data)
         # Reshape for Keras model prediction (expects batch dimension)
         state_batch = np.reshape(state_vector_1d, [1, self.input_size])
@@ -117,8 +144,14 @@ class FrontalLobeAI:
 
     def learn(self, state, action, reward, next_state, done):
         """
-        Stores the experience and triggers replay if buffer is large enough.
-        This method is called by the main loop after an action is taken.
+        Stores an experience tuple and initiates replay training if the replay buffer has enough samples.
+        
+        Args:
+            state: The current state before taking the action.
+            action: The action taken.
+            reward: The reward received after taking the action.
+            next_state: The resulting state after the action.
+            done: Boolean indicating if the episode has ended.
         """
         self.remember(state, action, reward, next_state, done)
 
@@ -131,7 +164,11 @@ class FrontalLobeAI:
         # print(f"Frontal Lobe: Memory size {len(self.memory)} < batch size {self.replay_batch_size}. Not replaying yet.")
 
     def replay(self):
-        """Trains the DQN by replaying experiences from the memory buffer."""
+        """
+        Performs experience replay by sampling a minibatch from memory and training the main Q-network.
+        
+        Samples a batch of past experiences, computes updated Q-values using the target network for bootstrapped targets, and fits the main model on the batch. Periodically updates the target network to synchronize weights.
+        """
         if len(self.memory) < self.replay_batch_size:
             return  # Not enough memory to sample a batch
 
@@ -188,11 +225,20 @@ class FrontalLobeAI:
             self.update_target_model()
 
     def update_target_model(self):
-        """Copies weights from the main model to the target model."""
+        """
+        Synchronizes the target network weights with the main model.
+        
+        Copies the weights from the main Q-network to the target network to ensure stable target value estimation during training.
+        """
         self.target_model.set_weights(self.model.get_weights())
         print("Frontal Lobe: Target network updated.")
 
     def save_model(self):
+        """
+        Saves the current model weights and exploration rate epsilon to disk.
+        
+        The model weights are saved in HDF5 format at the specified model path, and the current epsilon value is stored in a separate JSON file. Creates necessary directories if they do not exist.
+        """
         print(
             f"Saving Frontal Lobe model to {self.model_path} and epsilon to {self.epsilon_path}"
         )
@@ -210,6 +256,11 @@ class FrontalLobeAI:
             print(f"Error saving Frontal Lobe model/epsilon: {e}")
 
     def load_model(self):
+        """
+        Loads model weights and exploration rate (epsilon) from disk if available.
+        
+        If the model weights file exists, loads the weights into the main model and updates the target model accordingly. If the epsilon file exists, loads the exploration rate value. If either file is missing or loading fails, the model and epsilon remain at their initialized values.
+        """
         if os.path.exists(self.model_path):
             print(f"Loading Frontal Lobe model weights from {self.model_path}")
             try:
@@ -253,7 +304,11 @@ class FrontalLobeAI:
             )
 
     def consolidate(self):
-        """Bedtime: Perform more replay steps and save the model."""
+        """
+        Performs multiple replay training steps to reinforce learning, updates the target model, and saves the current model state.
+        
+        If sufficient experiences are stored in memory, executes several replay batches to consolidate learning before persisting model weights and the exploration rate.
+        """
         print("Frontal Lobe: Starting consolidation...")
         if len(self.memory) < self.replay_batch_size:
             print(
