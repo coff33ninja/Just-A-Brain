@@ -3,7 +3,7 @@ import os
 import sys
 import json
 import shutil # For cleaning up directories
-from unittest.mock import patch, MagicMock # For mocking
+from unittest.mock import patch, MagicMock, ANY # For mocking
 
 from collections import deque
 import numpy as np
@@ -132,8 +132,9 @@ class TestTemporalLobeAI(unittest.TestCase):
         # Case 1: predict_visual=False
         output_embedding = self.ai.process_task("sample text", predict_visual=False)
         self.assertIsInstance(output_embedding, list, "Output should be a list when predict_visual=False.")
-        self.assertEqual(len(output_embedding), self.ai.output_size, "Embedding list length mismatch.")
-        self.assertTrue(all(isinstance(x, float) for x in output_embedding), "All elements in embedding list should be floats.")
+        if isinstance(output_embedding, list): # Help Pylance with type narrowing
+            self.assertEqual(len(output_embedding), self.ai.output_size, "Embedding list length mismatch.")
+            self.assertTrue(all(isinstance(x, float) for x in output_embedding), "All elements in embedding list should be floats.")
 
         # Case 2: predict_visual=True
         output_tuple = self.ai.process_task("sample text", predict_visual=True)
@@ -142,20 +143,23 @@ class TestTemporalLobeAI(unittest.TestCase):
 
         embedding_list, visual_label_int = output_tuple
         self.assertIsInstance(embedding_list, list, "First element of tuple (embedding) should be a list.")
-        self.assertEqual(len(embedding_list), self.ai.output_size, "Embedding list length in tuple mismatch.")
-        self.assertTrue(all(isinstance(x, float) for x in embedding_list), "All elements in tuple's embedding list should be floats.")
+        if isinstance(embedding_list, list):
+            self.assertEqual(len(embedding_list), self.ai.output_size, "Embedding list length in tuple mismatch.")
+            self.assertTrue(all(isinstance(x, float) for x in embedding_list), "All elements in tuple's embedding list should be floats.")
+        else:
+            self.fail(f"Expected embedding_list to be a list, got {type(embedding_list)}")
 
         self.assertIsInstance(visual_label_int, int, "Second element of tuple (visual_label) should be an int.")
         self.assertTrue(0 <= visual_label_int < self.ai.visual_output_size, "Visual label out of expected range.")
 
 
-    @patch.object(TemporalLobeAI, 'model', new_callable=MagicMock) # Mock the model object itself
-    def test_learn_text_sequence(self, mock_model):
+    def test_learn_text_sequence(self):
         """Test learn method for text sequence learning path with mocked train_on_batch."""
         # Configure the mocked model's train_on_batch method
+        mock_model = MagicMock()
         mock_model.train_on_batch = MagicMock()
         self.ai.model = mock_model # Assign the mock to the instance
-
+    
         sequence_to_learn = [("input text", "target text")]
         self.ai.learn(sequence_to_learn, visual_label_as_context=None)
 
@@ -199,11 +203,10 @@ class TestTemporalLobeAI(unittest.TestCase):
         self.assertIn((text_for_assoc, visual_label), self.ai.cross_modal_memory)
 
 
-    @patch.object(TemporalLobeAI, 'model', new_callable=MagicMock)
-    def test_consolidate_combined_model(self, mock_model):
+    def test_consolidate_combined_model(self):
         """Test consolidate method for both memory_db and cross_modal_memory paths."""
+        mock_model = MagicMock()
         mock_model.fit = MagicMock()
-        # Mock predict for the self-supervised part of cross_modal_memory consolidation
         mock_model.predict.return_value = [np.random.rand(1, self.ai.output_size).astype(np.float32),
                                            np.random.rand(1, self.ai.visual_output_size).astype(np.float32)]
         self.ai.model = mock_model
@@ -436,9 +439,9 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
     def test_forward_propagate_output_shapes(self):
         # Use model.predict for forward propagation
-        input_shape = self.ai.model.input_shape # e.g., (64, 64, 3)
+        input_shape_tuple = self.ai.input_shape # e.g., (64, 64, 3)
         # Create a dummy input batch of 1 image
-        dummy_input_batch = np.random.rand(1, *input_shape)
+        dummy_input_batch = np.random.rand(1, *input_shape_tuple)
         output_scores_batch = self.ai.model.predict(dummy_input_batch, verbose=0)
         self.assertEqual(output_scores_batch.shape, (1, self.ai.output_size))
 
@@ -477,7 +480,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
 
         with patch.object(self.ai, '_preprocess_image') as mock_preprocess:
             self.ai.consolidate()
-            mock_preprocess.assert_not_called("consolidate should use cached images, not call _preprocess_image.")
+            mock_preprocess.assert_not_called()
 
         final_weights = self.ai.model.get_weights()
         weights_changed = any(not np.array_equal(iw, fw) for iw, fw in zip(initial_weights, final_weights))
@@ -548,7 +551,7 @@ class TestOccipitalLobeAI(unittest.TestCase):
         # Suppress print output during this expected failure
         with patch('builtins.print') as mock_print:
             self.ai.load_model() # Attempt to load corrupted file
-            mock_print.assert_any_call(unittest.mock.ANY) # Check that an error was printed
+            mock_print.assert_any_call(ANY) # Check that an error was printed
 
         weights_after_corrupt_load = self.ai.model.get_weights()
 
@@ -570,9 +573,8 @@ class TestFrontalLobeAI(unittest.TestCase):
             os.remove(self.epsilon_path)
 
         self.ai = FrontalLobeAI(model_path=self.test_instance_model_path, replay_batch_size=1)
-        # self.ai.save_model() # Save initial model if needed by specific tests, but often not for unit tests
-        self.sample_state = np.random.rand(self.ai.input_size).tolist()
-
+        # Use feature_size_per_step instead of input_size
+        self.sample_state = np.random.rand(self.ai.feature_size_per_step).tolist()
 
     def tearDown(self):
         if os.path.exists(self.test_instance_model_path):
@@ -580,15 +582,15 @@ class TestFrontalLobeAI(unittest.TestCase):
         if os.path.exists(self.epsilon_path):
             os.remove(self.epsilon_path)
 
-
     def test_process_task_epsilon_greedy_selection(self):
         self.ai.exploration_rate_epsilon = 1.0
         action_counts_explore = {i:0 for i in range(self.ai.output_size)}
         for _ in range(100 * self.ai.output_size): # More samples for better distribution
-            action_counts_explore[self.ai.process_task(self.sample_state)] += 1
+            action, _ = self.ai.process_task(self.sample_state)
+            action_counts_explore[action] += 1
         # Check that all actions were chosen at least once (for reasonable output_size)
         if self.ai.output_size <= 10: # Heuristic for small action spaces
-             self.assertTrue(all(count > 0 for count in action_counts_explore.values()),
+            self.assertTrue(all(count > 0 for count in action_counts_explore.values()),
                             f"Not all actions explored with epsilon=1.0. Counts: {action_counts_explore}")
 
         self.ai.exploration_rate_epsilon = 0.0
@@ -606,61 +608,77 @@ class TestFrontalLobeAI(unittest.TestCase):
 
         new_bias = np.zeros(bias_shape)
         self.ai.model.set_weights(weights[:-2] + [new_kernel, new_bias])
+        action_exploit, _ = self.ai.process_task(self.sample_state)
         self.assertEqual(
-            self.ai.process_task(self.sample_state),
+            action_exploit,
             expected_action,
             "Should pick action with highest Q-value when epsilon is 0 and weights are set."
         )
-        initial_epsilon = 0.5
-        self.ai.exploration_rate_epsilon = initial_epsilon
-        self.ai.process_task(self.sample_state)
-        self.assertAlmostEqual(self.ai.exploration_rate_epsilon,
-                               max(self.ai.min_epsilon, initial_epsilon - self.ai.epsilon_decay_rate),
-                               msg="Epsilon decay is not working as expected")
+        # Epsilon decay is tested in test_learn_q_update_and_memory
 
     def test_learn_q_update_and_memory(self):
         state = self.sample_state
+        # Create a sequence from the single state vector
+        state_sequence = [state] * self.ai.sequence_length
+
         action_taken = 1 % self.ai.output_size # Ensure valid action
         reward = 1.0
-        next_state = np.random.rand(self.ai.input_size).tolist()
+        next_state = np.random.rand(self.ai.feature_size_per_step).tolist()
+        # Create a sequence from the single next_state vector
+        next_state_sequence = [next_state] * self.ai.sequence_length
         done = False
 
         # Ensure the model is built before getting weights
-        _ = self.ai.model.predict(np.array([state]))
+        dummy_sequence_build = np.random.rand(1, self.ai.sequence_length, self.ai.feature_size_per_step)
+        _ = self.ai.model.predict(dummy_sequence_build)
         initial_model_weights = [w.copy() for w in self.ai.model.get_weights()]
-
+        initial_epsilon = self.ai.exploration_rate_epsilon # Store initial epsilon
         for _ in range(self.ai.replay_batch_size):
-             self.ai.learn(state, action_taken, reward, next_state, done)
+             self.ai.learn(state_sequence, action_taken, reward, next_state_sequence, done)
 
         final_model_weights = self.ai.model.get_weights()
         weights_changed = False
-        if self.ai.learning_rate_dqn > 0 and len(self.ai.memory) >= self.ai.replay_batch_size:
+        # Use memory_stm instead of memory
+        if self.ai.learning_rate_dqn > 0 and len(self.ai.memory_stm) >= self.ai.replay_batch_size:
             for initial_w_layer, final_w_layer in zip(initial_model_weights, final_model_weights):
                 if not np.array_equal(initial_w_layer, final_w_layer):
                     weights_changed = True
                     break
             self.assertTrue(weights_changed, "Model weights should change after learning enough to trigger replay if LR > 0.")
 
-        self.assertIn((list(state), action_taken, reward, list(next_state), done), self.ai.memory)
+        # Check if epsilon decayed (assuming replay_batch_size is enough to trigger replay)
+        if self.ai.replay_batch_size > 0 and len(self.ai.memory_stm) >= self.ai.replay_batch_size:
+            expected_epsilon_after_decay = max(self.ai.min_epsilon, initial_epsilon - (self.ai.epsilon_decay_rate * self.ai.replay_batch_size))
+            self.assertAlmostEqual(self.ai.exploration_rate_epsilon, expected_epsilon_after_decay,
+                                   msg="Epsilon decay is not working as expected after learn calls.")
 
-        self.ai.memory.clear()
+        self.assertIn((list(state_sequence), action_taken, reward, list(next_state_sequence), done), self.ai.memory_stm)
+
+        self.ai.memory_stm.clear()
         for _ in range(self.ai.replay_buffer_size + 5):
-            self.ai.learn(state, action_taken, reward, next_state, done)
-        self.assertTrue(len(self.ai.memory) <= self.ai.replay_buffer_size, "Memory size limit not enforced.")
-
+            self.ai.learn(state_sequence, action_taken, reward, next_state_sequence, done)
+        self.assertTrue(len(self.ai.memory_stm) <= self.ai.replay_buffer_size, "Memory size limit not enforced.")
 
     def test_consolidate_experience_replay(self):
         for i in range(self.ai.replay_batch_size * 2):
-            state = np.random.rand(self.ai.input_size).tolist()
+            state = np.random.rand(self.ai.feature_size_per_step).tolist()
+            state_sequence = [state] * self.ai.sequence_length # Create sequence
             action = np.random.randint(0, self.ai.output_size)
             reward_val = float(np.random.choice([-1,0,1]))
-            next_s = np.random.rand(self.ai.input_size).tolist()
+            next_s = np.random.rand(self.ai.feature_size_per_step).tolist()
+            next_s_sequence = [next_s] * self.ai.sequence_length # Create sequence
             done_val = bool(np.random.choice([True,False]))
-            self.ai.learn(state, action, reward_val, next_s, done_val)
+            self.ai.learn(state_sequence, action, reward_val, next_s_sequence, done_val)
 
-        self.assertTrue(len(self.ai.memory) > 0, "Memory should be populated before consolidation.")
+        self.assertTrue(len(self.ai.memory_stm) > 0, "Memory should be populated before consolidation.")
+        
+        # Ensure working_memory_buffer is populated for process_task calls during consolidation if any
+        for _ in range(self.ai.sequence_length):
+            self.ai.working_memory_buffer.append(np.random.rand(self.ai.feature_size_per_step))
+
         # Ensure model is built
-        _ = self.ai.model.predict(np.array([self.sample_state]))
+        dummy_sequence_build = np.random.rand(1, self.ai.sequence_length, self.ai.feature_size_per_step)
+        _ = self.ai.model.predict(dummy_sequence_build)
         initial_model_weights = [w.copy() for w in self.ai.model.get_weights()]
 
         self.ai.consolidate()
@@ -670,7 +688,7 @@ class TestFrontalLobeAI(unittest.TestCase):
             not np.array_equal(iw, fw)
             for iw, fw in zip(initial_model_weights, final_model_weights)
         )
-        if self.ai.learning_rate_dqn > 0 and len(self.ai.memory) >= self.ai.replay_batch_size:
+        if self.ai.learning_rate_dqn > 0 and len(self.ai.memory_stm) >= self.ai.replay_batch_size:
             self.assertTrue(
                 weights_changed,
                 "Weights should change after consolidation if learning rate is > 0 and memory is sufficient."
@@ -678,7 +696,8 @@ class TestFrontalLobeAI(unittest.TestCase):
 
     def test_model_save_load_q_learning_params(self):
         self.ai.exploration_rate_epsilon = 0.678
-        _ = self.ai.model.predict(np.array([self.sample_state])) # Build model
+        dummy_sequence_build = np.random.rand(1, self.ai.sequence_length, self.ai.feature_size_per_step)
+        _ = self.ai.model.predict(dummy_sequence_build) # Build model
         original_weights = [w.copy() for w in self.ai.model.get_weights()]
         modified_weights = [w * 0.5 for w in original_weights]
         self.ai.model.set_weights(modified_weights)
@@ -692,48 +711,56 @@ class TestFrontalLobeAI(unittest.TestCase):
                 loaded_w, orig_w, err_msg=f"Weights for layer {i} not loaded correctly."
             )
 
-    def test_replay_batch_logic(self):
+    @patch('random.sample')
+    def test_replay_batch_logic(self, mock_random_sample):
         batch_size = 2
-        # ai instance for this test uses self.test_instance_model_path
         ai = FrontalLobeAI(model_path=self.test_instance_model_path, replay_batch_size=batch_size)
-        input_size = ai.input_size
+        input_size = ai.feature_size_per_step
         output_size = ai.output_size
         ai.exploration_rate_epsilon = 0
 
-        state1_raw = np.array([0.1] * input_size).tolist()
+        # Experiences now store sequences
+        state1_vec = np.array([0.1] * input_size)
+        state1_seq = [state1_vec.tolist()] * ai.sequence_length
         action1 = 0
         reward1 = 0.5
-        next_state1_raw = np.array([0.2] * input_size).tolist()
+        next_state1_vec = np.array([0.2] * input_size)
+        next_state1_seq = [next_state1_vec.tolist()] * ai.sequence_length
         done1 = False
-        ai.remember(state1_raw, action1, reward1, next_state1_raw, done1)
+        exp1 = (state1_seq, action1, reward1, next_state1_seq, done1)
+        ai.remember(*exp1)
 
-        state2_raw = np.array([0.3] * input_size).tolist()
+        state2_vec = np.array([0.3] * input_size)
+        state2_seq = [state2_vec.tolist()] * ai.sequence_length
         action2 = 1 % output_size # Ensure valid action
         reward2 = -1.0
-        next_state2_raw = np.array([0.4] * input_size).tolist()
+        next_state2_vec = np.array([0.4] * input_size)
+        next_state2_seq = [next_state2_vec.tolist()] * ai.sequence_length
         done2 = True
-        ai.remember(state2_raw, action2, reward2, next_state2_raw, done2)
+        exp2 = (state2_seq, action2, reward2, next_state2_seq, done2)
+        ai.remember(*exp2)
+
+        # Mock random.sample to return experiences in a fixed order
+        mock_random_sample.return_value = [exp1, exp2]
 
         mock_current_q_s1 = np.random.rand(output_size)
         mock_current_q_s2 = np.random.rand(output_size)
         mock_current_q_values_batch = np.array([mock_current_q_s1, mock_current_q_s2])
 
         mock_next_q_ns1 = np.random.rand(output_size)
-        mock_next_q_ns2 = np.random.rand(output_size) # Will be used by _prepare_state_vector
+        mock_next_q_ns2 = np.random.rand(output_size)
         mock_next_q_values_target_batch = np.array([mock_next_q_ns1, mock_next_q_ns2])
 
-        expected_prepared_state1 = ai._prepare_state_vector(state1_raw)
-        expected_prepared_state2 = ai._prepare_state_vector(state2_raw)
-        expected_current_states_batch_np = np.array([expected_prepared_state1, expected_prepared_state2])
+        # Expected sequences for the batch
+        expected_current_states_batch_np = np.array([state1_seq, state2_seq])
 
         with patch.object(ai.model, 'predict') as mock_model_predict, \
              patch.object(ai.target_model, 'predict') as mock_target_model_predict, \
              patch.object(ai.model, 'fit') as mock_model_fit:
-
             mock_model_predict.return_value = mock_current_q_values_batch
             mock_target_model_predict.return_value = mock_next_q_values_target_batch
 
-            ai.replay()
+            ai.replay(memory_source=ai.memory_stm)
 
             mock_model_fit.assert_called_once()
 
@@ -753,12 +780,11 @@ class TestFrontalLobeAI(unittest.TestCase):
             np.testing.assert_array_almost_equal(mock_model_predict.call_args[0][0], expected_current_states_batch_np)
 
             expected_next_states_batch_np = np.array([
-                ai._prepare_state_vector(next_state1_raw),
-                ai._prepare_state_vector(next_state2_raw)
+                next_state1_seq,
+                next_state2_seq
             ])
             mock_target_model_predict.assert_called_once()
             np.testing.assert_array_almost_equal(mock_target_model_predict.call_args[0][0], expected_next_states_batch_np)
-
 class TestCerebellumAI(unittest.TestCase):
     def setUp(self):
         os.makedirs(TEST_DATA_DIR, exist_ok=True)
@@ -1055,7 +1081,7 @@ class TestParietalLobeAI(unittest.TestCase):
                 err_msg=f"Layer {i}: Weights of corrupted_ai changed after failed load attempt."
             )
 
-        # Also, ensure these weights are different from the original *valid* weights
+        # Also, ensure these weights are different from the original validly saved weights
         # (unless by extreme coincidence Keras initialized them identically).
         weights_are_different_from_valid_model = any(
             not np.array_equal(w_failed_load, w_valid)
@@ -1077,6 +1103,7 @@ class TestBrainCoordinator(unittest.TestCase):
         self.coordinator.temporal = MagicMock(spec=TemporalLobeAI)
         self.coordinator.cerebellum = MagicMock(spec=CerebellumAI)
         self.coordinator.limbic = MagicMock(spec=LimbicSystemAI)
+        self.coordinator.temporal.memory_db = [] # Add memory_db attribute to the mock
         self.coordinator.episode_length = 5 # Default from main.BrainCoordinator
 
         # Configure mock return values for process_task
@@ -1239,7 +1266,6 @@ class TestBrainCoordinator(unittest.TestCase):
             expected_done = (day - 1) % episode_length == 0 and (day-1) > 0
             # Correction: done is True when steps_since_last_episode_end (which is day-1 for the *transition*) hits episode_length
             # coordinator.steps_since_last_episode_end is state *after* processing current day, before learn.
-            # The learn call uses the state of coordinator.steps_since_last_episode_end *before* it's potentially reset.
             # The learn() call for the transition (s_{d-1}, a_{d-1}, r_{d-1}) -> s_d
             # uses steps_since_last_episode_end that has been incremented for day d.
             # So, if day d makes steps_since_last_episode_end == episode_length, then done is True for that learn call.
