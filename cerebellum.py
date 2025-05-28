@@ -185,7 +185,8 @@ if __name__ == "__main__":
     print("\n--- Testing process_task ---")
     predicted_commands = cerebellum_ai.process_task(sample_sensor_data)
     print(f"Predicted commands: {predicted_commands}")
-    assert len(predicted_commands) == cerebellum_ai.output_size, "process_task output length mismatch"
+    if not (len(predicted_commands) == cerebellum_ai.output_size):
+        raise AssertionError("process_task output length mismatch")
 
     print("\n--- Testing learn method ---")
     cerebellum_ai.learn(sample_sensor_data, sample_true_command)
@@ -232,7 +233,8 @@ if __name__ == "__main__":
             loaded_weights_sample = weights_list_loaded[0][0,0]
             print(f"Loaded model weight sample (hidden_layer kernel [0,0]): {loaded_weights_sample}")
             if weights_after_consolidate_sample is not None:
-                assert np.isclose(weights_after_consolidate_sample, loaded_weights_sample), "Loaded weights do not match saved weights."
+                if not np.isclose(weights_after_consolidate_sample, loaded_weights_sample):
+                    raise AssertionError("Loaded weights do not match saved weights.")
                 print("Model loading confirmed: weights match.")
 
     # Clean up dummy model file
